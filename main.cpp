@@ -50,10 +50,12 @@ int main() {
     // spacer
     std::cout << YELLOW << "--------------------------------------------------------------------------------\n" << RESET;
 
-    // write function to array, write array to file
+    // TODO: make it possible to choose initial wf source and parameters from input file
+    // write wavefunction to array, save array to file
     fftw_complex psi[ndx];
     fftw_complex_func_to_array(x0,xf,dx,gaussianWP,psi);
     fftw_complex_array_to_file(x0, xf, dx, psifile, psi);
+    // NOTE: replace above calls with fftw_complex_array_from_file to read wf from an input file
 
     // save initial wf-squared to file
     double psi_squared[ndx];
@@ -71,9 +73,11 @@ int main() {
     // spacer
     std::cout << YELLOW << "--------------------------------------------------------------------------------\n" << RESET;
 
+    // TODO: make it possible to choose potential source and parameters from input file
     // propagate wf
     std::cout << "Propogation progress:\n";
-    propagate(ndx, dx, x0, psi, barrier(0, 0.2, 200), dt, ndt, psiout);
+    propagate(ndx, dx, x0, psi, barrier(0, 0.2, 200),
+              dt, ndt, psiout);
 
     // spacer
     std::cout << YELLOW << "--------------------------------------------------------------------------------\n" << RESET;
