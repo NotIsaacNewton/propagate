@@ -64,14 +64,14 @@ void defV(int gridpoints, fftw_complex *op, const std::function<double(double)>&
         std::cout << GREEN << "\r" << 100*t/steps << "%";
         // print to output file every t_out steps
         if (t % 10 == 0 /*TODO: read this from input*/) {
-            std::ofstream potwrite;
-            potwrite.open(output, std::ios::app);
-            if (potwrite.is_open()) {
+            std::ofstream wf;
+            wf.open(output, std::ios::app);
+            if (wf.is_open()) {
                 for (int i=0; i<gridpoints; i += 32 /*TODO: read this from input*/) {
                     // OPTIMIZE: is this monstrosity of a write call slowing down the code? (yes)
-                    potwrite << t * time_width << " " << i*space_width + start << " " << psi[i][0] << " " << psi[i][1] << " " << psi[i][0]*psi[i][0] + psi[i][1]*psi[i][1] << std::endl;
+                    wf << t * time_width << " " << i*space_width + start << " " << psi[i][0] << " " << psi[i][1] << " " << psi[i][0]*psi[i][0] + psi[i][1]*psi[i][1] << std::endl;
                 }
-                potwrite.close();
+                wf.close();
             } else {
                 std::cerr << "Failed to open " << output << "." << std::endl;
                 break;
@@ -164,13 +164,13 @@ void defiV(int gridpoints, fftw_complex *op, double potential(double x), double 
         std::cout << BLUE << "\r" << 100*t/steps << "%";
         // print to output file every t_out steps
         if (t % 10 == 0) {
-            std::ofstream potwrite;
-            potwrite.open(output, std::ios::app);
-            if (potwrite.is_open()) {
+            std::ofstream wf;
+            wf.open(output, std::ios::app);
+            if (wf.is_open()) {
                 for (int i=0; i<gridpoints; i += 32) {
-                    potwrite << t * time_width << " " << i*space_width + start << " " << psi[i][0] << " " << psi[i][1] << " " << psi[i][0]*psi[i][0] + psi[i][1]*psi[i][1] << std::endl;
+                    wf << t * time_width << " " << i * space_width + start << " " << psi[i][0] << " " << psi[i][1] << " " << psi[i][0] * psi[i][0] + psi[i][1] * psi[i][1] << std::endl;
                 }
-                potwrite.close();
+                wf.close();
             } else {
                 std::cerr << "Failed to open " << output << "." << std::endl;
             }
