@@ -75,6 +75,7 @@ void defV(int gridpoints, fftw_complex *op, const std::function<double(double)>&
                 potwrite.close();
             } else {
                 std::cerr << "Failed to open " << output << "." << std::endl;
+                break;
             }
         }
         // mult space part

@@ -20,10 +20,9 @@ int main() {
 
     // file locations
     std::string inputfile = "/Users/ariandovald/CLionProjects/propagate/inputs";
-    std::string psifile = "/Users/ariandovald/CLionProjects/propagate/psi_initial.dat";
-    std::string psisquared = "/Users/ariandovald/CLionProjects/propagate/psi_squared_initial.dat";
-    std::string psiout = "/Users/ariandovald/CLionProjects/propagate/psi_final.dat";
-    std::string psisquaredout = "/Users/ariandovald/CLionProjects/propagate/psi_squared_final.dat";
+    std::string psifile = "/Users/ariandovald/CLionProjects/propagate/data/psi_initial.dat";
+    std::string psisquared = "/Users/ariandovald/CLionProjects/propagate/data/psi_squared_initial.dat";
+    std::string psiout = "/Users/ariandovald/CLionProjects/propagate/data/psi_final.dat";
 
     // spacer
     std::cout << YELLOW << "--------------------------------------------------------------------------------\n" << RESET;
@@ -75,13 +74,6 @@ int main() {
     // propagate wf
     std::cout << "Propogation progress:\n";
     propagate(ndx, dx, x0, psi, barrier(0, 0.2, 200), dt, ndt, psiout);
-
-    // spacer
-    std::cout << YELLOW << "--------------------------------------------------------------------------------\n" << RESET;
-
-    // save final wf-squared to file
-    fftw_complex_square(ndx, psi, psi_squared);
-    writeArray1D(x0, xf, dx, psisquaredout, psi_squared);
 
     // spacer
     std::cout << YELLOW << "--------------------------------------------------------------------------------\n" << RESET;

@@ -16,14 +16,12 @@
 void fftw_complex_array_to_file(const double& start, const double& end, const double& width, const std::string& file, fftw_complex *function) {
     const double n = (end-start)/width;
     std::ofstream potwrite;
-    //std::print("Opening {}...\n",file);
     potwrite.open(file);
     if (potwrite.is_open()) {
         std::print("Writing to {}...\n",file);
         for (int i=0; i<n; i++) {
             potwrite << i*width + start << " " << function[i][0] << " " << function[i][1] << std::endl;
         }
-        //std::print("Closing {}...\n",file);
         potwrite.close();
     } else {
         std::cerr << "Failed to open " << file << "." << std::endl;
@@ -43,7 +41,6 @@ void fftw_complex_func_to_array(const double& start, const double& end, const do
 // reads to fftw_complex array from file
 [[maybe_unused]] void fftw_complex_array_from_file(const std::string& file, fftw_complex *function) {
     std::ifstream read;
-    //std::print("Opening {}...\n",file);
     read.open(file);
     if (read.is_open()) {
         std::print("Reading from {}...\n",file);
@@ -52,16 +49,13 @@ void fftw_complex_func_to_array(const double& start, const double& end, const do
         while (std::getline(read, line)) {
             std::istringstream readline(line);
             double x;
-            double V;
-            //std::print("Reading line {}...\n", n);
-            readline >> x >> V;
-            //std::print("Storing line {}...\n", n);
-            function[n][0] = V;
-            function[n][1] = 0;
-            //std::print("Incrementing line...\n");
+            double re;
+            double im;
+            readline >> x >> re >> im;
+            function[n][0] = re;
+            function[n][1] = im;
             ++n;
         }
-        //std::print("Closing {}...\n",file);
         read.close();
     } else {
         std::cerr << "Failed to open " << file << "." << std::endl;
