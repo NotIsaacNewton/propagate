@@ -10,9 +10,7 @@
 #include "armpl.h"
 #include "fftw3.h"
 #include "fftw_complex_tools.h"
-
-// ANSI escape code for green
-#define BLUE   "\033[34m"
+#include "console_tools.h"
 
 // scales entire array by a scalar
 void scale_fftw_complex(double scalar, fftw_complex *complex_vec, int size) {
@@ -70,6 +68,7 @@ void defV(int gridpoints, fftw_complex *op, const std::function<double(double)>&
             potwrite.open(output, std::ios::app);
             if (potwrite.is_open()) {
                 for (int i=0; i<gridpoints; i += 32) {
+                    // OPTIMIZE: is this monstrosity of a write call slowing down the code? (yes)
                     potwrite << t * time_width << " " << i*space_width + start << " " << psi[i][0] << " " << psi[i][1] << " " << psi[i][0]*psi[i][0] + psi[i][1]*psi[i][1] << std::endl;
                 }
                 potwrite.close();

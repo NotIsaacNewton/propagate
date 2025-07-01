@@ -3,13 +3,7 @@
 #include "propagate.h"
 #include "fftw_complex_tools.h"
 #include "wavepackets_and_potentials.h"
-
-// ANSI escape codes for colors
-#define RESET   "\033[0m"
-#define RED     "\033[31m"
-#define GREEN   "\033[32m"
-#define YELLOW  "\033[33m"
-#define BLUE    "\033[34m"
+#include "console_tools.h"
 
 // TODO: create header that automatically selects between ArmPL and MKL (urgent, to run on beocat)
 // TODO: make everything more general and flexible for use in future projects
@@ -25,7 +19,7 @@ int main() {
     std::string psiout = "/Users/ariandovald/CLionProjects/propagate/data/psi_final.dat";
 
     // spacer
-    std::cout << YELLOW << "--------------------------------------------------------------------------------\n" << RESET;
+    spacer();
 
     // space stuff
     double x0;
@@ -48,7 +42,7 @@ int main() {
     potwrite.close();
 
     // spacer
-    std::cout << YELLOW << "--------------------------------------------------------------------------------\n" << RESET;
+    spacer();
 
     // TODO: make it possible to choose initial wf source and parameters from input file
     // write wavefunction to array, save array to file
@@ -63,7 +57,7 @@ int main() {
     writeArray1D(x0, xf, dx, psisquared, psi_squared);
 
     // spacer
-    std::cout << YELLOW << "--------------------------------------------------------------------------------\n" << RESET;
+    spacer();
 
     // check norm
     std::cout << RED "Check norm:\n" << RESET;
@@ -71,7 +65,7 @@ int main() {
     std::print("The initial norm is {}\n", norm);
 
     // spacer
-    std::cout << YELLOW << "--------------------------------------------------------------------------------\n" << RESET;
+    spacer();
 
     // TODO: make it possible to choose potential source and parameters from input file
     // propagate wf
@@ -80,7 +74,7 @@ int main() {
               dt, ndt, psiout);
 
     // spacer
-    std::cout << YELLOW << "--------------------------------------------------------------------------------\n" << RESET;
+    spacer();
 
     // check norm
     std::cout << RED "Check norm:\n" << RESET;
@@ -88,7 +82,7 @@ int main() {
     std::print("The final norm is {}\n", norm);
 
     // spacer
-    std::cout << YELLOW << "--------------------------------------------------------------------------------\n" << RESET;
+    spacer();
 
     // record end time and duration
     auto end = std::chrono::high_resolution_clock::now();
