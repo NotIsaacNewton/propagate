@@ -61,7 +61,7 @@ void defV(int gridpoints, fftw_complex *op, const std::function<double(double)>&
     // propagation loop
     for (int t = 0; t <= steps; t++) {
         // print completion % to console
-        std::cout << BLUE << "\r" << 100*t/steps << "%";
+        std::cout << GREEN << "\r" << 100*t/steps << "%";
         // print to output file every t_out steps
         if (t % 10 == 0) {
             std::ofstream potwrite;

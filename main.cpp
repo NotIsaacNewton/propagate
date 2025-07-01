@@ -19,7 +19,8 @@ int main() {
     std::string psiout = "/Users/ariandovald/CLionProjects/propagate/data/psi_final.dat";
 
     // spacer
-    spacer();
+    spacerChunky(BLUE);
+    std::cout << std::endl;
 
     // space stuff
     double x0;
@@ -41,9 +42,6 @@ int main() {
     potwrite.open(psiout);
     potwrite.close();
 
-    // spacer
-    spacer();
-
     // TODO: make it possible to choose initial wf source and parameters from input file
     // write wavefunction to array, save array to file
     fftw_complex psi[ndx];
@@ -57,7 +55,7 @@ int main() {
     writeArray1D(x0, xf, dx, psisquared, psi_squared);
 
     // spacer
-    spacer();
+    spacerThick(RESET);
 
     // check norm
     std::cout << RED "Check norm:\n" << RESET;
@@ -65,7 +63,7 @@ int main() {
     std::print("The initial norm is {}\n", norm);
 
     // spacer
-    spacer();
+    spacer(RESET);
 
     // TODO: make it possible to choose potential source and parameters from input file
     // propagate wf
@@ -74,7 +72,7 @@ int main() {
               dt, ndt, psiout);
 
     // spacer
-    spacer();
+    spacer(RESET);
 
     // check norm
     std::cout << RED "Check norm:\n" << RESET;
@@ -82,14 +80,17 @@ int main() {
     std::print("The final norm is {}\n", norm);
 
     // spacer
-    spacer();
+    spacer(RESET);
 
     // record end time and duration
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
     double time = double(duration.count())/1000000;
-    std::cout << GREEN << "Done :)\n\n" << RESET;
-    std::cout << "Execution time: " << time << " seconds\n";
+    std::cout << "Done :)\n\n";
+    std::cout << BLUE << "Execution time: " << time << " seconds\n";
+
+    // spacer
+    spacerChunky(BLUE);
 
     // TODO: would be nice to pipe commands to mathematica or gnuplot
 

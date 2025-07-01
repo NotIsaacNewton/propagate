@@ -16,8 +16,20 @@
 #define BLUE    "\033[34m"
 
 // spacer
-void spacer() {
-    std::cout << YELLOW << "--------------------------------------------------------------------------------\n" << RESET;
+void spacer(std::string color) {
+    std::cout << color << "--------------------------------------------------------------------------------\n" << RESET;
+}
+// thick spacer
+void spacerThick(std::string color) {
+    std::cout << color << "================================================================================\n" << RESET;
+}
+// chunky spacer
+void spacerChunky(std::string color) {
+    std::cout << color << "################################################################################\n" << RESET;
+}
+// fancy spacer
+void spacerFancy(std::string color) {
+    std::cout << color << "|[*]|[*]|[*]|[*]|[*]|[*]|[*]|[*]|[*]|[*]|[*]|[*]|[*]|[*]|[*]|[*]|[*]|[*]|[*]|[*]|\n" << RESET;
 }
 
 #endif //CONSOLE_TOOLS_H

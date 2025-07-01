@@ -16,7 +16,6 @@
     std::ofstream write;
     write.open(file);
     if (write.is_open()) {
-        std::print("Writing to {}...\n",file);
         for (int i=0; i<n; i++) {
             write << i*width + start << " " << function(i*width + start) << std::endl;
         }
@@ -32,7 +31,6 @@ void writeArray1D(const double& start, const double& end, const double& width, c
     std::ofstream write;
     write.open(file);
     if (write.is_open()) {
-        std::print("Writing to {}...\n",file);
         for (int i=0; i<n; i++) {
             write << i*width + start << " " << function[i] << std::endl;
         }
@@ -50,7 +48,7 @@ void readInputs(double& initial_pos, double& final_pos, int& space_grid,
     std::ifstream read;
     read.open(file);
     if (read.is_open()) {
-        std::print("Reading from {}...\n",file);
+        std::print("Reading inputs from {}...\n",file);
         std::string line;
         int n = 0;
         while (std::getline(read, line)) {
