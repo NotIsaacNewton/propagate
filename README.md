@@ -8,7 +8,7 @@ Machine requirements: ARM64
 
 External dependencies: ArmPL
 
-Compiler used: gcc
+Compiler used and version: gcc (Apple clang version 17.0.0 (clang-1700.0.13.5))
 
 ------------------------------------------------------------------------------------------------------------------------------
 
