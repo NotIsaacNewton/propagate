@@ -13,7 +13,7 @@
 #include "fftw3.h"
 
 // writes fftw_complex to file
-void writeComplex1D(const double& start, const double& end, const double& width, const std::string& file, fftw_complex *function) {
+void fftw_complex_array_to_file(const double& start, const double& end, const double& width, const std::string& file, fftw_complex *function) {
     const double n = (end-start)/width;
     std::ofstream potwrite;
     //std::print("Opening {}...\n",file);
@@ -41,7 +41,7 @@ void fftw_complex_func_to_array(const double& start, const double& end, const do
 }
 
 // reads to fftw_complex array from file
-[[maybe_unused]] void readComplex1D(const std::string& file, fftw_complex *function) {
+[[maybe_unused]] void fftw_complex_array_from_file(const std::string& file, fftw_complex *function) {
     std::ifstream read;
     //std::print("Opening {}...\n",file);
     read.open(file);
@@ -69,7 +69,7 @@ void fftw_complex_func_to_array(const double& start, const double& end, const do
 }
 
 // prints fftw_complex (mostly for debugging)
-[[maybe_unused]] void printComplex(int size, fftw_complex *in) {
+[[maybe_unused]] void print_fftw_complex(int size, fftw_complex *in) {
     for (int i = 0; i < size; i++) {
         std::cout << "(" << in[i][0] << ", " << in[i][1] << ")" << std::endl;
     }
@@ -83,7 +83,7 @@ void fftw_complex_square(const int size, fftw_complex *function, double *out) {
 }
 
 // integrates through array
-double array_integrate(const int size, double width, const double *in) {
+double fftw_complex_integrate(const int size, double width, const double *in) {
     double sum = 0;
     for (int i = 0; i < size; i++) {
         sum += in[i]*width;

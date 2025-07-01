@@ -6,6 +6,7 @@
 #define PROPAGATE_H
 
 #include <iostream>
+#include <functional>
 #include "armpl.h"
 #include "fftw3.h"
 #include "fftw_complex_tools.h"
@@ -37,7 +38,7 @@ void defH(int gridpoints, fftw_complex *op, double space_width, double time_widt
 }
 
 // creates potential operator array from potential function and outputs to op
-void defV(int gridpoints, fftw_complex *op, double potential(double x), double space_width, double time_width, double start) {
+void defV(int gridpoints, fftw_complex *op, const std::function<double(double)>& potential, double space_width, double time_width, double start) {
     for (int i = 0; i < gridpoints; i++) {
         op[i][0] = cos(potential(i * space_width + start) * time_width / 2.0);
         op[i][1] = -sin(potential(i * space_width + start) * time_width / 2.0);
@@ -46,7 +47,7 @@ void defV(int gridpoints, fftw_complex *op, double potential(double x), double s
 
 // propogates wavefunction based on general values
 // TODO: allow for time-dependent potentials (put in grid)
-[[maybe_unused]] void propagate(int gridpoints, double space_width, double start, fftw_complex *psi, double potential(double x), double time_width, int steps
+[[maybe_unused]] void propagate(int gridpoints, double space_width, double start, fftw_complex *psi, const std::function<double(double)>& potential, double time_width, int steps
 , std::string& output) {
     // create fft and inverse fft plans
     fftw_plan fft = fftw_plan_dft_1d(gridpoints, psi, psi, -1, FFTW_ESTIMATE);
@@ -68,7 +69,7 @@ void defV(int gridpoints, fftw_complex *op, double potential(double x), double s
             std::ofstream potwrite;
             potwrite.open(output, std::ios::app);
             if (potwrite.is_open()) {
-                for (int i=0; i<gridpoints; i += 128) {
+                for (int i=0; i<gridpoints; i += 32) {
                     potwrite << t * time_width << " " << i*space_width + start << " " << psi[i][0] << " " << psi[i][1] << " " << psi[i][0]*psi[i][0] + psi[i][1]*psi[i][1] << std::endl;
                 }
                 potwrite.close();

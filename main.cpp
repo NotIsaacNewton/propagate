@@ -54,7 +54,7 @@ int main() {
     // write function to array, write array to file
     fftw_complex psi[ndx];
     fftw_complex_func_to_array(x0,xf,dx,gaussianWP,psi);
-    writeComplex1D(x0, xf, dx, psifile, psi);
+    fftw_complex_array_to_file(x0, xf, dx, psifile, psi);
 
     // save initial wf-squared to file
     double psi_squared[ndx];
@@ -66,7 +66,7 @@ int main() {
 
     // check norm
     std::cout << RED "Check norm:\n" << RESET;
-    double norm = array_integrate(ndx, dx, psi_squared);
+    double norm = fftw_complex_integrate(ndx, dx, psi_squared);
     std::print("The initial norm is {}\n", norm);
 
     // spacer
@@ -74,7 +74,7 @@ int main() {
 
     // propagate wf
     std::cout << "Propogation progress:\n";
-    propagate(ndx, dx, x0, psi, step, dt, ndt, psiout);
+    propagate(ndx, dx, x0, psi, barrier(0, 0.2, 200), dt, ndt, psiout);
 
     // spacer
     std::cout << YELLOW << "--------------------------------------------------------------------------------\n" << RESET;
@@ -88,7 +88,7 @@ int main() {
 
     // check norm
     std::cout << RED "Check norm:\n" << RESET;
-    norm = array_integrate(ndx, dx, psi_squared);
+    norm = fftw_complex_integrate(ndx, dx, psi_squared);
     std::print("The final norm is {}\n", norm);
 
     // spacer

@@ -5,6 +5,10 @@
 #ifndef WAVEPACKETS_AND_POTENTIALS_H
 #define WAVEPACKETS_AND_POTENTIALS_H
 
+#include <functional>
+#include "armpl.h"
+#include "fftw3.h"
+
 // Gaussian wave-packet
 // Gaussian
 [[maybe_unused]] double gaussian(double x, const double delta) {
@@ -44,26 +48,32 @@
     out[1] = 0;
 }
 
-// potential functions TODO: all need more parameters, but filetools.h is too picky
+// potential functions
 // step potential
-[[maybe_unused]] double step(double x) {
-    return (x <= 0) ? 0 : (x > 0 && x <= 0.02) ? 800 : 0;
+[[maybe_unused]] std::function<double(double)> step(double pos, double strength_1, double strength_2) {
+    return [pos, strength_1, strength_2](double x) {
+        return (x <= pos) ? strength_1 : strength_2;
+    };
 }
 // harmonic oscillator
 [[maybe_unused]] double sho(double x) {
     return x*x/2;
 }
 // well
-[[maybe_unused]] double well(double x) {
-    return (x <= 3 && x >= -3) ? 0 : 5000;
+[[maybe_unused]] std::function<double(double)> barrier(double start_pos, double end_pos, double strength) {
+    return [start_pos, end_pos, strength](double x) {
+        return (x <= end_pos && x >= start_pos) ? strength : 0;
+    };
 }
 // triangle
 [[maybe_unused]] double triangle(double x) {
     return (x > -3 && x <= 0) ? -x : (x > 0 && x <= 3 ) ? x : 0;
 }
 // wall
-[[maybe_unused]] double wall(double x) {
-    return (x <= 0) ? 0 : 10000.0;
+[[maybe_unused]] std::function<double(double)> wall(double pos, double strength) {
+    return [pos, strength](double x) {
+        return (x <= pos) ? 0 : strength;
+    };
 }
 
 #endif //WAVEPACKETS_AND_POTENTIALS_H
