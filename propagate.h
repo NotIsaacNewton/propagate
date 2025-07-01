@@ -12,7 +12,7 @@
 #include "fftw_complex_tools.h"
 
 // ANSI escape code for green
-#define GREEN   "\033[32m"
+#define BLUE   "\033[34m"
 
 // scales entire array by a scalar
 void scale_fftw_complex(double scalar, fftw_complex *complex_vec, int size) {
@@ -63,7 +63,7 @@ void defV(int gridpoints, fftw_complex *op, const std::function<double(double)>&
     // propagation loop
     for (int t = 0; t <= steps; t++) {
         // print completion % to console
-        std::cout << GREEN << "\r" << 100*t/steps << "%";
+        std::cout << BLUE << "\r" << 100*t/steps << "%";
         // print to output file every t_out steps
         if (t % 10 == 0) {
             std::ofstream potwrite;
@@ -162,7 +162,7 @@ void defiV(int gridpoints, fftw_complex *op, double potential(double x), double 
     // propagation loop
     for (int t = 0; t <= steps; t++) {
         // print completion % to console
-        std::cout << GREEN << "\r" << 100*t/steps << "%";
+        std::cout << BLUE << "\r" << 100*t/steps << "%";
         // print to output file every t_out steps
         if (t % 10 == 0) {
             std::ofstream potwrite;

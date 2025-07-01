@@ -9,7 +9,7 @@
 #define RED     "\033[31m"
 #define GREEN   "\033[32m"
 #define YELLOW  "\033[33m"
-//#define BLUE    "\033[34m"
+#define BLUE    "\033[34m"
 
 // TODO: create header that automatically selects between ArmPL and MKL (urgent, to run on beocat)
 // TODO: make everything more general and flexible for use in future projects
@@ -94,7 +94,8 @@ int main() {
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
     double time = double(duration.count())/1000000;
-    std::cout << "Done :) Execution time: " << time << " seconds\n";
+    std::cout << GREEN << "Done :)\n\n" << RESET;
+    std::cout << "Execution time: " << time << " seconds\n";
 
     // TODO: would be nice to pipe commands to mathematica or gnuplot
 
