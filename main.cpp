@@ -49,35 +49,13 @@ int main() {
     fftw_complex_array_to_file(x0, xf, dx, psifile, psi);
     // NOTE: replace above calls with fftw_complex_array_from_file to read wf from an input file
 
-    // save initial wf-squared to file
-    double psi_squared[ndx];
-    fftw_complex_square(ndx, psi, psi_squared);
-    writeArray1D(x0, xf, dx, psisquared, psi_squared);
-
     // spacer
     spacerThick(RESET);
 
-    // check norm
-    std::cout << RED "Check norm:\n" << RESET;
-    double norm = fftw_complex_integrate(ndx, dx, psi_squared);
-    std::print("The initial norm is {}\n", norm);
-
-    // spacer
-    spacer(RESET);
-
     // TODO: make it possible to choose potential source and parameters from input file
     // propagate wf
-    std::cout << "Propogation progress:\n";
     propagate(ndx, dx, x0, psi, barrier(0, 0.2, 200),
               dt, ndt, psiout);
-
-    // spacer
-    spacer(RESET);
-
-    // check norm
-    std::cout << RED "Check norm:\n" << RESET;
-    norm = fftw_complex_integrate(ndx, dx, psi_squared);
-    std::print("The final norm is {}\n", norm);
 
     // spacer
     spacer(RESET);

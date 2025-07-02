@@ -65,6 +65,16 @@ void defV(int gridpoints, fftw_complex *op, const std::function<double(double)>&
         std::cerr << "Failed to open " << output << "." << std::endl;
         exit(1);
     }
+    // check norm
+    double psi_squared[gridpoints];
+    fftw_complex_square(gridpoints, psi, psi_squared);
+    std::cout << RED "Check norm:\n" << RESET;
+    double norm = fftw_complex_integrate(gridpoints, space_width, psi_squared);
+    std::print("The initial norm is {}\n", norm);
+    // spacer
+    spacer(RESET);
+    // console output
+    std::cout << "Propogation progress:\n";
     // propagation loop
     for (int t = 0; t <= steps; t++) {
         // print completion % to console
@@ -130,6 +140,13 @@ void defV(int gridpoints, fftw_complex *op, const std::function<double(double)>&
     // clean up
     fftw_destroy_plan(fft);
     fftw_destroy_plan(ifft);
+    // spacer
+    spacer(RESET);
+    // check norm
+    fftw_complex_square(gridpoints, psi, psi_squared);
+    std::cout << RED "Check norm:\n" << RESET;
+    norm = fftw_complex_integrate(gridpoints, space_width, psi_squared);
+    std::print("The final norm is {}\n", norm);
 }
 
 // imaginary time propogation
@@ -170,6 +187,8 @@ void defiV(int gridpoints, fftw_complex *op, double potential(double x), double 
         std::cerr << "Failed to open " << output << "." << std::endl;
         exit(1);
     }
+    // console output
+    std::cout << "Propogation progress:\n";
     // propagation loop
     for (int t = 0; t <= steps; t++) {
         // print completion % to console
