@@ -15,7 +15,6 @@ int main() {
     // file locations
     std::string inputfile = "/Users/ariandovald/CLionProjects/propagate/inputs";
     std::string psifile = "/Users/ariandovald/CLionProjects/propagate/data/psi_initial.dat";
-    std::string psisquared = "/Users/ariandovald/CLionProjects/propagate/data/psi_squared_initial.dat";
     std::string psiout = "/Users/ariandovald/CLionProjects/propagate/data/psi_final.dat";
 
     // spacer
