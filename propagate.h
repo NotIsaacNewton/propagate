@@ -44,7 +44,7 @@ void defV(int gridpoints, fftw_complex *op, const std::function<double(double)>&
 }
 
 // propogates wavefunction based on general values
-// TODO: allow for time-dependent potentials (put in grid)
+// TODO: allow for time-dependent potentials (put in defV grid)
 [[maybe_unused]] void propagate(int gridpoints, double space_width, double start, fftw_complex *psi, const std::function<double(double)>& potential, double time_width, int steps
 , std::string& output) {
     // create fft and inverse fft plans
@@ -58,24 +58,31 @@ void defV(int gridpoints, fftw_complex *op, const std::function<double(double)>&
     defH(gridpoints, H, space_width, time_width);
     // sign for mult
     int sign;
+    // open output file
+    std::ofstream wf;
+    wf.open(output, std::ios::app);
+    if (!wf.is_open()) {
+        std::cerr << "Failed to open " << output << "." << std::endl;
+        exit(1);
+    }
     // propagation loop
     for (int t = 0; t <= steps; t++) {
         // print completion % to console
         std::cout << GREEN << "\r" << 100*t/steps << "%";
         // print to output file every t_out steps
         if (t % 10 == 0 /*TODO: read this from input*/) {
-            std::ofstream wf;
-            wf.open(output, std::ios::app);
-            if (wf.is_open()) {
-                for (int i=0; i<gridpoints; i += 32 /*TODO: read this from input*/) {
-                    // OPTIMIZE: is this monstrosity of a write call slowing down the code? (yes)
-                    wf << t * time_width << " " << i*space_width + start << " " << psi[i][0] << " " << psi[i][1] << " " << psi[i][0]*psi[i][0] + psi[i][1]*psi[i][1] << std::endl;
-                }
-                wf.close();
-            } else {
-                std::cerr << "Failed to open " << output << "." << std::endl;
-                break;
+            // prepare input buffer for entire set of points
+            std::ostringstream  buffer;
+            for (int i=0; i<gridpoints; i += 32 /*TODO: read this from input*/) {
+                // prepare output
+                double re = psi[i][0];
+                double im = psi[i][1];
+                double square = re*re + im*im;
+                // send stuff to buffer
+                buffer << t * time_width << " " << i*space_width + start << " " << re << " " << im << " " << square << "\n";
             }
+            // save buffer to file
+            wf << buffer.str();
         }
         // mult space part
         for (int i = 0; i < gridpoints; i++) {
@@ -116,15 +123,13 @@ void defV(int gridpoints, fftw_complex *op, const std::function<double(double)>&
             psi[i][1] = im*V[i][0] + re*V[i][1];
         }
     }
+    // close output file
+    wf.close();
+    // console output
     std::cout << std::endl;
-    // destroy plans
+    // clean up
     fftw_destroy_plan(fft);
     fftw_destroy_plan(ifft);
-    for (int i = 0; i < gridpoints; i++) {
-        sign = (i % 2 == 0) ? 1 : -1;
-        psi[i][0] *= sign;
-        psi[i][1] *= sign;
-    }
 }
 
 // imaginary time propogation
@@ -158,22 +163,31 @@ void defiV(int gridpoints, fftw_complex *op, double potential(double x), double 
     defiH(gridpoints, H, space_width, time_width);
     // sign for mult
     int sign;
+    // open output file
+    std::ofstream wf;
+    wf.open(output, std::ios::app);
+    if (!wf.is_open()) {
+        std::cerr << "Failed to open " << output << "." << std::endl;
+        exit(1);
+    }
     // propagation loop
     for (int t = 0; t <= steps; t++) {
         // print completion % to console
-        std::cout << BLUE << "\r" << 100*t/steps << "%";
+        std::cout << GREEN << "\r" << 100*t/steps << "%";
         // print to output file every t_out steps
-        if (t % 10 == 0) {
-            std::ofstream wf;
-            wf.open(output, std::ios::app);
-            if (wf.is_open()) {
-                for (int i=0; i<gridpoints; i += 32) {
-                    wf << t * time_width << " " << i * space_width + start << " " << psi[i][0] << " " << psi[i][1] << " " << psi[i][0] * psi[i][0] + psi[i][1] * psi[i][1] << std::endl;
-                }
-                wf.close();
-            } else {
-                std::cerr << "Failed to open " << output << "." << std::endl;
+        if (t % 10 == 0 /*TODO: read this from input*/) {
+            // prepare input buffer for entire set of points
+            std::ostringstream  buffer;
+            for (int i=0; i<gridpoints; i += 32 /*TODO: read this from input*/) {
+                // prepare output
+                double re = psi[i][0];
+                double im = psi[i][1];
+                double square = re*re + im*im;
+                // send stuff to buffer
+                buffer << t * time_width << " " << i*space_width + start << " " << re << " " << im << " " << square << "\n";
             }
+            // save buffer to file
+            wf << buffer.str();
         }
         // mult space part
         for (int i = 0; i < gridpoints; i++) {
@@ -184,17 +198,17 @@ void defiV(int gridpoints, fftw_complex *op, double potential(double x), double 
             double re = psi[i][0];
             double im = psi[i][1];
             // mult by V(x) exponential term
-            psi[i][0] = re*V[i][0] - im*V[i][1];
-            psi[i][1] = im*V[i][0] + re*V[i][1];
+            psi[i][0] = re*V[i][0];
+            psi[i][1] = im*V[i][0];
         }
         // execute fft plan
         fftw_execute(fft);
-        // multiply psi by e^(-i*dt*H)
+        // multiply psi by e^(-dt*H)
         for (int i = 0; i < gridpoints; i++) {
             double re = psi[i][0];
             double im = psi[i][1];
-            psi[i][0] = re*H[i][0] - im*H[i][1];
-            psi[i][1] = im*H[i][0] + re*H[i][1];
+            psi[i][0] = re*H[i][0];
+            psi[i][1] = im*H[i][0];
         }
         // execute inverse fft plan
         fftw_execute(ifft);
@@ -210,19 +224,17 @@ void defiV(int gridpoints, fftw_complex *op, double potential(double x), double 
             double re = psi[i][0];
             double im = psi[i][1];
             // mult by V(x) exponential term
-            psi[i][0] = re*V[i][0] - im*V[i][1];
-            psi[i][1] = im*V[i][0] + re*V[i][1];
+            psi[i][0] = re*V[i][0];
+            psi[i][1] = im*V[i][0];
         }
     }
+    // close output file
+    wf.close();
+    // console output
     std::cout << std::endl;
-    // destroy plans
+    // clean up
     fftw_destroy_plan(fft);
     fftw_destroy_plan(ifft);
-    for (int i = 0; i < gridpoints; i++) {
-        sign = (i % 2 == 0) ? 1 : -1;
-        psi[i][0] *= sign;
-        psi[i][1] *= sign;
-    }
 }
 
 #endif //PROPAGATE_H
