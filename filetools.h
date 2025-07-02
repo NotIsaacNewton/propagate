@@ -26,7 +26,7 @@
 }
 
 // writes from 1D array to file
-void writeArray1D(const double& start, const double& end, const double& width, const std::string& file, double *function) {
+[[maybe_unused]] void writeArray1D(const double& start, const double& end, const double& width, const std::string& file, double *function) {
     const double n = (end-start)/width;
     std::ofstream write;
     write.open(file);
