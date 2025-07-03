@@ -6,8 +6,9 @@
 #include "console_tools.h"
 
 // FIXME: stop using VLAs for fftw_complex, change to std::vector<fftw_complex>
-// TODO: create header that automatically selects between ArmPL and MKL (urgent, to run on beocat)
-// TODO: make everything more general and flexible for use in future projects
+// TODO:
+//  create header that automatically selects between ArmPL and MKL (urgent, to run on beocat)
+//  make everything more general and flexible for use in future projects
 
 int main() {
     // record the start time
@@ -71,8 +72,6 @@ int main() {
 
     // spacer
     spacerChunky(BLUE);
-
-    // TODO: would be nice to pipe commands to mathematica or gnuplot
 
     return 0;
 }
