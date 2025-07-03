@@ -70,6 +70,7 @@ void kineticOperator(int gridpoints, fftw_complex *psi, fftw_complex *T) {
 
 // propagates wavefunction based on general values
 // TODO: allow for time-dependent potentials (put in definePotentialOperator grid)
+// TODO: use multi-threaded fftw methods :)
 [[maybe_unused]] void propagate(int gridpoints, double space_width, double start, fftw_complex *psi, const std::function<double(double)>& potential, double time_width, int steps
 , std::string& output, int output_ndt, int output_ndx) {
     // TODO: wrap plan creation and destruction in some kind of clean helper function — FIXME: need RAII
@@ -90,7 +91,7 @@ void kineticOperator(int gridpoints, fftw_complex *psi, fftw_complex *T) {
     std::ofstream wf;
     wf.open(output, std::ios::app);
     if (!wf.is_open()) {
-        std::cerr << "Failed to open " << output << "." << std::endl;
+        std::cerr << "Failed to open " << output << "." << "\n";
     }
     // check norm
     double psi_squared[gridpoints];
@@ -139,7 +140,7 @@ void kineticOperator(int gridpoints, fftw_complex *psi, fftw_complex *T) {
     // close output file
     wf.close();
     // console output
-    std::cout << std::endl;
+    std::cout << "\n";
     // clean up
     fftw_destroy_plan(fft);
     fftw_destroy_plan(ifft);
@@ -189,7 +190,7 @@ void defiV(int gridpoints, fftw_complex *op, double potential(double x), double 
     std::ofstream wf;
     wf.open(output, std::ios::app);
     if (!wf.is_open()) {
-        std::cerr << "Failed to open " << output << "." << std::endl;
+        std::cerr << "Failed to open " << output << "." << "\n";
     }
     // console output
     std::cout << "Propagation progress:\n";
@@ -228,7 +229,7 @@ void defiV(int gridpoints, fftw_complex *op, double potential(double x), double 
     // close output file
     wf.close();
     // console output
-    std::cout << std::endl;
+    std::cout << "\n";
     // clean up
     fftw_destroy_plan(fft);
     fftw_destroy_plan(ifft);

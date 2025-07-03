@@ -19,11 +19,11 @@ void fftw_complex_array_to_file(const double& start, const double& end, const do
     potwrite.open(file);
     if (potwrite.is_open()) {
         for (int i=0; i<n; i++) {
-            potwrite << i*width + start << " " << function[i][0] << " " << function[i][1] << std::endl;
+            potwrite << i*width + start << " " << function[i][0] << " " << function[i][1] << "\n";
         }
         potwrite.close();
     } else {
-        std::cerr << "Failed to open " << file << "." << std::endl;
+        std::cerr << "Failed to open " << file << ".\n";
     }
 }
 
@@ -56,14 +56,14 @@ void fftw_complex_func_to_array(const double& start, const double& end, const do
         }
         read.close();
     } else {
-        std::cerr << "Failed to open " << file << "." << std::endl;
+        std::cerr << "Failed to open " << file << ".\n";
     }
 }
 
 // prints fftw_complex (mostly for debugging)
 [[maybe_unused]] void print_fftw_complex(int size, fftw_complex *in) {
     for (int i = 0; i < size; i++) {
-        std::cout << "(" << in[i][0] << ", " << in[i][1] << ")" << std::endl;
+        std::cout << "(" << in[i][0] << ", " << in[i][1] << ")\n";
     }
 }
 

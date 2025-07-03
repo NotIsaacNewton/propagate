@@ -20,7 +20,7 @@ int main() {
 
     // spacer
     spacerChunky(BLUE);
-    std::cout << std::endl;
+    std::cout << "\n";
 
     // space stuff
     double x0;

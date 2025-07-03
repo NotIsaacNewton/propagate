@@ -17,11 +17,11 @@
     write.open(file);
     if (write.is_open()) {
         for (int i=0; i<n; i++) {
-            write << i*width + start << " " << function(i*width + start) << std::endl;
+            write << i*width + start << " " << function(i*width + start) << "\n";
         }
         write.close();
     } else {
-        std::cerr << "Failed to open " << file << "." << std::endl;
+        std::cerr << "Failed to open " << file << "." << "\n";
     }
 }
 
@@ -32,11 +32,11 @@
     write.open(file);
     if (write.is_open()) {
         for (int i=0; i<n; i++) {
-            write << i*width + start << " " << function[i] << std::endl;
+            write << i*width + start << " " << function[i] << "\n";
         }
         write.close();
     } else {
-        std::cerr << "Failed to open " << file << "." << std::endl;
+        std::cerr << "Failed to open " << file << "." << "\n";
     }
 }
 
@@ -67,7 +67,7 @@ void readInputs(double& initial_pos, double& final_pos, int& space_grid, int& nx
         time_grid = intinputarray[1];
         nt_prints = intinputarray[3];
     } else {
-        std::cerr << "Failed to open " << file << "." << std::endl;
+        std::cerr << "Failed to open " << file << "." << "\n";
     }
 }
 
