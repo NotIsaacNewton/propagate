@@ -5,6 +5,7 @@
 #include "wavepackets_and_potentials.h"
 #include "console_tools.h"
 
+// FIXME: stop using VLAs for fftw_complex, change to std::vector<fftw_complex>
 // TODO: create header that automatically selects between ArmPL and MKL (urgent, to run on beocat)
 // TODO: make everything more general and flexible for use in future projects
 
@@ -25,13 +26,15 @@ int main() {
     double x0;
     double xf;
     int ndx;
+    int output_ndx;
     // time stuff
     double t0;
     double tf;
     int ndt;
+    int output_ndt;
 
     // read input file
-    readInputs(x0, xf, ndx, t0, tf, ndt, inputfile);
+    readInputs(x0, xf, ndx, output_ndx, t0, tf, ndt, output_ndt, inputfile);
     // space-time grid-widths
     const double dx = (xf - x0)/ndx;
     const double dt = (tf - t0)/ndt;
@@ -54,10 +57,10 @@ int main() {
     // TODO: make it possible to choose potential source and parameters from input file
     // propagate wf
     propagate(ndx, dx, x0, psi, barrier(0, 0.2, 200),
-              dt, ndt, psiout);
+              dt, ndt, psiout, output_ndt, output_ndx);
 
     // spacer
-    spacer(RESET);
+    spacerThick(RESET);
 
     // record end time and duration
     auto end = std::chrono::high_resolution_clock::now();

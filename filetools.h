@@ -40,11 +40,12 @@
     }
 }
 
-void readInputs(double& initial_pos, double& final_pos, int& space_grid,
-                double& initial_t, double& final_t, int& time_grid,
+// TODO: needs to be much more flexible and general, maybe as a class with struct usage
+void readInputs(double& initial_pos, double& final_pos, int& space_grid, int& nx_prints,
+                double& initial_t, double& final_t, int& time_grid, int& nt_prints,
                 const std::string& file) {
     double inputarray[4];
-    int intinputarray[2];
+    int intinputarray[4];
     std::ifstream read;
     read.open(file);
     if (read.is_open()) {
@@ -60,9 +61,11 @@ void readInputs(double& initial_pos, double& final_pos, int& space_grid,
         initial_pos = inputarray[0];
         final_pos = inputarray[1];
         space_grid = intinputarray[0];
+        nx_prints = intinputarray[2];
         initial_t = inputarray[2];
         final_t = inputarray[3];
         time_grid = intinputarray[1];
+        nt_prints = intinputarray[3];
     } else {
         std::cerr << "Failed to open " << file << "." << std::endl;
     }

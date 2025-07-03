@@ -21,8 +21,8 @@
     out[0] = re*gaussian(x, delta);
     out[1] = im*gaussian(x, delta);
 }
-// prepares wave-packet (narrows parameters because the function from fftw_complex_tools.h is too picky)
-// TODO: make fftw_complex_tools.h less picky
+// prepares wave-packet
+// TODO: make these functions use <functional> methods so the parameters can be modified more easily
 [[maybe_unused]] void gaussianWP(double x, fftw_complex out) {
     gaussianMoving(x, 0.5, 15, out);
 }

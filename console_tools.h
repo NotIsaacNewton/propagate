@@ -29,7 +29,10 @@ void spacerChunky(std::string color) {
 }
 // fancy spacer
 void spacerFancy(std::string color) {
-    std::cout << color << "|[*]|[*]|[*]|[*]|[*]|[*]|[*]|[*]|[*]|[*]|[*]|[*]|[*]|[*]|[*]|[*]|[*]|[*]|[*]|[*]|\n" << RESET;
+    std::cout << color << "<*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*>\n" << RESET;
 }
-
+// chain spacer
+void spacerChain(std::string color) {
+    std::cout << color << "<=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=>\n" << RESET;
+}
 #endif //CONSOLE_TOOLS_H
