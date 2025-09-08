@@ -40,10 +40,9 @@ static void definePotentialOperator(int gridpoints, fftw_complex *op, const std:
 }
 
 // potential energy exponential operator
-static void potentialOperator(int gridpoints, fftw_complex *psi, fftw_complex *V) {
-    int sign;
+static void potentialOperator(int gridpoints, fftw_complex *psi, const fftw_complex *V) {
     for (int i = 0; i < gridpoints; i++) {
-        sign = (i % 2 == 0) ? 1 : -1;
+        int sign = (i % 2 == 0) ? 1 : -1;
         // sign change for dft
         psi[i][0] *= sign;
         psi[i][1] *= sign;
@@ -56,7 +55,7 @@ static void potentialOperator(int gridpoints, fftw_complex *psi, fftw_complex *V
 }
 
 // kinetic energy exponential operator
-static void kineticOperator(int gridpoints, fftw_complex *psi, fftw_complex *T) {
+static void kineticOperator(int gridpoints, fftw_complex *psi, const fftw_complex *T) {
     for (int i = 0; i < gridpoints; i++) {
         double re = psi[i][0];
         double im = psi[i][1];
@@ -66,7 +65,7 @@ static void kineticOperator(int gridpoints, fftw_complex *psi, fftw_complex *T) 
 }
 
 // output to file
-static void writeOutput(fftw_complex (*psi), int t, double start, int gridpoints, double space_width, double time_width,
+static void writeOutput(const fftw_complex *psi, int t, double start, int gridpoints, double space_width, double time_width,
                  int output_ndx, int output_ndt, std::ostringstream &buffer) {
     // print to output file every output_ndt steps
     if (t % output_ndt == 0) {
@@ -87,9 +86,10 @@ static void writeOutput(fftw_complex (*psi), int t, double start, int gridpoints
 //  allow for time-dependent potentials (put in definePotentialOperator grid)
 //  find some way to dynamically define re and im, to reduce redundancy
 [[maybe_unused]] inline void propagate(inputs& in,
-    fftw_complex *psi, const std::function<double(double)>& potential, std::string& output) {
+    fftw_complex *psi, const std::function<double(double)>& potential, const std::string& data) {
     // create fft and inverse fft plans with RAII
-    fftw_import_wisdom_from_filename("../data/fftw_wisdom.dat");
+    std::string wisdomfile = data + "/fftw_wisdom.dat";
+    fftw_import_wisdom_from_filename(wisdomfile.c_str());
     std::unique_ptr<std::remove_pointer_t<fftw_plan>, void(*)(fftw_plan)> fft_ptr(
             fftw_plan_dft_1d(in.space_grid, psi, psi, FFTW_FORWARD, FFTW_MEASURE),
             &fftw_destroy_plan
@@ -98,7 +98,7 @@ static void writeOutput(fftw_complex (*psi), int t, double start, int gridpoints
             fftw_plan_dft_1d(in.space_grid, psi, psi, FFTW_BACKWARD, FFTW_MEASURE),
             &fftw_destroy_plan
     );
-    fftw_export_wisdom_to_filename("../data/fftw_wisdom.dat");
+    fftw_export_wisdom_to_filename(wisdomfile.c_str());
     // define potential term (once because it is time-independent)
     auto V = fftw_alloc_complex(in.space_grid);
     definePotentialOperator(in.space_grid, V, potential, in.dx, in.dt, in.initial_pos);
@@ -110,6 +110,7 @@ static void writeOutput(fftw_complex (*psi), int t, double start, int gridpoints
     // scale for normalizing fft result
     double scale = 1.0 / in.space_grid;
     // open output file
+    std::string output = data + "/psi_final.dat";
     std::ofstream wf;
     wf.open(output, std::ios::app);
     if (!wf.is_open()) {
@@ -183,9 +184,10 @@ static void defineImPotentialOperator(int gridpoints, fftw_complex *op, const st
 
 // propagates wavefunction based on general values
 [[maybe_unused]] inline void ipropagate(inputs& in,
-    fftw_complex *psi, const std::function<double(double)>& potential, std::string& output) {
+    fftw_complex *psi, const std::function<double(double)>& potential, std::string& data) {
     // create fft and inverse fft plans with RAII
-    fftw_import_wisdom_from_filename("../data/fftw_wisdom.dat");
+    std::string wisdomfile = data + "/fftw_wisdom.dat";
+    fftw_import_wisdom_from_filename(wisdomfile.c_str());
     std::unique_ptr<std::remove_pointer_t<fftw_plan>, void(*)(fftw_plan)> fft_ptr(
             fftw_plan_dft_1d(in.time_grid, psi, psi, FFTW_FORWARD, FFTW_MEASURE),
             &fftw_destroy_plan
@@ -194,7 +196,7 @@ static void defineImPotentialOperator(int gridpoints, fftw_complex *op, const st
             fftw_plan_dft_1d(in.time_grid, psi, psi, FFTW_BACKWARD, FFTW_MEASURE),
             &fftw_destroy_plan
     );
-    fftw_export_wisdom_to_filename("../data/fftw_wisdom.dat");
+    fftw_export_wisdom_to_filename(wisdomfile.c_str());
     // define potential term (once because it is time-independent)
     auto V = fftw_alloc_complex(in.time_grid);
     defineImPotentialOperator(in.time_grid, V, potential, in.dx, in.dt, in.initial_pos);
@@ -206,6 +208,7 @@ static void defineImPotentialOperator(int gridpoints, fftw_complex *op, const st
     // scale for normalizing fft results
     double scale = 1.0 / in.time_grid;
     // open output file
+    std::string output = data + "/psi_final.dat";
     std::ofstream wf;
     wf.open(output, std::ios::app);
     if (!wf.is_open()) {

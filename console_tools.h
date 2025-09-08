@@ -35,4 +35,5 @@ inline void spacerFancy(const std::string& color) {
 inline void spacerChain(const std::string& color) {
     std::cout << color << "<=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=>\n" << RESET;
 }
+
 #endif //CONSOLE_TOOLS_H

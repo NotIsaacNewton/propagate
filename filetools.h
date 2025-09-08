@@ -11,7 +11,8 @@
 #include <string>
 
 // writes from 1D double function to file
-[[maybe_unused]] inline void writeFunction1D(const double& start, const double& end, const double& width, const std::string& file, double function(double x)) {
+[[maybe_unused]] inline void writeFunction1D(const double& start, const double& end, const double& width,
+    const std::string& file, double function(double x)) {
     const double n = (end-start)/width;
     std::ofstream write;
     write.open(file);
@@ -26,7 +27,8 @@
 }
 
 // writes from 1D array to file
-[[maybe_unused]] inline void writeArray1D(const double& start, const double& end, const double& width, const std::string& file, double *function) {
+[[maybe_unused]] inline void writeArray1D(const double& start, const double& end, const double& width,
+    const std::string& file, const double *function) {
     const double n = (end-start)/width;
     std::ofstream write;
     write.open(file);
@@ -40,30 +42,30 @@
     }
 }
 
-// inputs
+// inputs go here
 struct inputs {
+    // space stuff
     double initial_pos;
     double final_pos;
     int space_grid;
     int nx_prints;
-
+    // time stuff
     double initial_t;
     double final_t;
     int time_grid;
     int nt_prints;
-
+    // space-time widths
     double dx;
     double dt;
 };
 
-// TODO: needs to be much more flexible and general, maybe as a class with struct usage
+// read inputs from file
 inline inputs readInputs(const std::string& file) {
-    inputs in{};
-    double inputarray[4];
-    int intinputarray[4];
     std::ifstream read;
     read.open(file);
     if (read.is_open()) {
+        double inputarray[4];
+        int intinputarray[4];
         std::print("Reading inputs from {}\n",file);
         std::string line;
         int n = 0;
@@ -73,24 +75,23 @@ inline inputs readInputs(const std::string& file) {
             ++n;
         }
         read.close();
-        in.initial_pos = inputarray[0];
-        in.final_pos = inputarray[1];
-        in.space_grid = intinputarray[0];
-        in.nx_prints = intinputarray[2];
-        in.initial_t = inputarray[2];
-        in.final_t = inputarray[3];
-        in.time_grid = intinputarray[1];
-        in.nt_prints = intinputarray[3];
-
-        // space-time grid-widths
+        // initialize inputs
+        inputs in{
+            inputarray[0],
+            inputarray[1],
+            intinputarray[0],
+            intinputarray[2],
+            inputarray[2],
+            inputarray[3],
+            intinputarray[1],
+            intinputarray[3]
+        };
         in.dx = (in.final_pos - in.initial_pos)/in.space_grid;
         in.dt = (in.final_t - in.initial_t)/in.time_grid;
-
-        return in;
-    } else {
-        std::cerr << "Failed to open " << file << "." << "\n";
         return in;
     }
+    std::cerr << "Failed to open " << file << "." << "\n";
+    exit(1);
 }
 
 #endif //FILETOOLS_H

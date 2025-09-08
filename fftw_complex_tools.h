@@ -20,7 +20,8 @@ inline void scale_fftw_complex(double scalar, fftw_complex *complex_vec, int siz
 }
 
 // writes fftw_complex to file
-inline void fftw_complex_array_to_file(const double& start, const double& end, const double& width, const std::string& file, fftw_complex *function) {
+inline void fftw_complex_array_to_file(const double& start, const double& end, const double& width,
+    const std::string& file, const fftw_complex *function) {
     const double n = (end-start)/width;
     std::ofstream potwrite;
     potwrite.open(file);
@@ -34,7 +35,8 @@ inline void fftw_complex_array_to_file(const double& start, const double& end, c
     }
 }
 
-inline void fftw_complex_func_to_array(const double& start, const double& end, const double& width, void function(double x, fftw_complex temp), fftw_complex *out) {
+inline void fftw_complex_func_to_array(const double& start, const double& end, const double& width,
+    const std::function<void(double, fftw_complex)>& function, fftw_complex *out) {
     fftw_complex temp;
     const double n = (end-start)/width;
     for (int i = 0; i < n; i++) {
@@ -64,18 +66,19 @@ inline void fftw_complex_func_to_array(const double& start, const double& end, c
         read.close();
     } else {
         std::cerr << "Failed to open " << file << ".\n";
+        exit(1);
     }
 }
 
 // prints fftw_complex (mostly for debugging)
-[[maybe_unused]] inline void print_fftw_complex(int size, fftw_complex *in) {
+[[maybe_unused]] inline void print_fftw_complex(int size, const fftw_complex *in) {
     for (int i = 0; i < size; i++) {
         std::cout << "(" << in[i][0] << ", " << in[i][1] << ")\n";
     }
 }
 
 // finds square amplitude of fftw_complex
-inline void fftw_complex_square(const int size, fftw_complex *function, double *out) {
+inline void fftw_complex_square(const int size, const fftw_complex *function, double *out) {
     for (int i = 0; i < size; i++) {
         out[i] = function[i][0]*function[i][0] + function[i][1]*function[i][1];
     }

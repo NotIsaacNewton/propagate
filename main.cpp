@@ -1,21 +1,27 @@
-//#include <cstdlib>
+//
+// Created by Arian Dovald.
+//
+
 #include "filetools.h"
 #include "propagate.h"
+#include "potentials.h"
 #include "fftw_complex_tools.h"
-#include "wavepackets_and_potentials.h"
+#include "wavepackets.h"
 #include "console_tools.h"
 
 // TODO:
+//  separate the propagation code from potential creation and wavefunction creation
 //  create header that automatically selects between ArmPL and MKL
 //  <expected> for error paths
-int main() {
+int main(int argc, const char* argv[]) {
     // record the start time
     auto start = std::chrono::steady_clock::now();
 
     // file locations
-    std::string inputfile = "../inputs";
-    std::string psifile = "../data/psi_initial.dat";
-    std::string psiout = "../data/psi_final.dat";
+    std::string inputfile = argv[1];
+    std::string data = argv[2];
+    std::string psifile = data+"/psi_initial.dat";
+    std::string psiout = data+"/psi_final.dat";
 
     // spacer
     spacerChunky(BLUE);
@@ -29,22 +35,21 @@ int main() {
     potwrite.open(psiout);
     potwrite.close();
 
-    // TODO: make it possible to choose initial wf source and parameters from input file
-    // allocate wavefunction
+    // allocate wavefunction with RAII
     auto psi = fftw_alloc_complex(in.space_grid);
-    // RAII for psi
     std::unique_ptr<fftw_complex, void(*)(void*)> psip{psi, fftw_free};
     // write wavefunction to array, save array to file
-    fftw_complex_func_to_array(in.initial_pos,in.final_pos,in.dx, gaussianWP, psi);
-    fftw_complex_array_to_file(in.initial_pos, in.final_pos, in.dx, psifile, psi);
+    fftw_complex_func_to_array(in.initial_pos,in.final_pos,in.dx,
+        gaussianWP(0.5, 10, 3), psi);
+    fftw_complex_array_to_file(in.initial_pos, in.final_pos, in.dx,
+        psifile, psi);
     // NOTE: replace above calls with fftw_complex_array_from_file to read wf from an input file
 
     // spacer
     spacerThick(RESET);
 
-    // TODO: make it possible to choose potential source and parameters from input file
     // propagate wf
-    propagate(in, psi, barrier(0, 0.2, 200), psiout);
+    propagate(in, psi, sho(5), data);
 
     // spacer
     spacerThick(RESET);
