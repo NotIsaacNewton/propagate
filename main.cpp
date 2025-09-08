@@ -5,40 +5,24 @@
 #include "wavepackets_and_potentials.h"
 #include "console_tools.h"
 
-// FIXME: stop using VLAs for fftw_complex, change to std::vector<fftw_complex>
 // TODO:
-//  create header that automatically selects between ArmPL and MKL (urgent, to run on beocat)
-//  make everything more general and flexible for use in future projects
-
+//  create header that automatically selects between ArmPL and MKL
+//  <expected> for error paths
 int main() {
     // record the start time
-    auto start = std::chrono::high_resolution_clock::now();
+    auto start = std::chrono::steady_clock::now();
 
     // file locations
-    std::string inputfile = "/Users/ariandovald/CLionProjects/propagate/inputs";
-    std::string psifile = "/Users/ariandovald/CLionProjects/propagate/data/psi_initial.dat";
-    std::string psiout = "/Users/ariandovald/CLionProjects/propagate/data/psi_final.dat";
+    std::string inputfile = "../inputs";
+    std::string psifile = "../data/psi_initial.dat";
+    std::string psiout = "../data/psi_final.dat";
 
     // spacer
     spacerChunky(BLUE);
-    std::cout << "\n";
-
-    // space stuff
-    double x0;
-    double xf;
-    int ndx;
-    int output_ndx;
-    // time stuff
-    double t0;
-    double tf;
-    int ndt;
-    int output_ndt;
+    std::print("\n");
 
     // read input file
-    readInputs(x0, xf, ndx, output_ndx, t0, tf, ndt, output_ndt, inputfile);
-    // space-time grid-widths
-    const double dx = (xf - x0)/ndx;
-    const double dt = (tf - t0)/ndt;
+    inputs in = readInputs(inputfile);
 
     // clear output file
     std::ofstream potwrite;
@@ -46,10 +30,13 @@ int main() {
     potwrite.close();
 
     // TODO: make it possible to choose initial wf source and parameters from input file
+    // allocate wavefunction
+    auto psi = fftw_alloc_complex(in.space_grid);
+    // RAII for psi
+    std::unique_ptr<fftw_complex, void(*)(void*)> psip{psi, fftw_free};
     // write wavefunction to array, save array to file
-    fftw_complex psi[ndx];
-    fftw_complex_func_to_array(x0,xf,dx,gaussianWP,psi);
-    fftw_complex_array_to_file(x0, xf, dx, psifile, psi);
+    fftw_complex_func_to_array(in.initial_pos,in.final_pos,in.dx, gaussianWP, psi);
+    fftw_complex_array_to_file(in.initial_pos, in.final_pos, in.dx, psifile, psi);
     // NOTE: replace above calls with fftw_complex_array_from_file to read wf from an input file
 
     // spacer
@@ -57,18 +44,16 @@ int main() {
 
     // TODO: make it possible to choose potential source and parameters from input file
     // propagate wf
-    propagate(ndx, dx, x0, psi, barrier(0, 0.2, 200),
-              dt, ndt, psiout, output_ndt, output_ndx);
+    propagate(in, psi, barrier(0, 0.2, 200), psiout);
 
     // spacer
     spacerThick(RESET);
 
     // record end time and duration
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-    double time = double(duration.count())/1000000;
-    std::cout << "Done :)\n\n";
-    std::cout << BLUE << "Execution time: " << time << " seconds\n";
+    auto end = std::chrono::steady_clock::now();
+    const std::chrono::duration<double> sec = end - start;
+    std::print("Done :)\n\n");
+    std::print("{}Execution time: {} seconds\n", BLUE, sec.count());
 
     // spacer
     spacerChunky(BLUE);
