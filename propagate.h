@@ -7,7 +7,6 @@
 
 #include <iostream>
 #include <functional>
-#include <thread>
 #include <numbers>
 #include "filetools.h"
 #include "armpl.h"
@@ -29,7 +28,7 @@ static void defineKineticOperator(int gridpoints, fftw_complex *op, double space
         op[i][1] = -sin(time_width * psquared(i, gridpoints, space_width) / 2);
     }
 }
-
+/*
 // creates potential operator array from potential function and outputs to op
 static void definePotentialOperator(int gridpoints, fftw_complex *op, const std::function<double(double)>& potential,
                              double space_width, double time_width, double start) {
@@ -38,7 +37,7 @@ static void definePotentialOperator(int gridpoints, fftw_complex *op, const std:
         op[i][1] = -sin(potential(i * space_width + start) * time_width / 2.0);
     }
 }
-
+*/
 // potential energy exponential operator
 static void potentialOperator(int gridpoints, fftw_complex *psi, const fftw_complex *V) {
     for (int i = 0; i < gridpoints; i++) {
@@ -85,8 +84,8 @@ static void writeOutput(const fftw_complex *psi, int t, double start, int gridpo
 // TODO:
 //  allow for time-dependent potentials (put in definePotentialOperator grid)
 //  find some way to dynamically define re and im, to reduce redundancy
-[[maybe_unused]] inline void propagate(inputs& in,
-    fftw_complex *psi, const std::function<double(double)>& potential, const std::string& data) {
+[[maybe_unused]] inline void propagate(const inputs& in,
+    fftw_complex *psi, const std::string& data) {
     // create fft and inverse fft plans with RAII
     std::string wisdomfile = data + "/fftw_wisdom.dat";
     fftw_import_wisdom_from_filename(wisdomfile.c_str());
@@ -99,10 +98,11 @@ static void writeOutput(const fftw_complex *psi, int t, double start, int gridpo
             &fftw_destroy_plan
     );
     fftw_export_wisdom_to_filename(wisdomfile.c_str());
-    // define potential term (once because it is time-independent)
+    // define potential term
+    std::string potfile = data + "/potential.dat";
     auto V = fftw_alloc_complex(in.space_grid);
-    definePotentialOperator(in.space_grid, V, potential, in.dx, in.dt, in.initial_pos);
-    // define kinetic term (once because it is time-independent);
+    fftw_complex_array_from_file(potfile, V);
+    // define kinetic term;
     auto T = fftw_alloc_complex(in.space_grid);
     defineKineticOperator(in.space_grid, T, in.dx, in.dt);
     // RAII wrapper for T and V
@@ -183,7 +183,7 @@ static void defineImPotentialOperator(int gridpoints, fftw_complex *op, const st
 }
 
 // propagates wavefunction based on general values
-[[maybe_unused]] inline void ipropagate(inputs& in,
+[[maybe_unused]] inline void ipropagate(const inputs& in,
     fftw_complex *psi, const std::function<double(double)>& potential, std::string& data) {
     // create fft and inverse fft plans with RAII
     std::string wisdomfile = data + "/fftw_wisdom.dat";
@@ -197,10 +197,10 @@ static void defineImPotentialOperator(int gridpoints, fftw_complex *op, const st
             &fftw_destroy_plan
     );
     fftw_export_wisdom_to_filename(wisdomfile.c_str());
-    // define potential term (once because it is time-independent)
+    // define potential term
     auto V = fftw_alloc_complex(in.time_grid);
     defineImPotentialOperator(in.time_grid, V, potential, in.dx, in.dt, in.initial_pos);
-    // define e^(-i*dt*T) operator (once because it is time-independent);
+    // define e^(-i*dt*T) operator;
     auto T = fftw_alloc_complex(in.time_grid);
     defineImKineticOperator(in.time_grid, T, in.dx, in.dt);
     // RAII wrapper for T and V

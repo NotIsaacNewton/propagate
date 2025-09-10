@@ -9,5 +9,10 @@ include_directories(${ARMPL_DIR}/include)
 link_directories(${ARMPL_DIR}/lib)
 
 add_executable(propagate main.cpp)
-
 target_link_libraries(propagate armpl)
+
+add_executable(wavepacket wavepackets.cpp)
+target_link_libraries(wavepacket armpl)
+
+add_executable(potential potentials.cpp)
+target_link_libraries(potential armpl)

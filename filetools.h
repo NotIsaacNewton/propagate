@@ -66,7 +66,7 @@ inline inputs readInputs(const std::string& file) {
     if (read.is_open()) {
         double inputarray[4];
         int intinputarray[4];
-        std::print("Reading inputs from {}\n",file);
+        std::print("Reading {}\n",file);
         std::string line;
         int n = 0;
         while (std::getline(read, line)) {

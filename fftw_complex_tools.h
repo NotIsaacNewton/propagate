@@ -10,17 +10,18 @@
 #include <sstream>
 #include <string>
 #include "fftw3.h"
+#include "filetools.h"
 
 // scales entire array by a scalar
-inline void scale_fftw_complex(double scalar, fftw_complex *complex_vec, int size) {
+[[maybe_unused]] inline void scale_fftw_complex(double scalar, fftw_complex *complex_vec, int size) {
     for (int i = 0; i < size; i++) {
         complex_vec[i][0] *= scalar;
         complex_vec[i][1] *= scalar;
     }
 }
 
-// writes fftw_complex to file
-inline void fftw_complex_array_to_file(const double& start, const double& end, const double& width,
+// writes fftw_complex array to file
+[[maybe_unused]] inline void fftw_complex_array_to_file(const double& start, const double& end, const double& width,
     const std::string& file, const fftw_complex *function) {
     const double n = (end-start)/width;
     std::ofstream potwrite;
@@ -35,7 +36,7 @@ inline void fftw_complex_array_to_file(const double& start, const double& end, c
     }
 }
 
-inline void fftw_complex_func_to_array(const double& start, const double& end, const double& width,
+[[maybe_unused]] inline void fftw_complex_func_to_array(const double& start, const double& end, const double& width,
     const std::function<void(double, fftw_complex)>& function, fftw_complex *out) {
     fftw_complex temp;
     const double n = (end-start)/width;
@@ -44,6 +45,19 @@ inline void fftw_complex_func_to_array(const double& start, const double& end, c
         out[i][0] = temp[0];
         out[i][1] = temp[1];
     }
+}
+
+// writes fftw_complex function to file
+[[maybe_unused]] inline void fftw_complex_func_to_file(const inputs& in, const std::string& savefile,
+    const std::function<void(double, fftw_complex)>& wavefunction) {
+    // allocate temp array with RAII
+    const auto temp = fftw_alloc_complex(in.space_grid);
+    std::unique_ptr<fftw_complex, void(*)(void*)> psip{temp, fftw_free};
+    // write wavefunction to array, save array to file
+    fftw_complex_func_to_array(in.initial_pos,in.final_pos,in.dx,
+        wavefunction, temp);
+    fftw_complex_array_to_file(in.initial_pos, in.final_pos, in.dx,
+        savefile, temp);
 }
 
 // reads to fftw_complex array from file
