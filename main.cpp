@@ -8,9 +8,7 @@
 #include "fftw_complex_tools.h"
 #include "console_tools.h"
 
-// TODO:
-//  create header that automatically selects between ArmPL and MKL
-//  more safety checks and error paths (try <expected>)
+// TODO: more safety checks and error paths (try <expected>)
 
 // inputs: location/of/input_file location/of/data_directory
 int main(int argc, const char* argv[]) {

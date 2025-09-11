@@ -9,7 +9,6 @@
 #include <functional>
 #include <numbers>
 #include "filetools.h"
-#include "armpl.h"
 #include "fftw3.h"
 #include "fftw_complex_tools.h"
 #include "console_tools.h"
@@ -28,16 +27,7 @@ static void defineKineticOperator(int gridpoints, fftw_complex *op, double space
         op[i][1] = -sin(time_width * psquared(i, gridpoints, space_width) / 2);
     }
 }
-/*
-// creates potential operator array from potential function and outputs to op
-static void definePotentialOperator(int gridpoints, fftw_complex *op, const std::function<double(double)>& potential,
-                             double space_width, double time_width, double start) {
-    for (int i = 0; i < gridpoints; i++) {
-        op[i][0] = cos(potential(i * space_width + start) * time_width / 2.0);
-        op[i][1] = -sin(potential(i * space_width + start) * time_width / 2.0);
-    }
-}
-*/
+
 // potential energy exponential operator
 static void potentialOperator(int gridpoints, fftw_complex *psi, const fftw_complex *V) {
     for (int i = 0; i < gridpoints; i++) {

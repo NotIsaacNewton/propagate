@@ -5,9 +5,9 @@
 ### Details
 **Language:** C++23
 
-**Machine requirements:** ARM64
+**Machine requirements:** ARM64 (ish)
 
-**External dependencies:** ArmPL
+**External dependencies:** ArmPL (specifically for fftw)
 
 **Compiler used and version:** gcc (Apple clang version 17.0.0 (clang-1700.0.13.5))
 

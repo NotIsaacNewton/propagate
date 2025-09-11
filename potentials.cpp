@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
     const auto temp = fftw_alloc_complex(in.space_grid);
     std::unique_ptr<fftw_complex, void(*)(void*)> psip{temp, fftw_free};
     // write and save potential operator to file
-    definePotentialOperator(in.space_grid, temp, barrier(0,1,10000),
+    definePotentialOperator(in.space_grid, temp, sho(50),
         in.dx, in.dt, in.initial_pos);
     fftw_complex_array_to_file(in.initial_pos, in.final_pos, in.dx, potfile, temp);
 

@@ -3,6 +3,12 @@ project(propagate)
 
 set(CMAKE_CXX_STANDARD 23)
 
+#option(BUILD_INTEL "Build for Beocat x86_64" OFF)
+#if(BUILD_INTEL)
+#    set(CMAKE_OSX_ARCHITECTURES "x86_64")
+#    add_compile_options(-march=x86-64 -mtune=sandybridge)
+#endif()
+
 set(ARMPL_DIR /opt/arm/armpl_25.04_flang-new_clang_19)
 
 include_directories(${ARMPL_DIR}/include)
