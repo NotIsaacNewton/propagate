@@ -6,17 +6,6 @@
 #define POTENTIALS_H
 
 #include <functional>
-#include "fftw3.h"
-
-// creates potential operator array from potential function and outputs to op
-[[maybe_unused]] inline void definePotentialOperator(const int gridpoints, fftw_complex *op,
-    const std::function<double(double)>& potential, const double space_width,
-    const double time_width, const double start) {
-    for (int i = 0; i < gridpoints; i++) {
-        op[i][0] = cos(potential(i * space_width + start) * time_width / 2.0);
-        op[i][1] = -sin(potential(i * space_width + start) * time_width / 2.0);
-    }
-}
 
 // potential functions
 // step potential

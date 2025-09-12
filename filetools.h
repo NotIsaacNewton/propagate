@@ -9,18 +9,39 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <functional>
 
 // writes from 1D double function to file
 [[maybe_unused]] inline void writeFunction1D(const double& start, const double& end, const double& width,
-    const std::string& file, const double function(double x)) {
-    const double n = (end-start)/width;
+    const int& gridpoints, const std::string& file, const std::function<double(double)>& function) {
     std::ofstream write;
     write.open(file);
     if (write.is_open()) {
-        for (int i=0; i<n; i++) {
+        for (int i=0; i<gridpoints; i++) {
             write << i*width + start << " " << function(i*width + start) << "\n";
         }
         write.close();
+    } else {
+        std::cerr << "Failed to open " << file << "." << "\n";
+    }
+}
+
+// reads from file to 1D array
+[[maybe_unused]] inline void readArray1D(const std::string& file, std::vector<double>& array) {
+    std::ifstream read;
+    read.open(file);
+    if (read.is_open()) {
+        std::string line;
+        int i = 0;
+        while (std::getline(read, line)) {
+            std::istringstream readline(line);
+            double pos; // not used, but needs to moved out of the way
+            double val;
+            readline >> pos >> val;
+            array[i] = val;
+            ++i;
+        }
+        read.close();
     } else {
         std::cerr << "Failed to open " << file << "." << "\n";
     }

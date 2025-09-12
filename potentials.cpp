@@ -8,7 +8,6 @@
 #include "console_tools.h"
 
 // TODO: generalize inputs for a wider range of potentials
-//  currently outputs potential operator grid... should output pure potential curve
 
 // inputs: location/of/input_file location/of/data_directory
 int main(const int argc, char *argv[]) {
@@ -29,18 +28,14 @@ int main(const int argc, char *argv[]) {
     const std::string potfile = data + "/potential.dat";
 
     // read inputs
-    inputs in = readInputs(inputfile);
+    const inputs in = readInputs(inputfile);
 
     // spacer
     spacer(RESET);
 
-    // temporary fftw_complex array
-    const auto temp = fftw_alloc_complex(in.space_grid);
-    std::unique_ptr<fftw_complex, void(*)(void*)> psip{temp, fftw_free};
-    // write and save potential operator to file
-    definePotentialOperator(in.space_grid, temp, sho(50),
-        in.dx, in.dt, in.initial_pos);
-    fftw_complex_array_to_file(in.initial_pos, in.final_pos, in.dx, potfile, temp);
+    // write and save potential curve to file
+    writeFunction1D(in.initial_pos, in.final_pos, in.dx, in.space_grid,
+        potfile, sho(50));
 
     // console output
     std::print("{}Potential written!\n\n", GREEN);

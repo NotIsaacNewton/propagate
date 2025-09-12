@@ -26,6 +26,18 @@ inline std::vector<double> psquared(const int gridpoints, const double space_wid
 }
 
 // real time propagation
+// creates potential operator array from data file and outputs to op
+[[maybe_unused]] inline void definePotentialOperator(const int gridpoints, fftw_complex *op,
+    const std::string& potfile, const double time_width) {
+    std::vector<double> potential(gridpoints);
+    readArray1D(potfile, potential);
+    for (int i = 0; i < gridpoints; i++) {
+        const double phase = potential[i] * time_width / 2.0;
+        op[i][0] = cos(phase);
+        op[i][1] = -sin(phase);
+    }
+}
+
 // calculates free-particle operator based on general values and outputs to op
 inline void defineKineticOperator(const int gridpoints, fftw_complex *op, const double space_width,
     const double time_width) {
@@ -100,7 +112,7 @@ inline void writeOutput(const fftw_complex *psi, const int t, const double start
     // define potential term
     std::string potfile = data + "/potential.dat";
     auto V = fftw_alloc_complex(in.space_grid);
-    fftw_complex_array_from_file(potfile, V);
+    definePotentialOperator(in.space_grid, V, potfile, in.dt);
     // define kinetic term;
     auto T = fftw_alloc_complex(in.space_grid);
     defineKineticOperator(in.space_grid, T, in.dx, in.dt);
