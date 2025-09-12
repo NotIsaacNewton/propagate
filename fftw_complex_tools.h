@@ -13,7 +13,7 @@
 #include "filetools.h"
 
 // scales entire array by a scalar
-[[maybe_unused]] inline void scale_fftw_complex(double scalar, fftw_complex *complex_vec, int size) {
+[[maybe_unused]] inline void scale_fftw_complex(double scalar, fftw_complex *complex_vec, const int size) {
     for (int i = 0; i < size; i++) {
         complex_vec[i][0] *= scalar;
         complex_vec[i][1] *= scalar;
@@ -85,21 +85,22 @@
 }
 
 // prints fftw_complex (mostly for debugging)
-[[maybe_unused]] inline void print_fftw_complex(int size, const fftw_complex *in) {
+[[maybe_unused]] inline void print_fftw_complex(const int size, const fftw_complex *in) {
     for (int i = 0; i < size; i++) {
         std::cout << "(" << in[i][0] << ", " << in[i][1] << ")\n";
     }
 }
 
 // finds square amplitude of fftw_complex
-inline void fftw_complex_square(const int size, const fftw_complex *function, double *out) {
+inline void fftw_complex_square(const fftw_complex* function, std::vector<double>& out) {
+    const std::size_t size = out.size();
     for (int i = 0; i < size; i++) {
         out[i] = function[i][0]*function[i][0] + function[i][1]*function[i][1];
     }
 }
 
 // integrates through array
-inline double fftw_complex_integrate(const int size, double width, const double *in) {
+inline double fftw_complex_integrate(const int size, const double width, const std::vector<double>& in) {
     double sum = 0;
     for (int i = 0; i < size; i++) {
         sum += in[i]*width;

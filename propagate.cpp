@@ -11,7 +11,7 @@
 // TODO: more safety checks and error paths (try <expected>)
 
 // inputs: location/of/input_file location/of/data_directory
-int main(int argc, const char* argv[]) {
+int main(const int argc, const char* argv[]) {
     if (argc != 3) {
         spacerFancy(RED);
         std::cerr << RED << "Error: improper inputs.\n";
@@ -44,7 +44,7 @@ int main(int argc, const char* argv[]) {
     // allocate wavefunction with RAII
     auto psi = fftw_alloc_complex(in.space_grid);
     std::unique_ptr<fftw_complex, void(*)(void*)> psip{psi, fftw_free};
-    // get wavefunction from psifile
+    // get wavefunction from psifile and save it to psi
     fftw_complex_array_from_file(psifile, psi);
 
     // spacer

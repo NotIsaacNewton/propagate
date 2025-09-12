@@ -1,8 +1,0 @@
--6      // initial position
-6       // final position
-0       // initial time
-1.6     // final time
-4096    // space gridpoints
-8000    // time gridpoints
-16      // print to file every nx space steps
-10      // print to file every nt time steps

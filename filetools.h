@@ -12,7 +12,7 @@
 
 // writes from 1D double function to file
 [[maybe_unused]] inline void writeFunction1D(const double& start, const double& end, const double& width,
-    const std::string& file, double function(double x)) {
+    const std::string& file, const double function(double x)) {
     const double n = (end-start)/width;
     std::ofstream write;
     write.open(file);

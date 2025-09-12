@@ -8,9 +8,10 @@
 #include "console_tools.h"
 
 // TODO: generalize inputs for a wider range of potentials
+//  currently outputs potential operator grid... should output pure potential curve
 
 // inputs: location/of/input_file location/of/data_directory
-int main(int argc, char *argv[]) {
+int main(const int argc, char *argv[]) {
     if(argc != 3) {
         spacerFancy(RED);
         std::cerr << RED << "Error: improper inputs.\n";
