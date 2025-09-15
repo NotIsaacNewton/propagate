@@ -7,15 +7,16 @@
 #include "filetools.h"
 #include "console_tools.h"
 
-// TODO: generalize inputs for a wider range of potentials
+// TODO: add time-dependent potentials
 
-// inputs: location/of/input_file location/of/data_directory
+// inputs: location/of/input_file location/of/data_directory potential_type pos1 pos2 strength1 strength2
 int main(const int argc, char *argv[]) {
-    if(argc != 3) {
+    if(argc < 5) {
         spacerFancy(RED);
         std::cerr << RED << "Error: improper inputs.\n";
-        std::print("{}location/of/input_file location/of/data_directory\n", GREEN);
+        std::print("{}location/of/input_file location/of/data_directory potential_parameters\n", GREEN);
         spacerFancy(RED);
+        return 1;
     }
 
     // spacer
@@ -34,12 +35,13 @@ int main(const int argc, char *argv[]) {
     spacer(RESET);
 
     // write and save potential curve to file
+
     writeFunction1D(in.initial_pos, in.final_pos, in.dx, in.space_grid,
-        potfile, sho(50));
+        potfile, potOptions(argv).at(argv[3]));
 
     // console output
     std::print("{}Potential written!\n\n", GREEN);
     spacerChunky(BLUE);
 
-    return 1;
+    return 0;
 }

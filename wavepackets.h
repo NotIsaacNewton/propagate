@@ -5,8 +5,10 @@
 #ifndef WAVEPACKETS_H
 #define WAVEPACKETS_H
 
+#include <unordered_map>
 #include <functional>
 #include <numbers>
+#include <string>
 #include "fftw3.h"
 
 // Gaussian wave-packet
@@ -52,9 +54,19 @@
 [[maybe_unused]] inline std::function<void(double, fftw_complex)> test() {
     return [](const double x, fftw_complex out) {
         double psi;
-        (x <= 5 && x >= -5) ? psi = 1 : psi = 0;
+        x <= 5 && x >= -5 ? psi = 1 : psi = 0;
         out[0] = psi;
         out[1] = 0;
+    };
+}
+
+// map of options
+inline std::unordered_map<std::string, std::function<void(double, fftw_complex)>> wpOptions(char* argv[]) {
+    return {
+        {"gaussian", gaussianWP(std::stod(argv[4]),std::stod(argv[5]),std::stod(argv[6]))},
+       {"shoground", shoGround()},
+        {"shoexcited", shoExcited()},
+       {"test", test()}
     };
 }
 

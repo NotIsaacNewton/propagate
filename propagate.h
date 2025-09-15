@@ -52,7 +52,7 @@ inline void defineKineticOperator(const int gridpoints, fftw_complex *op, const 
 // potential energy exponential operator
 inline void applyPotentialOperator(const int gridpoints, fftw_complex *psi, const fftw_complex *V) {
     for (int i = 0; i < gridpoints; i++) {
-        const int sign = (i % 2 == 0) ? 1 : -1;
+        const int sign = i % 2 == 0 ? 1 : -1;
         // sign change for dft
         psi[i][0] *= sign;
         psi[i][1] *= sign;
@@ -93,9 +93,6 @@ inline void writeOutput(const fftw_complex *psi, const int t, const double start
 }
 
 // propagates wavefunction based on general values
-// TODO:
-//  allow for time-dependent potentials (put in definePotentialOperator grid)
-//  find some way to dynamically define re and im, to reduce redundancy
 [[maybe_unused]] inline void propagate(const inputs& in, fftw_complex *psi, const std::string& data) {
     // create fft and inverse fft plans with RAII
     std::string wisdomfile = data + "/fftw_wisdom.dat";

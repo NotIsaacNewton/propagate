@@ -4,11 +4,12 @@
 
 #include "filetools.h"
 #include "propagate.h"
-#include "potentials.h"
 #include "fftw_complex_tools.h"
 #include "console_tools.h"
 
 // TODO: more safety checks and error paths (try <expected>)
+//  allow for time-dependent potentials (write from potentials.cpp grid, add defineTDPotentialOperator)
+//  generalize to higher dimensions
 
 // inputs: location/of/input_file location/of/data_directory
 int main(const int argc, const char* argv[]) {

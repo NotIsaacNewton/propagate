@@ -3,20 +3,20 @@
 //
 
 #include <functional>
+#include <map>
 #include "filetools.h"
 #include "fftw_complex_tools.h"
 #include "wavepackets.h"
 #include "console_tools.h"
 
-// TODO: generalize inputs for a wider range of wavepackets
-
-// inputs: location/of/input_file location/of/data_directory delta momentum position
+// inputs: location/of/input_file location/of/data_directory wavepacket_type delta momentum position
 int main(const int argc, char* argv[]) {
-    if (argc != 6) {
+    if (argc < 4) {
         spacerFancy(RED);
         std::cerr << RED << "Error: improper inputs.\n";
-        std::print("{}location/of/input_file location/of/data_directory delta momentum position\n", GREEN);
+        std::print("{}location/of/input_file location/of/data_directory wavepacket_parameters\n", GREEN);
         spacerFancy(RED);
+        return 1;
     }
 
     // spacer
@@ -35,8 +35,7 @@ int main(const int argc, char* argv[]) {
     spacer(RESET);
 
     // write wavefunction
-    fftw_complex_func_to_file(in, psifile,
-        gaussianWP(std::stod(argv[3]),std::stod(argv[4]), std::stod(argv[5])));
+    fftw_complex_func_to_file(in, psifile, wpOptions(argv).at(argv[3]));
 
     // console output
     std::print("{}Wavepacket written!\n\n", GREEN);
