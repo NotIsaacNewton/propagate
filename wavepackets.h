@@ -7,67 +7,27 @@
 
 #include <unordered_map>
 #include <functional>
-#include <numbers>
 #include <string>
 #include "fftw3.h"
 
 // Gaussian wave-packet
 // Gaussian
-[[maybe_unused]] inline double gaussian(const double x, const double delta, const double pos) {
-    return pow(1/(std::numbers::pi * (delta*delta)), 1.0/4.0)*exp(-(x-pos)*(x-pos)/(2*(delta*delta)));
-}
+double gaussian(double x, double delta, double pos);
 // gives Gaussian momentum
-[[maybe_unused]] inline void gaussianMoving(const double x, const double delta, const double momentum, const double pos,
-    fftw_complex out) {
-    const double re = cos(momentum * x);
-    const double im = sin(momentum * x);
-    out[0] = re*gaussian(x, delta, pos);
-    out[1] = im*gaussian(x, delta, pos);
-}
+void gaussianMoving(double x, double delta, double momentum, double pos, fftw_complex out);
 // prepares wave-packet
-[[maybe_unused]] inline std::function<void(double, fftw_complex)> gaussianWP(const double delta, const double momentum,
-    const double pos) {
-    return [delta, momentum, pos](const double x, fftw_complex out) {
-        gaussianMoving(x, delta, momentum, pos, out);
-    };
-}
+std::function<void(double, fftw_complex)> gaussianWP(double delta, double momentum, double pos);
 
 // SHO ground-state
-[[maybe_unused]] inline std::function<void(double, fftw_complex)> shoGround() {
-    return [](const double x, fftw_complex out) {
-        const double psi = pow(1/std::numbers::pi, 1.0/4.0)*exp(-x*x/2);
-        out[0] = psi;
-        out[1] = 0;
-    };
-}
+std::function<void(double, fftw_complex)> shoGround();
 
 // SHO first excited state
-[[maybe_unused]] inline std::function<void(double, fftw_complex)> shoExcited() {
-    return [](const double x, fftw_complex out) {
-        const double psi = pow(1/std::numbers::pi, 1.0/4.0)*sqrt(2)*x*exp(-x*x/2);
-        out[0] = psi;
-        out[1] = 0;
-    };
-}
+std::function<void(double, fftw_complex)> shoExcited();
 
 // test state (for imaginary time propagation)
-[[maybe_unused]] inline std::function<void(double, fftw_complex)> test() {
-    return [](const double x, fftw_complex out) {
-        double psi;
-        x <= 5 && x >= -5 ? psi = 1 : psi = 0;
-        out[0] = psi;
-        out[1] = 0;
-    };
-}
+std::function<void(double, fftw_complex)> test();
 
 // map of options
-inline std::unordered_map<std::string, std::function<void(double, fftw_complex)>> wpOptions(char* argv[]) {
-    return {
-        {"gaussian", gaussianWP(std::stod(argv[4]),std::stod(argv[5]),std::stod(argv[6]))},
-       {"shoground", shoGround()},
-        {"shoexcited", shoExcited()},
-       {"test", test()}
-    };
-}
+std::unordered_map<std::string, std::function<void(double, fftw_complex)>> wpOptions(char* argv[]);
 
 #endif //WAVEPACKETS_H

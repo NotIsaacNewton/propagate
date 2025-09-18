@@ -5,7 +5,6 @@
 #ifndef CONSOLE_TOOLS_H
 #define CONSOLE_TOOLS_H
 
-#include <iostream>
 #include <string>
 
 // ANSI escape codes for colors
@@ -16,24 +15,14 @@
 #define BLUE    "\033[34m"
 
 // spacer
-inline void spacer(const std::string& color) {
-    std::cout << color << "--------------------------------------------------------------------------------\n" << RESET;
-}
+void spacer(const std::string& color);
 // thick spacer
-inline void spacerThick(const std::string& color) {
-    std::cout << color << "================================================================================\n" << RESET;
-}
+void spacerThick(const std::string& color);
 // chunky spacer
-inline void spacerChunky(const std::string& color) {
-    std::cout << color << "################################################################################\n" << RESET;
-}
+void spacerChunky(const std::string& color);
 // fancy spacer
-inline void spacerFancy(const std::string& color) {
-    std::cout << color << "<*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*>\n" << RESET;
-}
+void spacerFancy(const std::string& color);
 // chain spacer
-inline void spacerChain(const std::string& color) {
-    std::cout << color << "<=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=>\n" << RESET;
-}
+void spacerChain(const std::string& color);
 
 #endif //CONSOLE_TOOLS_H

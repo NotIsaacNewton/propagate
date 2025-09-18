@@ -14,11 +14,11 @@ set(ARMPL_DIR /opt/arm/armpl_25.04_flang-new_clang_19)
 include_directories(${ARMPL_DIR}/include)
 link_directories(${ARMPL_DIR}/lib)
 
-add_executable(propagate propagate.cpp)
+add_executable(propagate propagate.cpp filetools.cpp fftw_complex_tools.cpp console_tools.cpp)
 target_link_libraries(propagate armpl)
 
-add_executable(wavepacket wavepackets.cpp)
+add_executable(wavepacket wavepackets.cpp filetools.cpp fftw_complex_tools.cpp console_tools.cpp)
 target_link_libraries(wavepacket armpl)
 
-add_executable(potential potentials.cpp)
+add_executable(potential potentials.cpp filetools.cpp fftw_complex_tools.cpp console_tools.cpp)
 target_link_libraries(potential armpl)
