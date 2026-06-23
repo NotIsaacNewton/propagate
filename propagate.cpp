@@ -14,7 +14,9 @@
 #include "console_tools.h"
 
 // TODO: more safety checks and error paths (try <expected>)
+//  make potentials and wf readable from a file with interpolation routines that fit it to the grid parameters
 //  allow for time-dependent potentials (write from potentials.cpp grid, add defineTDPotentialOperator)
+//  block buffers
 //  generalize to higher dimensions
 
 std::vector<double> psquared(const int gridpoints, const double space_width) {
@@ -307,7 +309,7 @@ int main(const int argc, const char* argv[]) {
 
     // record end time and duration
     auto end = std::chrono::steady_clock::now();
-    const std::chrono::duration<double> sec = end - start;
+    const auto sec = end - start;
     std::print("Done :)\n\n");
     std::print("{}Execution time: {} seconds\n", BLUE, sec.count());
 
