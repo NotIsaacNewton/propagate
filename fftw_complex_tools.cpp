@@ -5,6 +5,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <memory>
 #include "fftw_complex_tools.h"
 
 // scales entire array by a scalar
