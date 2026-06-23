@@ -12,6 +12,7 @@
 #include "console_tools.h"
 #include "fftw_complex_tools.h"
 #include "wavepackets.h"
+#include <print>
 
 double gaussian(const double x, const double delta, const double pos) {
     return pow(1/(std::numbers::pi * (delta*delta)), 1.0/4.0)*exp(-(x-pos)*(x-pos)/(2*(delta*delta)));
