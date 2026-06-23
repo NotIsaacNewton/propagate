@@ -8,6 +8,10 @@
 #include <iostream>
 #include <fstream>
 #include <functional>
+#include <cmath>
+#include <memory>
+#include <chrono>
+#include <print>
 #include "filetools.h"
 #include "propagate.h"
 #include "fftw_complex_tools.h"

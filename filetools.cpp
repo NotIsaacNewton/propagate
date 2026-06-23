@@ -6,6 +6,7 @@
 #include <fstream>
 #include <sstream>
 #include <functional>
+#include <print>
 
 // writes from 1D double function to file
 void writeFunction1D(const double& start, const double& width,
