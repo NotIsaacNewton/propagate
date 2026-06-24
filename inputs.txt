@@ -4,5 +4,5 @@
 0.4 // final time
 8192 // space gridpoints
 16000 // time gridpoints
-4 // print to file every nx space steps
-10 // print to file every nt time steps
+16 // print to file every nx space steps
+50 // print to file every nt time steps

@@ -313,7 +313,7 @@ int main(const int argc, const char* argv[]) {
 
     // record end time and duration
     auto end = std::chrono::steady_clock::now();
-    const auto sec = end - start;
+    const std::chrono::duration<double> sec = end - start;
     std::print("Done :)\n\n");
     std::print("{}Execution time: {} seconds\n", BLUE, sec.count());
 
