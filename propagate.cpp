@@ -300,7 +300,7 @@ int main(const int argc, const char* argv[]) {
     auto psi = fftw_alloc_complex(in.space_grid);
     std::unique_ptr<fftw_complex, void(*)(void*)> psip{psi, fftw_free};
     // get wavefunction from psifile and save it to psi
-    fftw_complex_array_from_file(psifile, psi);
+    fftw_complex_array_from_file(psifile, psi, in.space_grid);
 
     // spacer
     spacerThick(RESET);

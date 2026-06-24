@@ -13,10 +13,10 @@
 void scale_fftw_complex(double scalar, fftw_complex *complex_vec, int size);
 
 // writes fftw_complex array to file
-void fftw_complex_array_to_file(const double& start, const double& end, const double& width,
+void fftw_complex_array_to_file(const double& start, const int& size, const double& width,
     const std::string& file, const fftw_complex *function);
 
-void fftw_complex_func_to_array(const double& start, const double& end, const double& width,
+void fftw_complex_func_to_array(const double& start, const int& size, const double& width,
     const std::function<void(double, fftw_complex)>& function, fftw_complex *out);
 
 // writes fftw_complex function to file
@@ -24,7 +24,7 @@ void fftw_complex_func_to_file(const inputs& in, const std::string& savefile,
     const std::function<void(double, fftw_complex)>& wavefunction);
 
 // reads to fftw_complex array from file
-void fftw_complex_array_from_file(const std::string& file, fftw_complex *function);
+void fftw_complex_array_from_file(const std::string& file, fftw_complex *function, const int& size);
 
 // prints fftw_complex (mostly for debugging)
 void print_fftw_complex(int size, const fftw_complex *in);

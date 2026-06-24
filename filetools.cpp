@@ -89,7 +89,7 @@ inputs readInputs(const std::string& file) {
         int n = 0;
         while (std::getline(read, line)) {
             std::istringstream readline(line);
-            (n < 4) ? readline >> inputarray[n] : readline >> intinputarray[n-4];
+            n < 4 ? readline >> inputarray[n] : readline >> intinputarray[n-4];
             ++n;
         }
         read.close();
