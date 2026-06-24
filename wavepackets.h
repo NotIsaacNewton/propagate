@@ -5,9 +5,7 @@
 #ifndef WAVEPACKETS_H
 #define WAVEPACKETS_H
 
-#include <unordered_map>
 #include <functional>
-#include <string>
 #include "fftw3.h"
 
 // Gaussian wave-packet
@@ -28,6 +26,6 @@ std::function<void(double, fftw_complex)> shoExcited();
 std::function<void(double, fftw_complex)> test();
 
 // map of options
-std::unordered_map<std::string, std::function<void(double, fftw_complex)>> wpOptions(char* argv[]);
+std::function<void(double, fftw_complex)> buildWavepacket(char* argv[]);
 
 #endif //WAVEPACKETS_H

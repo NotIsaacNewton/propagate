@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <print>
+#include <unordered_map>
 #include "potentials.h"
 #include "fftw_complex_tools.h"
 #include "filetools.h"
@@ -45,17 +46,26 @@ std::function<double(double)> wall(const double pos, const double strength) {
     };
 }
 
-// map of options
-std::unordered_map<std::string, std::function<double(double)>> potOptions(char* argv[]) {
-    return {
-            {
-                {"step", step(std::stod(argv[4]),std::stod(argv[6]),std::stod(argv[7]))},
-                {"sho", sho(std::stod(argv[6]))},
-                {"well", barrier(std::stod(argv[4]),std::stod(argv[5]),std::stod(argv[6]))},
-                {"triangle", triangle(std::stod(argv[6]))},
-                {"wall", wall(std::stod(argv[4]),std::stod(argv[6]))}
-            }
+// potential builder + map of options
+std::function<double(double)> buildPotential(char* argv[]) {
+    std::unordered_map<std::string, std::function<std::function<double(double)>()>> potentials = {
+        {"step",    [argv] {
+            return step(std::stod(argv[4]),std::stod(argv[6]),std::stod(argv[7]));
+            }},
+        {"sho",     [argv] {
+            return sho(std::stod(argv[6]));
+            }},
+        {"well",    [argv] {
+            return barrier(std::stod(argv[4]),std::stod(argv[5]),std::stod(argv[6]));
+            }},
+        {"triangle",[argv] {
+            return triangle(std::stod(argv[6]));
+            }},
+        {"wall",    [argv] {
+            return wall(std::stod(argv[4]),std::stod(argv[6]));
+            }}
     };
+    return potentials.at(argv[3])();
 }
 
 // inputs: location/of/input_file location/of/data_directory potential_type pos1 pos2 strength1 strength2
@@ -86,7 +96,7 @@ int main(const int argc, char *argv[]) {
     // write and save potential curve to file
 
     writeFunction1D(in.initial_pos, in.dx, in.space_grid,
-        potfile, potOptions(argv).at(argv[3]));
+        potfile, buildPotential(argv));
 
     // console output
     std::print("{}Potential written!\n\n", GREEN);

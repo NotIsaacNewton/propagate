@@ -8,6 +8,7 @@
 #include <string>
 #include <cmath>
 #include <map>
+#include <unordered_map>
 #include "filetools.h"
 #include "console_tools.h"
 #include "fftw_complex_tools.h"
@@ -64,14 +65,16 @@ std::function<void(double, fftw_complex)> test() {
 }
 
 // map of options
-std::unordered_map<std::string, std::function<void(double, fftw_complex)>> wpOptions(char* argv[]) {
-    return {
-            {"gaussian", gaussianWP(std::stod(argv[4]),std::stod(argv[5]),
-                std::stod(argv[6]))},
-           {"shoground", shoGround()},
-            {"shoexcited", shoExcited()},
-           {"test", test()}
+std::function<void(double, fftw_complex)> buildWavepacket(char* argv[]) {
+    std::unordered_map<std::string, std::function<std::function<void(double, fftw_complex)>()>> wavepackets = {
+        {"gaussian",    [argv] {
+            return gaussianWP(std::stod(argv[4]),std::stod(argv[5]), std::stod(argv[6]));
+            }},
+        {"shoground",   [] { return shoGround(); }},
+        {"shoexcited",  [] { return shoExcited(); }},
+        {"test",        [] { return test(); }}
     };
+    return wavepackets.at(argv[3])();
 }
 
 // inputs: location/of/input_file location/of/data_directory wavepacket_type delta momentum position
@@ -100,7 +103,7 @@ int main(const int argc, char* argv[]) {
     spacer(RESET);
 
     // write wavefunction
-    fftw_complex_func_to_file(in, psifile, wpOptions(argv).at(argv[3]));
+    fftw_complex_func_to_file(in, psifile, buildWavepacket(argv));
 
     // console output
     std::print("{}Wavepacket written!\n\n", GREEN);

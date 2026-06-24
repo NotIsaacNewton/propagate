@@ -5,7 +5,6 @@
 #ifndef POTENTIALS_H
 #define POTENTIALS_H
 
-#include <unordered_map>
 #include <functional>
 
 // potential functions
@@ -21,6 +20,6 @@ std::function<double(double)> triangle(double strength);
 std::function<double(double)> wall(double pos, double strength);
 
 // map of options
-std::unordered_map<std::string, std::function<double(double)>> potOptions(char* argv[]);
+std::function<double(double)> buildPotential(char* argv[]);
 
 #endif //POTENTIALS_H
