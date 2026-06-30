@@ -16,10 +16,11 @@ std::vector<double> psquared(int gridpoints, double space_width);
 
 // real time propagation
 // creates potential operator array from data file and outputs to op
-void definePotentialOperator(int gridpoints, fftw_complex *op, const std::string& potfile, double time_width);
+void definePotentialOperator(int gridpoints, fftw_complex *op, const std::string& potfile, double time_width,
+    bool imProp);
 
 // calculates free-particle operator based on general values and outputs to op
-void defineKineticOperator(int gridpoints, fftw_complex *op, double space_width, double time_width);
+void defineKineticOperator(int gridpoints, fftw_complex *op, double space_width, double time_width, bool imProp);
 
 // potential energy exponential operator
 void applyPotentialOperator(int gridpoints, fftw_complex *psi, const fftw_complex *V);
@@ -34,17 +35,5 @@ void writeOutput(const fftw_complex *psi, int t, double start, int gridpoints,
 
 // propagates wavefunction based on general values
 void propagate(const inputs& in, fftw_complex *psi, const std::string& data);
-
-// imaginary time propagation
-// calculates free-particle operator based on general values and outputs to op
-void defineImKineticOperator(int gridpoints, fftw_complex *op, double space_width, double time_width);
-
-// creates potential operator array from potential function and outputs to op
-void defineImPotentialOperator(int gridpoints, fftw_complex *op,
-    const std::function<double(double)>& potential, double space_width,
-    double time_width, double start);
-
-// propagates wavefunction based on general values
-void ipropagate(const inputs& in, fftw_complex *psi, const std::function<double(double)>& potential, std::string& data);
 
 #endif //PROPAGATE_H
