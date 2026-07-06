@@ -98,19 +98,15 @@ void applyKineticOperator(const int gridpoints, fftw_complex *psi, const fftw_co
 }
 
 // output to file
-void writeOutput(const fftw_complex *psi, const int t, const double start, const int gridpoints,
-    const double space_width, const double time_width, const int output_ndx, const int output_ndt,
-    std::ostringstream &buffer) {
+void writeOutput(const fftw_complex *psi, const int t, const int gridpoints, const int output_ndx, const int output_ndt,
+    std::vector<double> &buffer) {
     // print to output file every output_ndt steps
     if (t % output_ndt == 0) {
-        // print to ouput file every output_ndx steps
+        // print to output file every output_ndx steps
         for (int i=0; i<gridpoints; i += output_ndx) {
-            // prepare output
-            const double re = psi[i][0];
-            const double im = psi[i][1];
-            const double square = re*re + im*im;
             // send stuff to buffer
-            buffer << t * time_width << " " << i*space_width + start << " " << re << " " << im << " " << square << "\n";
+            buffer.push_back(psi[i][0]);
+            buffer.push_back(psi[i][1]);
         }
     }
 }
@@ -189,7 +185,8 @@ void propagate(const inputs& in, fftw_complex *psi, const std::string& data, boo
         std::cerr << "Failed to open " << output << "." << "\n";
     }
     // prepare input buffer for entire set of points
-    std::ostringstream buffer;
+    std::vector<double> buffer;
+    buffer.reserve((in.time_grid / in.nt_prints + 1) * (in.space_grid / in.nx_prints) * 2);
     // check norm
     std::vector<double> psi_squared(in.space_grid);
     fftw_complex_square(psi, psi_squared);
@@ -206,13 +203,13 @@ void propagate(const inputs& in, fftw_complex *psi, const std::string& data, boo
         !(t % static_cast<int>(in.time_grid * 0.1)) ?
         std::cout << GREEN << "\r" << 100*t/in.time_grid << "%" : std::cout << RESET;
         // write lines in output file
-        writeOutput(psi, t, in.initial_pos, in.space_grid, in.dx, in.dt,
-            in.nx_prints, in.nt_prints, buffer);
+        writeOutput(psi, t, in.space_grid, in.nx_prints, in.nt_prints, buffer);
         // propagate for one tick
         propTick(in, psi, V, T, fft, ifft, scale);
     }
     // save buffer to output file and close the file
-    wf << buffer.str();
+    wf.write(reinterpret_cast<const char*>(buffer.data()),
+         static_cast<std::streamsize>(buffer.size() * sizeof(double)));
     wf.close();
     // console output
     std::cout << "\n";
