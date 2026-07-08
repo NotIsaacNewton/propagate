@@ -75,6 +75,7 @@ void defineKineticOperator(const int gridpoints, fftw_complex *op, const double 
 // potential energy exponential operator
 void applyPotentialOperator(const int gridpoints, fftw_complex *psi, const fftw_complex *V) {
     for (int i = 0; i < gridpoints; i++) {
+        // sign flip to properly center DFT
         const int sign = i % 2 == 0 ? 1 : -1;
         // sign change for dft
         psi[i][0] *= sign;
@@ -151,20 +152,20 @@ fftwResources fftwPrep(const inputs& in, fftw_complex *psi, const std::string& d
 }
 
 // propagation tick
-void propTick(const inputs& in, fftw_complex *psi, const fftw_complex* V, const fftw_complex* T,
+void propTick(const int gridpoints, fftw_complex *psi, const fftw_complex* V, const fftw_complex* T,
     fftw_plan fft, fftw_plan ifft, const double scale) {
     // apply e^(-i dt V(X))
-    applyPotentialOperator(in.space_grid, psi, V);
+    applyPotentialOperator(gridpoints, psi, V);
     // execute fft plan
     fftw_execute(fft);
     // apply e^(-i dt p^2 / 2)
-    applyKineticOperator(in.space_grid, psi, T);
+    applyKineticOperator(gridpoints, psi, T);
     // execute inverse fft plan
     fftw_execute(ifft);
     // normalize fftw result (fftw uses non-normalized fft algorithm)
-    scale_fftw_complex(scale, psi, in.space_grid);
+    scale_fftw_complex(scale, psi, gridpoints);
     // apply e^(-i dt V(X))
-    applyPotentialOperator(in.space_grid, psi, V);
+    applyPotentialOperator(gridpoints, psi, V);
 }
 
 // propagates wavefunction based on general values
@@ -184,7 +185,7 @@ void propagate(const inputs& in, fftw_complex *psi, const std::string& data, boo
     if (!wf.is_open()) {
         std::cerr << "Failed to open " << output << "." << "\n";
     }
-    // prepare input buffer for entire set of points
+    // prepare output buffer for entire set of points
     std::vector<double> buffer;
     buffer.reserve((in.time_grid / in.nt_prints + 1) * (in.space_grid / in.nx_prints) * 2);
     // check norm
@@ -205,7 +206,7 @@ void propagate(const inputs& in, fftw_complex *psi, const std::string& data, boo
         // write lines in output file
         writeOutput(psi, t, in.space_grid, in.nx_prints, in.nt_prints, buffer);
         // propagate for one tick
-        propTick(in, psi, V, T, fft, ifft, scale);
+        propTick(in.space_grid, psi, V, T, fft, ifft, scale);
     }
     // save buffer to output file and close the file
     wf.write(reinterpret_cast<const char*>(buffer.data()),
