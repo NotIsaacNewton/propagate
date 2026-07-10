@@ -132,15 +132,6 @@ void writeOutput(const fftw_complex *psi, const int t, const int gridpoints, con
     }
 }
 
-// struct bundling all resources needed for using fftw in propagation loops
-struct fftwResources {
-    // pointers used as wrappers for RAII
-    std::unique_ptr<std::remove_pointer_t<fftw_plan>, void(*)(fftw_plan)> fft_ptr;
-    std::unique_ptr<std::remove_pointer_t<fftw_plan>, void(*)(fftw_plan)> ifft_ptr;
-    std::unique_ptr<fftw_complex, void(*)(void*)> Vp;
-    std::unique_ptr<fftw_complex, void(*)(void*)> Tp;
-};
-
 // prepares fftw variables with RAII
 fftwResources fftwPrep(const inputs& in, fftw_complex *psi, const std::string& data, const bool imProp) {
     // locate fftw wisdom file

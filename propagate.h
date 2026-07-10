@@ -27,11 +27,24 @@ void applyPotentialOperator(int gridpoints, fftw_complex *psi, const fftw_comple
 void applyKineticOperator(int gridpoints, fftw_complex *psi, const fftw_complex *T);
 
 // output to file
-void writeOutput(const fftw_complex *psi, int t, double start, int gridpoints,
-    double space_width, double time_width, int output_ndx, int output_ndt,
-    std::ostringstream &buffer);
+void writeOutput(const fftw_complex *psi, int t, int gridpoints, int output_ndx, int output_ndt,
+    std::vector<double> &buffer);
+
+// struct bundling all resources needed for using fftw in propagation loops
+struct fftwResources {
+    // pointers used as wrappers for RAII
+    std::unique_ptr<std::remove_pointer_t<fftw_plan>, void(*)(fftw_plan)> fft_ptr;
+    std::unique_ptr<std::remove_pointer_t<fftw_plan>, void(*)(fftw_plan)> ifft_ptr;
+    std::unique_ptr<fftw_complex, void(*)(void*)> Vp;
+    std::unique_ptr<fftw_complex, void(*)(void*)> Tp;
+};
+
+fftwResources fftwPrep(const inputs& in, fftw_complex *psi, const std::string& data, bool imProp);
+
+void propTick(int gridpoints, fftw_complex *psi, const fftw_complex* V, const fftw_complex* T,
+    fftw_plan fft, fftw_plan ifft, double scale);
 
 // propagates wavefunction based on general values
-void propagate(const inputs& in, fftw_complex *psi, const std::string& data);
+void propagate(const inputs& in, fftw_complex *psi, const std::string& data, bool imProp);
 
 #endif //PROPAGATE_H
