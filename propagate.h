@@ -14,13 +14,11 @@
 // calculates momentum-squared grid based on general values
 std::vector<double> psquared(int gridpoints, double space_width);
 
-// real time propagation
 // creates potential operator array from data file and outputs to op
-void definePotentialOperator(const inputs& in, fftw_complex *op, const std::string& potfile, double time_width,
-    bool imProp);
+void definePotentialOperator(const inputs& in, fftw_complex *op, const std::string& potfile, bool imProp);
 
 // calculates free-particle operator based on general values and outputs to op
-void defineKineticOperator(int gridpoints, fftw_complex *op, double space_width, double time_width, bool imProp);
+void defineKineticOperator(const inputs& in, fftw_complex *op, bool imProp);
 
 // potential energy exponential operator
 void applyPotentialOperator(int gridpoints, fftw_complex *psi, const fftw_complex *V);
