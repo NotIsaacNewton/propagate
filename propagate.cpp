@@ -3,22 +3,21 @@
 //
 
 #include <string>
-#include <sstream>
 #include <numbers>
 #include <iostream>
 #include <fstream>
-#include <functional>
 #include <cmath>
 #include <memory>
 #include <chrono>
 #include <print>
+#include <algorithm>
 #include "filetools.h"
 #include "propagate.h"
 #include "fftw_complex_tools.h"
 #include "console_tools.h"
+#include "interpolate_1d.h"
 
 // TODO: more safety checks and error paths (try <expected>)
-//  interpolation routines that fit any potential to the grid parameters
 //  allow for time-dependent potentials (write from potentials.cpp grid, add defineTDPotentialOperator)
 //  block buffers
 //  generalize to higher dimensions
@@ -34,20 +33,37 @@ std::vector<double> psquared(const int gridpoints, const double space_width) {
     return mom;
 }
 
-// real time propagation
 // creates potential operator array from data file and outputs to op
-void definePotentialOperator(const int gridpoints, fftw_complex *op,
-    const std::string& potfile, const double time_width, const bool imProp) {
-    std::vector<double> potential(gridpoints);
+void definePotentialOperator(const inputs& in, fftw_complex *op,
+    const std::string& potfile, const bool imProp) {
+    std::vector<double> potential(in.pot_grid);
     readArray1D(potfile, potential);
+    // reshape potential with interpolation if needed
+    if (in.space_grid != in.pot_grid) {
+        std::vector<double> grid(in.pot_grid); // grid on which potential is defined
+        const double dx = (in.final_pos-in.initial_pos)/(in.pot_grid-1); // width of potential grid
+        // write potential grid
+        for (int i = 0; i < in.pot_grid; i++) {
+            grid[i] = in.initial_pos + i*dx;
+        }
+        spline_interp interpolator(grid, potential); // spline interpolation object
+        std::vector<double> pot(in.space_grid); // temporary potential array
+        // write temp array
+        for (int i = 0; i < in.space_grid; i++) {
+            pot[i] = interpolator.interp(in.initial_pos + i*in.dx);
+        }
+        // reshape potential
+        potential = std::move(pot);
+    }
+    // write potential operator
     if (imProp) {
-        for (int i = 0; i < gridpoints; i++) {
-            op[i][0] = exp(-potential[i] * time_width / 2.0);
+        for (int i = 0; i < in.space_grid; i++) {
+            op[i][0] = exp(-potential[i] * in.dt / 2.0);
             op[i][1] = 0;
         }
     } else {
-        for (int i = 0; i < gridpoints; i++) {
-            const double phase = potential[i] * time_width / 2.0;
+        for (int i = 0; i < in.space_grid; i++) {
+            const double phase = potential[i] * in.dt / 2.0;
             op[i][0] = cos(phase);
             op[i][1] = -sin(phase);
         }
@@ -55,17 +71,16 @@ void definePotentialOperator(const int gridpoints, fftw_complex *op,
 }
 
 // calculates free-particle operator based on general values and outputs to op
-void defineKineticOperator(const int gridpoints, fftw_complex *op, const double space_width,
-    const double time_width, const bool imProp) {
-    const std::vector<double> mom = psquared(gridpoints, space_width);
+void defineKineticOperator(const inputs& in, fftw_complex *op, const bool imProp) {
+    const std::vector<double> mom = psquared(in.space_grid, in.dx);
     if (imProp) {
-        for (int i = 0; i < gridpoints; i++) {
-            op[i][0] = exp(-time_width * mom[i] / 2);
+        for (int i = 0; i < in.space_grid; i++) {
+            op[i][0] = exp(-in.dt * mom[i] / 2);
             op[i][1] = 0;
         }
     } else {
-        for (int i = 0; i < gridpoints; i++) {
-            const double phase = time_width * mom[i] / 2;
+        for (int i = 0; i < in.space_grid; i++) {
+            const double phase = in.dt * mom[i] / 2;
             op[i][0] = cos(phase);
             op[i][1] = -sin(phase);
         }
@@ -141,8 +156,8 @@ fftwResources fftwPrep(const inputs& in, fftw_complex *psi, const std::string& d
     // define potential and kinetic terms
     const auto V = fftw_alloc_complex(in.space_grid);
     const auto T = fftw_alloc_complex(in.space_grid);
-    definePotentialOperator(in.space_grid, V, potfile, in.dt, imProp);
-    defineKineticOperator(in.space_grid, T, in.dx, in.dt, imProp);
+    definePotentialOperator(in, V, potfile, imProp);
+    defineKineticOperator(in, T, imProp);
     // return fftwResources
     return fftwResources{
         std::move(fft_ptr), std::move(ifft_ptr),
@@ -169,7 +184,8 @@ void propTick(const int gridpoints, fftw_complex *psi, const fftw_complex* V, co
 }
 
 // propagates wavefunction based on general values
-void propagate(const inputs& in, fftw_complex *psi, const std::string& data, bool imProp) {
+// Note: FFT methods implicitly impose periodic boundary conditions
+void propagate(const inputs& in, fftw_complex *psi, const std::string& data, const bool imProp) {
     // prep fftw variables and plans
     auto [fft_ptr, ifft_ptr, Vp, Tp] = fftwPrep(in, psi, data, imProp);
     fftw_complex* V = Vp.get();
@@ -179,9 +195,8 @@ void propagate(const inputs& in, fftw_complex *psi, const std::string& data, boo
     // scale for normalizing fft result
     const double scale = 1.0 / in.space_grid;
     // open output file
-    std::string output = data + "/psi_final.dat";
-    std::ofstream wf;
-    wf.open(output, std::ios::app);
+    const std::string output = data + "/psi_final.dat";
+    std::ofstream wf(output, std::ios::app | std::ios::binary);
     if (!wf.is_open()) {
         std::cerr << "Failed to open " << output << "." << "\n";
     }
@@ -201,12 +216,17 @@ void propagate(const inputs& in, fftw_complex *psi, const std::string& data, boo
     // propagation loop
     for (int t = 0; t <= in.time_grid; t++) {
         // print completion % to console
-        !(t % static_cast<int>(in.time_grid * 0.1)) ?
-        std::cout << GREEN << "\r" << 100*t/in.time_grid << "%" : std::cout << RESET;
+        !(t % (in.time_grid / 10)) ? std::cout << GREEN << "\r" << 100*t/in.time_grid << "%" : std::cout << RESET;
         // write lines in output file
         writeOutput(psi, t, in.space_grid, in.nx_prints, in.nt_prints, buffer);
         // propagate for one tick
         propTick(in.space_grid, psi, V, T, fft, ifft, scale);
+        // naive renormalization if doing imaginary time propagation
+        if (imProp && t % 10 == 0) {
+            fftw_complex_square(psi, psi_squared);
+            norm = fftw_complex_integrate(in.space_grid, in.dx, psi_squared);
+            scale_fftw_complex(1/sqrt(norm), psi, in.space_grid);
+        }
     }
     // save buffer to output file and close the file
     wf.write(reinterpret_cast<const char*>(buffer.data()),
@@ -251,6 +271,19 @@ int main(const int argc, const char* argv[]) {
 
     // read input file
     const inputs in = readInputs(inputfile);
+
+    // warning if odd number of gridpoints
+    if (in.space_grid % 2 != 0) {
+        spacerFancy(YELLOW);
+        std::cerr << YELLOW << "WARNING: Odd number of gridpoints may produce asymmetric momentum grid.\n" << RESET;
+        spacerFancy(YELLOW);
+    }
+    // warning if large dt
+    if (in.time_grid < 1000) {
+        spacerFancy(YELLOW);
+        std::cerr << YELLOW << "WARNING: Large dt may fail to resolve rapid dynamics. Use dt < pi/E_max.\n" << RESET;
+        spacerFancy(YELLOW);
+    }
 
     // clear output file
     std::ofstream clearout;

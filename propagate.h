@@ -16,7 +16,7 @@ std::vector<double> psquared(int gridpoints, double space_width);
 
 // real time propagation
 // creates potential operator array from data file and outputs to op
-void definePotentialOperator(int gridpoints, fftw_complex *op, const std::string& potfile, double time_width,
+void definePotentialOperator(const inputs& in, fftw_complex *op, const std::string& potfile, double time_width,
     bool imProp);
 
 // calculates free-particle operator based on general values and outputs to op

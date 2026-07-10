@@ -16,8 +16,8 @@ void writeFunction1D(const double& start, const double& width,
 void readArray1D(const std::string& file, std::vector<double>& array);
 
 // writes from 1D array to file
-void writeArray1D(const double& start, const double& end, const double& width,
-    const std::string& file, const double *function);
+void writeArray1D(const double& start, const double& end, const double& width, const int& gridpoints,
+    const std::string& file, const std::vector<double>& function);
 
 // inputs go here
 struct inputs {
@@ -26,6 +26,7 @@ struct inputs {
     double final_pos;
     int space_grid;
     int nx_prints;
+    int pot_grid;
     // time stuff
     double initial_t;
     double final_t;

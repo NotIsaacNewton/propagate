@@ -45,13 +45,12 @@ void readArray1D(const std::string& file, std::vector<double>& array) {
 }
 
 // writes from 1D array to file
-void writeArray1D(const double& start, const double& end, const double& width,
-    const std::string& file, const double *function) {
-    const double n = (end-start)/width;
+void writeArray1D(const double& start, const double& end, const double& width, const int& gridpoints,
+    const std::string& file, const std::vector<double>& function) {
     std::ofstream write;
     write.open(file);
     if (write.is_open()) {
-        for (int i=0; i<n; i++) {
+        for (int i=0; i<gridpoints; i++) {
             write << i*width + start << " " << function[i] << "\n";
         }
         write.close();
@@ -67,6 +66,7 @@ struct inputs {
     double final_pos;
     int space_grid;
     int nx_prints;
+    int pot_grid;
     // time stuff
     double initial_t;
     double final_t;
@@ -83,7 +83,7 @@ inputs readInputs(const std::string& file) {
     read.open(file);
     if (read.is_open()) {
         double inputarray[4];
-        int intinputarray[4];
+        int intinputarray[5];
         std::print("Reading {}\n",file);
         std::string line;
         int n = 0;
@@ -98,14 +98,15 @@ inputs readInputs(const std::string& file) {
             inputarray[0],
             inputarray[1],
             intinputarray[0],
-            intinputarray[2],
+            intinputarray[3],
+            intinputarray[1],
             inputarray[2],
             inputarray[3],
-            intinputarray[1],
-            intinputarray[3]
+            intinputarray[2],
+            intinputarray[4]
         };
-        in.dx = (in.final_pos - in.initial_pos)/in.space_grid;
-        in.dt = (in.final_t - in.initial_t)/in.time_grid;
+        in.dx = (in.final_pos - in.initial_pos)/(in.space_grid - 1);
+        in.dt = (in.final_t - in.initial_t)/(in.time_grid - 1);
         return in;
     }
     std::cerr << "Failed to open " << file << "." << "\n";

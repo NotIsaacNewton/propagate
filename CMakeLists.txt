@@ -15,11 +15,14 @@ else()
     set(FFT_LIBS armpl)
 endif()
 
-add_executable(propagate propagate.cpp filetools.cpp fftw_complex_tools.cpp console_tools.cpp)
+add_executable(propagate propagate.cpp filetools.cpp fftw_complex_tools.cpp console_tools.cpp interpolate_1d.cpp)
 target_link_libraries(propagate ${FFT_LIBS})
 
-add_executable(wavepacket wavepackets.cpp filetools.cpp fftw_complex_tools.cpp console_tools.cpp)
+add_executable(wavepacket wavepackets.cpp filetools.cpp fftw_complex_tools.cpp console_tools.cpp interpolate_1d.cpp)
 target_link_libraries(wavepacket ${FFT_LIBS})
 
-add_executable(potential potentials.cpp filetools.cpp fftw_complex_tools.cpp console_tools.cpp)
+add_executable(potential potentials.cpp filetools.cpp fftw_complex_tools.cpp console_tools.cpp interpolate_1d.cpp)
 target_link_libraries(potential ${FFT_LIBS})
+
+add_executable(interpolate interpolate_1d.cpp filetools.cpp console_tools.cpp)
+target_link_libraries(interpolate)

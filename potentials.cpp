@@ -48,7 +48,7 @@ std::function<double(double)> wall(const double pos, const double strength) {
 
 // potential builder + map of options
 std::function<double(double)> buildPotential(char* argv[]) {
-    std::unordered_map<std::string, std::function<std::function<double(double)>()>> potentials = {
+    std::unordered_map<std::string, std::function<std::function<double(double)>()>> const potentials = {
         {"step",    [argv] {
             return step(std::stod(argv[4]),std::stod(argv[6]),std::stod(argv[7]));
             }},
@@ -94,8 +94,8 @@ int main(const int argc, char *argv[]) {
     spacer(RESET);
 
     // write and save potential curve to file
-
-    writeFunction1D(in.initial_pos, in.dx, in.space_grid,
+    const double dx = (in.final_pos-in.initial_pos)/(in.pot_grid-1);
+    writeFunction1D(in.initial_pos, dx, in.pot_grid,
         potfile, buildPotential(argv));
 
     // console output
