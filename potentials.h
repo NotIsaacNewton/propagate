@@ -15,7 +15,7 @@ std::function<double(double)> sho(double strength);
 // well
 std::function<double(double)> barrier(double start_pos, double end_pos, double strength);
 // triangle
-std::function<double(double)> triangle(double strength);
+std::function<double(double)> triangle(double strength, double pos);
 // wall
 std::function<double(double)> wall(double pos, double strength);
 

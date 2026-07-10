@@ -19,9 +19,10 @@
 
 // TODO: more safety checks and error paths (try <expected>)
 //  allow for time-dependent potentials (write from potentials.cpp grid, add defineTDPotentialOperator)
-//  block buffers
+//  implement CI models: propagation on multiple potential curves. make dimension-agnostic as much as possible.
 //  generalize to higher dimensions
 
+// creates array of squared momenta
 std::vector<double> psquared(const int gridpoints, const double space_width) {
     const double scale = 2 * std::numbers::pi / (gridpoints * space_width);
     const double shift = - std::numbers::pi / space_width;
@@ -40,7 +41,7 @@ void definePotentialOperator(const inputs& in, fftw_complex *op,
     readArray1D(potfile, potential);
     // reshape potential with interpolation if needed
     if (in.space_grid != in.pot_grid) {
-        std::vector<double> grid(in.pot_grid); // grid on which potential is defined
+        std::vector<double> grid(in.pot_grid); // stores grid on which potential is defined
         const double dx = (in.final_pos-in.initial_pos)/(in.pot_grid-1); // width of potential grid
         // write potential grid
         for (int i = 0; i < in.pot_grid; i++) {
@@ -57,11 +58,13 @@ void definePotentialOperator(const inputs& in, fftw_complex *op,
     }
     // write potential operator
     if (imProp) {
+        // imaginary propagation
         for (int i = 0; i < in.space_grid; i++) {
             op[i][0] = exp(-potential[i] * in.dt / 2.0);
             op[i][1] = 0;
         }
     } else {
+        // real propagation
         for (int i = 0; i < in.space_grid; i++) {
             const double phase = potential[i] * in.dt / 2.0;
             op[i][0] = cos(phase);
@@ -74,11 +77,13 @@ void definePotentialOperator(const inputs& in, fftw_complex *op,
 void defineKineticOperator(const inputs& in, fftw_complex *op, const bool imProp) {
     const std::vector<double> mom = psquared(in.space_grid, in.dx);
     if (imProp) {
+        // imaginary propagation
         for (int i = 0; i < in.space_grid; i++) {
             op[i][0] = exp(-in.dt * mom[i] / 2);
             op[i][1] = 0;
         }
     } else {
+        // real propagation
         for (int i = 0; i < in.space_grid; i++) {
             const double phase = in.dt * mom[i] / 2;
             op[i][0] = cos(phase);
@@ -87,14 +92,14 @@ void defineKineticOperator(const inputs& in, fftw_complex *op, const bool imProp
     }
 }
 
-// potential energy exponential operator
+// applies potential energy exponential operator to psi
 void applyPotentialOperator(const int gridpoints, fftw_complex *psi, const fftw_complex *V) {
     for (int i = 0; i < gridpoints; i++) {
-        // sign flip to properly center DFT
+        // sign flip for dft
         const int sign = i % 2 == 0 ? 1 : -1;
-        // sign change for dft
         psi[i][0] *= sign;
         psi[i][1] *= sign;
+        // write
         const double re = psi[i][0];
         const double im = psi[i][1];
         // mult by V(x) exponential term
@@ -103,7 +108,7 @@ void applyPotentialOperator(const int gridpoints, fftw_complex *psi, const fftw_
     }
 }
 
-// kinetic energy exponential operator
+// applies kinetic energy exponential operator to psi
 void applyKineticOperator(const int gridpoints, fftw_complex *psi, const fftw_complex *T) {
     for (int i = 0; i < gridpoints; i++) {
         const double re = psi[i][0];
@@ -129,6 +134,7 @@ void writeOutput(const fftw_complex *psi, const int t, const int gridpoints, con
 
 // struct bundling all resources needed for using fftw in propagation loops
 struct fftwResources {
+    // pointers used as wrappers for RAII
     std::unique_ptr<std::remove_pointer_t<fftw_plan>, void(*)(fftw_plan)> fft_ptr;
     std::unique_ptr<std::remove_pointer_t<fftw_plan>, void(*)(fftw_plan)> ifft_ptr;
     std::unique_ptr<fftw_complex, void(*)(void*)> Vp;
@@ -203,11 +209,14 @@ void propagate(const inputs& in, fftw_complex *psi, const std::string& data, con
     // prepare output buffer for entire set of points
     std::vector<double> buffer;
     buffer.reserve((in.time_grid / in.nt_prints + 1) * (in.space_grid / in.nx_prints) * 2);
-    // check norm
-    std::vector<double> psi_squared(in.space_grid);
-    fftw_complex_square(psi, psi_squared);
+    // norm psi (often slightly off norm) and check norm
+    std::vector<double> psi_squared(in.space_grid); // stores |psi|^2
+    fftw_complex_square(psi, psi_squared); // calculates |psi|^2
+    double norm = fftw_complex_integrate(in.space_grid, in.dx, psi_squared); // calculate and store norm
+    scale_fftw_complex(1/sqrt(norm), psi, in.space_grid); // normalize psi
+    fftw_complex_square(psi, psi_squared); // recalculate |psi|^2
+    norm = fftw_complex_integrate(in.space_grid, in.dx, psi_squared); // recalculate norm
     std::cout << RED << "Check norm:\n" << RESET;
-    double norm = fftw_complex_integrate(in.space_grid, in.dx, psi_squared);
     std::print("The initial norm is {}\n", norm);
     // spacer
     spacer(RESET);

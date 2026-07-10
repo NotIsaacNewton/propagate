@@ -34,9 +34,9 @@ std::function<double(double)> barrier(const double start_pos,
     };
 }
 // triangle
-std::function<double(double)> triangle(const double strength) {
-    return [strength](const double x) {
-        return x > -3 && x <= 0 ? -strength*x : x > 0 && x <= 3 ? strength*x : 0;
+std::function<double(double)> triangle(const double strength, const double pos) {
+    return [strength, pos](const double x) {
+        return x > -pos && x <= 0 ? -strength*x-strength : x > 0 && x <= pos ? strength*x-strength : 0;
     };
 }
 // wall
@@ -59,7 +59,7 @@ std::function<double(double)> buildPotential(char* argv[]) {
             return barrier(std::stod(argv[4]),std::stod(argv[5]),std::stod(argv[6]));
             }},
         {"triangle",[argv] {
-            return triangle(std::stod(argv[6]));
+            return triangle(std::stod(argv[6]),std::stod(argv[4]));
             }},
         {"wall",    [argv] {
             return wall(std::stod(argv[4]),std::stod(argv[6]));
