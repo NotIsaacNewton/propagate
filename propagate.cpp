@@ -18,8 +18,9 @@
 #include "interpolate_1d.h"
 
 // TODO: more safety checks and error paths (try <expected>)
-//  allow for time-dependent potentials (write from potentials.cpp grid, add defineTDPotentialOperator)
-//  implement CI models: propagation on multiple potential curves. make dimension-agnostic as much as possible.
+//  allow for time-dependent potentials (write from potentials.cpp grid, add defineTDPotentialOperator,
+//                                                                                             2D interpolation needed)
+//  implement coupling: propagation on multiple potential curves. make dimension-agnostic as much as possible.
 //  generalize to higher dimensions
 
 // creates array of squared momenta
@@ -146,7 +147,7 @@ fftwResources fftwPrep(const inputs& in, fftw_complex *psi, const std::string& d
             fftw_plan_dft_1d(in.space_grid, psi, psi, FFTW_BACKWARD, FFTW_MEASURE),
             &fftw_destroy_plan
     );
-    // save fftw wisom to file
+    // save fftw wisdom to file
     fftw_export_wisdom_to_filename(wisdomfile.c_str());
     // locate potential curve file
     const std::string potfile = data + "/potential.dat";
@@ -157,9 +158,9 @@ fftwResources fftwPrep(const inputs& in, fftw_complex *psi, const std::string& d
     defineKineticOperator(in, T, imProp);
     // return fftwResources
     return fftwResources{
-        std::move(fft_ptr), std::move(ifft_ptr),
-        std::unique_ptr<fftw_complex, void(*)(void*)>(V, fftw_free),
-        std::unique_ptr<fftw_complex, void(*)(void*)>(T, fftw_free)
+        .fft_ptr = std::move(fft_ptr), .ifft_ptr = std::move(ifft_ptr),
+        .Vp = std::unique_ptr<fftw_complex, void(*)(void*)>(V, fftw_free),
+        .Tp = std::unique_ptr<fftw_complex, void(*)(void*)>(T, fftw_free)
     };
 }
 

@@ -82,7 +82,7 @@ int main(const int argc, char* argv[]) {
     if (argc < 4) {
         spacerFancy(RED);
         std::cerr << RED << "Error: improper inputs.\n";
-        std::print("{}location/of/input_file location/of/data_directory wavepacket_parameters\n", GREEN);
+        std::print("{}[location/of/input_file] [location/of/data_directory] [wavepacket_parameters]\n", GREEN);
         spacerFancy(RED);
         return 1;
     }
