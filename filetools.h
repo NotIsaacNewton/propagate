@@ -19,6 +19,9 @@ void readArray1D(const std::string& file, std::vector<double>& array);
 void writeArray1D(const double& start, const double& end, const double& width, const int& gridpoints,
     const std::string& file, const std::vector<double>& function);
 
+// reads from file to 2D array
+void readArray2D(const std::string& file, std::vector<std::vector<double>>& array, const int& width, const int& height);
+
 // inputs go here
 struct inputs {
     // space stuff
@@ -26,12 +29,13 @@ struct inputs {
     double final_pos;
     int space_grid;
     int nx_prints;
-    int pot_grid;
+    int space_grid_coarse;
     // time stuff
     double initial_t;
     double final_t;
     int time_grid;
     int nt_prints;
+    int time_grid_coarse;
     // space-time widths
     double dx;
     double dt;

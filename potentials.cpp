@@ -94,8 +94,8 @@ int main(const int argc, char *argv[]) {
     spacer(RESET);
 
     // write and save potential curve to file
-    const double dx = (in.final_pos-in.initial_pos)/(in.pot_grid-1);
-    writeFunction1D(in.initial_pos, dx, in.pot_grid,
+    const double dx = (in.final_pos-in.initial_pos)/(in.space_grid_coarse-1);
+    writeFunction1D(in.initial_pos, dx, in.space_grid_coarse,
         potfile, buildPotential(argv));
 
     // console output

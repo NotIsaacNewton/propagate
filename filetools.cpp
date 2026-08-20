@@ -2,6 +2,7 @@
 // Created by Arian Dovald on 9/18/25.
 //
 
+#include "filetools.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -59,23 +60,26 @@ void writeArray1D(const double& start, const double& end, const double& width, c
     }
 }
 
-// inputs go here
-struct inputs {
-    // space stuff
-    double initial_pos;
-    double final_pos;
-    int space_grid;
-    int nx_prints;
-    int pot_grid;
-    // time stuff
-    double initial_t;
-    double final_t;
-    int time_grid;
-    int nt_prints;
-    // space-time widths
-    double dx;
-    double dt;
-};
+// reads from file to 2D array
+void readArray2D(const std::string& file, std::vector<std::vector<double>>& array,
+    const int& width, const int& height) {
+    std::ifstream read;
+    read.open(file);
+    if (read.is_open()) {
+        array.assign(height, std::vector<double>(width));
+        std::string line;
+        for (int i=0; i<height; i++) {
+            std::getline(read, line);
+            std::istringstream readline(line);
+            for (int j=0; j<width; j++) {
+                readline >> array[i][j];
+            }
+        }
+        read.close();
+    } else {
+        std::cerr << "Failed to open " << file << "." << "\n";
+    }
+}
 
 // read inputs from file
 inputs readInputs(const std::string& file) {
@@ -83,7 +87,7 @@ inputs readInputs(const std::string& file) {
     read.open(file);
     if (read.is_open()) {
         double inputarray[4];
-        int intinputarray[5];
+        int intinputarray[6];
         std::print("Reading {}\n",file);
         std::string line;
         int n = 0;
@@ -103,7 +107,8 @@ inputs readInputs(const std::string& file) {
             inputarray[2],
             inputarray[3],
             intinputarray[2],
-            intinputarray[4]
+            intinputarray[4],
+            intinputarray[5]
         };
         in.dx = (in.final_pos - in.initial_pos)/(in.space_grid - 1);
         in.dt = (in.final_t - in.initial_t)/(in.time_grid - 1);

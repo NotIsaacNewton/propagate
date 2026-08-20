@@ -36,16 +36,15 @@ std::vector<double> psquared(const int gridpoints, const double space_width) {
 }
 
 // creates potential operator array from data file and outputs to op
-void definePotentialOperator(const inputs& in, fftw_complex *op,
-    const std::string& potfile, const bool imProp) {
-    std::vector<double> potential(in.pot_grid);
+void definePotentialOperator(const inputs& in, fftw_complex *op, const std::string& potfile, const bool imProp) {
+    std::vector<double> potential(in.space_grid_coarse);
     readArray1D(potfile, potential);
     // reshape potential with interpolation if needed
-    if (in.space_grid != in.pot_grid) {
-        std::vector<double> grid(in.pot_grid); // stores grid on which potential is defined
-        const double dx = (in.final_pos-in.initial_pos)/(in.pot_grid-1); // width of potential grid
+    if (in.space_grid != in.space_grid_coarse) {
+        std::vector<double> grid(in.space_grid_coarse); // stores grid on which potential is defined
+        const double dx = (in.final_pos-in.initial_pos)/(in.space_grid_coarse-1); // width of potential grid
         // write potential grid
-        for (int i = 0; i < in.pot_grid; i++) {
+        for (int i = 0; i < in.space_grid_coarse; i++) {
             grid[i] = in.initial_pos + i*dx;
         }
         spline_interp interpolator(grid, potential); // spline interpolation object
