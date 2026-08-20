@@ -19,8 +19,18 @@ void readArray1D(const std::string& file, std::vector<double>& array);
 void writeArray1D(const double& start, const double& end, const double& width, const int& gridpoints,
     const std::string& file, const std::vector<double>& function);
 
+// writes from 2D double function to file
+void writeFunction2D(const double& start_x, const double& start_y, const double& dx, const double& dy,
+    const int& width, const int& height, const std::string& file,
+    const std::function<double(double, double)>& function);
+
 // reads from file to 2D array
-void readArray2D(const std::string& file, std::vector<std::vector<double>>& array, const int& width, const int& height);
+void readArray2D(const std::string& file, std::vector<std::vector<double>>& array,
+    const int& width, const int& height);
+
+// writes from 2D array to file
+void writeArray2D(const std::string& file, const std::vector<std::vector<double>>& array,
+    const int& width, const int& height);
 
 // inputs go here
 struct inputs {

@@ -243,7 +243,9 @@ void propagate(const inputs& in, fftw_complex *psi, const std::string& data, con
     std::print("The final norm is {}\n", norm);
 }
 
+// NOTE: comment out this main() block when building propagate_td
 // inputs: location/of/input_file location/of/data_directory
+/*
 int main(const int argc, const char* argv[]) {
     if (argc != 4) {
         spacerFancy(RED);
@@ -316,3 +318,4 @@ int main(const int argc, const char* argv[]) {
 
     return 0;
 }
+*/

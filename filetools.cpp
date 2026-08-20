@@ -60,6 +60,25 @@ void writeArray1D(const double& start, const double& end, const double& width, c
     }
 }
 
+// writes from 2D double function to file
+void writeFunction2D(const double& start_x, const double& start_y, const double& dx, const double& dy,
+    const int& width, const int& height, const std::string& file,
+    const std::function<double(double, double)>& function) {
+    std::ofstream write;
+    write.open(file);
+    if (write.is_open()) {
+        for (int i=0; i<height; i++) {
+            for (int j=0; j<width; j++) {
+                write << function(j*dx + start_x, i*dy + start_y) << " ";
+            }
+            write << "\n";
+        }
+        write.close();
+    } else {
+        std::cerr << "Failed to open " << file << "." << "\n";
+    }
+}
+
 // reads from file to 2D array
 void readArray2D(const std::string& file, std::vector<std::vector<double>>& array,
     const int& width, const int& height) {
@@ -76,6 +95,24 @@ void readArray2D(const std::string& file, std::vector<std::vector<double>>& arra
             }
         }
         read.close();
+    } else {
+        std::cerr << "Failed to open " << file << "." << "\n";
+    }
+}
+
+// writes from 2D array to file
+void writeArray2D(const std::string& file, const std::vector<std::vector<double>>& array,
+    const int& width, const int& height) {
+    std::ofstream write;
+    write.open(file);
+    if (write.is_open()) {
+        for (int i=0; i<height; i++) {
+            for (int j=0; j<width; j++) {
+                write << array[i][j] << " ";
+            }
+            write << "\n";
+        }
+        write.close();
     } else {
         std::cerr << "Failed to open " << file << "." << "\n";
     }
@@ -111,7 +148,7 @@ inputs readInputs(const std::string& file) {
             intinputarray[5]
         };
         in.dx = (in.final_pos - in.initial_pos)/(in.space_grid - 1);
-        in.dt = (in.final_t - in.initial_t)/(in.time_grid - 1);
+        in.dt = (in.final_t - in.initial_t)/(in.time_grid-1);
         return in;
     }
     std::cerr << "Failed to open " << file << "." << "\n";

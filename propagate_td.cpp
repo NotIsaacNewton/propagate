@@ -67,7 +67,7 @@ interpolator prepInterpolation(const inputs& in, const std::vector<std::vector<d
         for (int j = 0; j < in.time_grid_coarse; j++) {
             slice[j] = potential[j][i];
         }
-        time_interp.push_back(spline_interp{time_grid, slice});
+        time_interp.emplace_back(time_grid, slice);
     }
     // return interpolator struct
     return { .pos_grid = pos_grid, .time_interp = time_interp };
@@ -175,7 +175,7 @@ int main(const int argc, const char* argv[]) {
     if (argc != 3) {
         spacerFancy(RED);
         std::cerr << RED << "Error: improper inputs.\n";
-        std::print("{}[location/of/input_file] [location/of/data_directory] \n", GREEN);
+        std::print("{}[location/of/input_file] [location/of/data_directory]\n", GREEN);
         spacerFancy(RED);
         return 1;
     }

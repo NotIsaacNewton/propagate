@@ -68,7 +68,9 @@ std::function<double(double)> buildPotential(char* argv[]) {
     return potentials.at(argv[3])();
 }
 
+// NOTE: comment out this main() block when building potentials_td
 // inputs: location/of/input_file location/of/data_directory potential_type pos1 pos2 strength1 strength2
+/*
 int main(const int argc, char *argv[]) {
     if(argc < 5) {
         spacerFancy(RED);
@@ -104,3 +106,4 @@ int main(const int argc, char *argv[]) {
 
     return 0;
 }
+*/
