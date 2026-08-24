@@ -46,7 +46,7 @@ void readArray1D(const std::string& file, std::vector<double>& array) {
 }
 
 // writes from 1D array to file
-void writeArray1D(const double& start, const double& end, const double& width, const int& gridpoints,
+void writeArray1D(const double& start, const double& width, const int& gridpoints,
     const std::string& file, const std::vector<double>& function) {
     std::ofstream write;
     write.open(file);
@@ -82,16 +82,17 @@ void writeFunction2D(const double& start_x, const double& start_y, const double&
 // reads from file to 2D array
 void readArray2D(const std::string& file, std::vector<std::vector<double>>& array,
     const int& width, const int& height) {
-    std::ifstream read;
-    read.open(file);
-    if (read.is_open()) {
+    if (std::ifstream read(file); read.is_open()) {
         array.assign(height, std::vector<double>(width));
-        std::string line;
+        std::string val;
         for (int i=0; i<height; i++) {
-            std::getline(read, line);
-            std::istringstream readline(line);
             for (int j=0; j<width; j++) {
-                readline >> array[i][j];
+                read >> val;
+                try {
+                    array[i][j] = std::stod(val);
+                } catch (const std::out_of_range&) {
+                    array[i][j] = 0.0;
+                }
             }
         }
         read.close();
@@ -125,7 +126,6 @@ inputs readInputs(const std::string& file) {
     if (read.is_open()) {
         double inputarray[4];
         int intinputarray[6];
-        std::print("Reading {}\n",file);
         std::string line;
         int n = 0;
         while (std::getline(read, line)) {
@@ -136,19 +136,20 @@ inputs readInputs(const std::string& file) {
         read.close();
         // initialize inputs
         inputs in{
-            inputarray[0],
-            inputarray[1],
-            intinputarray[0],
-            intinputarray[3],
-            intinputarray[1],
-            inputarray[2],
-            inputarray[3],
-            intinputarray[2],
-            intinputarray[4],
-            intinputarray[5]
+            .initial_pos = inputarray[0],
+            .final_pos = inputarray[1],
+            .space_grid = intinputarray[0],
+            .nx_prints = intinputarray[3],
+            .space_grid_coarse = intinputarray[1],
+            .initial_t = inputarray[2],
+            .final_t = inputarray[3],
+            .time_grid = intinputarray[2],
+            .nt_prints = intinputarray[4],
+            .time_grid_coarse = intinputarray[5]
         };
         in.dx = (in.final_pos - in.initial_pos)/(in.space_grid - 1);
         in.dt = (in.final_t - in.initial_t)/(in.time_grid-1);
+        std::print("Read {}\n",file);
         return in;
     }
     std::cerr << "Failed to open " << file << "." << "\n";

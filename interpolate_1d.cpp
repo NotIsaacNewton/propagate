@@ -8,7 +8,8 @@
 #include "filetools.h"
 
 // inputs: location/of/input_output_file gridpoints_in gridpoints_out initial_abscissa final_abscissa
-int interpolate(const int argc, char *argv[]) {
+/*
+int main(const int argc, char *argv[]) {
     if(argc < 6) {
         spacerFancy(RED);
         std::cerr << RED << "Error: improper inputs.\n";
@@ -53,7 +54,7 @@ int interpolate(const int argc, char *argv[]) {
     }
 
     // send interpolated data to file
-    writeArray1D(initial_x, final_x, dx, gridpoints, datafile, data);
+    writeArray1D(initial_x, dx, gridpoints, datafile, data);
 
     // spacer
     spacer(RESET);
@@ -64,3 +65,4 @@ int interpolate(const int argc, char *argv[]) {
 
     return 0;
 }
+*/

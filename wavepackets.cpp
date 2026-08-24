@@ -66,7 +66,7 @@ std::function<void(double, fftw_complex)> test() {
 
 // map of options
 std::function<void(double, fftw_complex)> buildWavepacket(char* argv[]) {
-    std::unordered_map<std::string, std::function<std::function<void(double, fftw_complex)>()>> wavepackets = {
+    const std::unordered_map<std::string, std::function<std::function<void(double, fftw_complex)>()>> wavepackets = {
         {"gaussian",    [argv] {
             return gaussianWP(std::stod(argv[4]),std::stod(argv[5]), std::stod(argv[6]));
             }},
@@ -87,9 +87,14 @@ int main(const int argc, char* argv[]) {
         return 1;
     }
 
+    // introduction
+    std::print("\n{}wavepacket\n", BLUE);
+
+    // record the start time
+    auto const start = std::chrono::steady_clock::now();
+
     // spacer
     spacerChunky(BLUE);
-    std::print("\n");
 
     // file locations
     const std::string inputfile = argv[1];
@@ -105,9 +110,12 @@ int main(const int argc, char* argv[]) {
     // write wavefunction
     fftw_complex_func_to_file(in, psifile, buildWavepacket(argv));
 
-    // console output
-    std::print("{}Wavepacket written!\n\n", GREEN);
+    // record end time and duration
+    const auto end = std::chrono::steady_clock::now();
+    const std::chrono::duration<double> sec = end - start;
+    std::print("{}Wavepacket written!\n", GREEN);
     spacerChunky(BLUE);
+    std::print("{}Execution time: {} seconds\n\n", BLUE, sec.count());
 
     return 0;
 }

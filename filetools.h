@@ -16,7 +16,7 @@ void writeFunction1D(const double& start, const double& width,
 void readArray1D(const std::string& file, std::vector<double>& array);
 
 // writes from 1D array to file
-void writeArray1D(const double& start, const double& end, const double& width, const int& gridpoints,
+void writeArray1D(const double& start, const double& width, const int& gridpoints,
     const std::string& file, const std::vector<double>& function);
 
 // writes from 2D double function to file

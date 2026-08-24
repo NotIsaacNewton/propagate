@@ -1,10 +1,10 @@
--30 // initial position
-30 // final position
+-100 // initial position
+100 // final position
 0 // initial time
-1 // final time
-16384 // space gridpoints
-8192 // coarse space grid
-16000 // time gridpoints
+16 // final time
+8192 // space gridpoints
+0 // coarse space grid
+10000 // time gridpoints
 8 // print to file every nx space steps
 25 // print to file every nt time steps
-1600 // coarse time grid
+0 // coarse time grid

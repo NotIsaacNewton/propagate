@@ -18,8 +18,6 @@
 #include "interpolate_1d.h"
 
 // TODO: more safety checks and error paths (try <expected>)
-//  allow for time-dependent potentials (write from potentials.cpp grid, add defineTDPotentialOperator,
-//                                                                                             2D interpolation needed)
 //  implement coupling: propagation on multiple potential curves. make dimension-agnostic as much as possible.
 //  generalize to higher dimensions
 
@@ -165,15 +163,15 @@ fftwResources fftwPrep(const inputs& in, fftw_complex *psi, const std::string& d
 
 // propagation tick
 void propTick(const int gridpoints, fftw_complex *psi, const fftw_complex* V, const fftw_complex* T,
-    fftw_plan fft, fftw_plan ifft, const double scale) {
+    const fftw_plan* fft, const fftw_plan* ifft, const double scale) {
     // apply e^(-i dt V(X))
     applyPotentialOperator(gridpoints, psi, V);
     // execute fft plan
-    fftw_execute(fft);
+    fftw_execute(*fft);
     // apply e^(-i dt p^2 / 2)
     applyKineticOperator(gridpoints, psi, T);
     // execute inverse fft plan
-    fftw_execute(ifft);
+    fftw_execute(*ifft);
     // normalize fftw result (fftw uses non-normalized fft algorithm)
     scale_fftw_complex(scale, psi, gridpoints);
     // apply e^(-i dt V(X))
@@ -220,7 +218,7 @@ void propagate(const inputs& in, fftw_complex *psi, const std::string& data, con
         // write lines in output file
         writeOutput(psi, t, in.space_grid, in.nx_prints, in.nt_prints, buffer);
         // propagate for one tick
-        propTick(in.space_grid, psi, V, T, fft, ifft, scale);
+        propTick(in.space_grid, psi, V, T, &fft, &ifft, scale);
         // naive renormalization if doing imaginary time propagation
         if (imProp && t % 10 == 0) {
             fftw_complex_square(psi, psi_squared);

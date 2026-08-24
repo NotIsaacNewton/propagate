@@ -42,7 +42,7 @@ struct fftwResources {
 fftwResources fftwPrep(const inputs& in, fftw_complex *psi, const std::string& data, bool imProp);
 
 void propTick(int gridpoints, fftw_complex *psi, const fftw_complex* V, const fftw_complex* T,
-    fftw_plan fft, fftw_plan ifft, double scale);
+    const fftw_plan* fft, const fftw_plan* ifft, double scale);
 
 // propagates wavefunction based on general values
 void propagate(const inputs& in, fftw_complex *psi, const std::string& data, bool imProp);
