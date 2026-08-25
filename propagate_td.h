@@ -11,8 +11,6 @@
 // gets potential and returns arrays
 std::vector<std::vector<double>> getPotential(const inputs& in, const std::string& data);
 
-std::unique_ptr<fftw_complex, void(*)(void*)> getWavepacket(const inputs& in, const std::string& data);
-
 // creates potential operator array from data file and outputs to op
 void definePotentialOperatorTD(const inputs& in, const int& tick, fftw_complex *op,
     const std::vector<std::vector<double>>& potential);

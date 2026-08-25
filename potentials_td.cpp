@@ -15,8 +15,8 @@ std::function<double(double, double)> electricBarrier(double start_pos, double e
     double strength_1, double strength_2) {
     return [start_pos, end_pos, strength_1, strength_2](const double x, const double t) {
         return x <= end_pos && x >= start_pos ?
-        strength_1 + std::abs(strength_1)*cos(strength_2*x-137*strength_2*t)*exp(-(x-t+8)*(x-t+8)/16) :
-        std::abs(strength_1)*cos(strength_2*x-137*strength_2*t)*exp(-(x-t+8)*(x-t+8)/16);
+        strength_1 + std::abs(strength_1)*cos(strength_2*x-137*strength_2*t)*exp(-(x-t+8)*(x-t+8)/8) :
+        std::abs(strength_1)*cos(strength_2*x-137*strength_2*t)*exp(-(x-t+8)*(x-t+8)/8);
     };
 }
 

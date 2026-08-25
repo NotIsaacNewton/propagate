@@ -203,3 +203,7 @@
 /cmake-build-debug/potentials_td
 /cmake-build-debug/propagate_td
 /calculate_td.sh
+/cmake-build-debug/.cmake/api/v1/reply/index-2026-08-24T17-13-03-0412.json
+/cmake-build-debug/CMakeFiles/potential_td.dir/runtime_tools.cpp.o
+/cmake-build-debug/CMakeFiles/propagate_td.dir/runtime_tools.cpp.o
+/cmake-build-debug/CMakeFiles/wavepacket.dir/runtime_tools.cpp.o

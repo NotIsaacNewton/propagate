@@ -64,14 +64,18 @@ void writeArray1D(const double& start, const double& width, const int& gridpoint
 void writeFunction2D(const double& start_x, const double& start_y, const double& dx, const double& dy,
     const int& width, const int& height, const std::string& file,
     const std::function<double(double, double)>& function) {
-    std::ofstream write;
-    write.open(file);
+    std::ofstream write(file, std::ios::binary);
+    if (!write.is_open()) {
+        std::cerr << "Failed to open " << file << "." << "\n";
+    }
     if (write.is_open()) {
+        std::vector<double> temp(width);
         for (int i=0; i<height; i++) {
             for (int j=0; j<width; j++) {
-                write << function(j*dx + start_x, i*dy + start_y) << " ";
+                temp[j] = function(j*dx + start_x, i*dy + start_y);
             }
-            write << "\n";
+            write.write(
+            reinterpret_cast<const char*>(temp.data()), static_cast<std::streamsize>(width * sizeof(double)));
         }
         write.close();
     } else {
@@ -82,18 +86,10 @@ void writeFunction2D(const double& start_x, const double& start_y, const double&
 // reads from file to 2D array
 void readArray2D(const std::string& file, std::vector<std::vector<double>>& array,
     const int& width, const int& height) {
-    if (std::ifstream read(file); read.is_open()) {
+    if (std::ifstream read(file, std::ios::binary); read.is_open()) {
         array.assign(height, std::vector<double>(width));
-        std::string val;
         for (int i=0; i<height; i++) {
-            for (int j=0; j<width; j++) {
-                read >> val;
-                try {
-                    array[i][j] = std::stod(val);
-                } catch (const std::out_of_range&) {
-                    array[i][j] = 0.0;
-                }
-            }
+            read.read(reinterpret_cast<char*>(array[i].data()), static_cast<std::streamsize>(width * sizeof(double)));
         }
         read.close();
     } else {

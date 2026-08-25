@@ -33,26 +33,41 @@ std::vector<double> psquared(const int gridpoints, const double space_width) {
     return mom;
 }
 
+// gets wavepacket and returns pointer to array
+std::unique_ptr<fftw_complex, void(*)(void*)> getWavepacket(const inputs& in, const std::string& data) {
+    // allocate wavefunction with RAII
+    const auto psi = fftw_alloc_complex(in.space_grid);
+    std::unique_ptr<fftw_complex, void(*)(void*)> psip{psi, fftw_free};
+    // get wavefunction from psifile and save it to psi
+    fftw_complex_array_from_file(data + "/psi_initial.dat", psi, in.space_grid);
+    return psip;
+}
+
+// reshapes potential using interpolation
+void reshapePotential(const inputs& in, std::vector<double> potential) {
+    std::vector<double> grid(in.space_grid_coarse); // stores grid on which potential is defined
+    const double dx = (in.final_pos-in.initial_pos)/(in.space_grid_coarse-1); // width of potential grid
+    // write potential grid
+    for (int i = 0; i < in.space_grid_coarse; i++) {
+        grid[i] = in.initial_pos + i*dx;
+    }
+    spline_interp interpolator(grid, potential); // spline interpolation object
+    std::vector<double> pot(in.space_grid); // temporary potential array
+    // write temp array
+    for (int i = 0; i < in.space_grid; i++) {
+        pot[i] = interpolator.interp(in.initial_pos + i*in.dx);
+    }
+    // reshape potential
+    potential = std::move(pot);
+}
+
 // creates potential operator array from data file and outputs to op
 void definePotentialOperator(const inputs& in, fftw_complex *op, const std::string& potfile, const bool imProp) {
     std::vector<double> potential(in.space_grid_coarse);
     readArray1D(potfile, potential);
     // reshape potential with interpolation if needed
     if (in.space_grid != in.space_grid_coarse) {
-        std::vector<double> grid(in.space_grid_coarse); // stores grid on which potential is defined
-        const double dx = (in.final_pos-in.initial_pos)/(in.space_grid_coarse-1); // width of potential grid
-        // write potential grid
-        for (int i = 0; i < in.space_grid_coarse; i++) {
-            grid[i] = in.initial_pos + i*dx;
-        }
-        spline_interp interpolator(grid, potential); // spline interpolation object
-        std::vector<double> pot(in.space_grid); // temporary potential array
-        // write temp array
-        for (int i = 0; i < in.space_grid; i++) {
-            pot[i] = interpolator.interp(in.initial_pos + i*in.dx);
-        }
-        // reshape potential
-        potential = std::move(pot);
+        reshapePotential(in, potential);
     }
     // write potential operator
     if (imProp) {
@@ -180,7 +195,10 @@ void propTick(const int gridpoints, fftw_complex *psi, const fftw_complex* V, co
 
 // propagates wavefunction based on general values
 // Note: FFT methods implicitly impose periodic boundary conditions
-void propagate(const inputs& in, fftw_complex *psi, const std::string& data, const bool imProp) {
+void propagate(const inputs& in, const std::string& data, const bool imProp) {
+    // get initial wavepacket
+    auto psip = getWavepacket(in, data);
+    auto psi = psip.get();
     // prep fftw variables and plans
     auto [fft_ptr, ifft_ptr, Vp, Tp] = fftwPrep(in, psi, data, imProp);
     fftw_complex* V = Vp.get();
@@ -290,17 +308,11 @@ int main(const int argc, const char* argv[]) {
     clearout.open(psiout);
     clearout.close();
 
-    // allocate wavefunction with RAII
-    auto psi = fftw_alloc_complex(in.space_grid);
-    std::unique_ptr<fftw_complex, void(*)(void*)> psip{psi, fftw_free};
-    // get wavefunction from psifile and save it to psi
-    fftw_complex_array_from_file(psifile, psi, in.space_grid);
-
     // spacer
     spacerThick(RESET);
 
     // propagate wf
-    propagate(in, psi, data, imProp);
+    propagate(in, data, imProp);
 
     // spacer
     spacerThick(RESET);

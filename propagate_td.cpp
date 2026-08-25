@@ -15,16 +15,6 @@ std::vector<std::vector<double>> getPotential(const inputs& in, const std::strin
     return potential;
 }
 
-// gets wavepacket and returns pointer to array
-std::unique_ptr<fftw_complex, void(*)(void*)> getWavepacket(const inputs& in, const std::string& data) {
-    // allocate wavefunction with RAII
-    const auto psi = fftw_alloc_complex(in.space_grid);
-    std::unique_ptr<fftw_complex, void(*)(void*)> psip{psi, fftw_free};
-    // get wavefunction from psifile and save it to psi
-    fftw_complex_array_from_file(data + "/psi_initial.dat", psi, in.space_grid);
-    return psip;
-}
-
 // creates potential operator array from data and outputs to op
 void definePotentialOperatorTD(const inputs& in, const int& tick, fftw_complex *op,
     const std::vector<std::vector<double>>& potential) {

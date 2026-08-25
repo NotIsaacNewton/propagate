@@ -14,8 +14,14 @@
 // calculates momentum-squared grid based on general values
 std::vector<double> psquared(int gridpoints, double space_width);
 
+// gets wavepacket from file and puts it into a managed pointer
+std::unique_ptr<fftw_complex, void(*)(void*)> getWavepacket(const inputs& in, const std::string& data);
+
 // creates potential operator array from data file and outputs to op
 void definePotentialOperator(const inputs& in, fftw_complex *op, const std::string& potfile, bool imProp);
+
+// reshapes potential using interpolation
+void reshapePotential(const inputs& in, std::vector<double> potential);
 
 // calculates free-particle operator based on general values and outputs to op
 void defineKineticOperator(const inputs& in, fftw_complex *op, bool imProp);
@@ -45,6 +51,6 @@ void propTick(int gridpoints, fftw_complex *psi, const fftw_complex* V, const ff
     const fftw_plan* fft, const fftw_plan* ifft, double scale);
 
 // propagates wavefunction based on general values
-void propagate(const inputs& in, fftw_complex *psi, const std::string& data, bool imProp);
+void propagate(const inputs& in, const std::string& data, bool imProp);
 
 #endif //PROPAGATE_H
