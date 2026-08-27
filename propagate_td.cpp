@@ -99,7 +99,7 @@ void propagateTD(const inputs& in, const std::string& data) {
     normalize(in.space_grid, in.dx, psi); // normalize psi
     double mag = norm(in.space_grid, in.dx, psi); // recalculate norm
     std::cout << RED << "Check norm:\n" << RESET;
-    std::print("The initial norm is {}\n", mag);
+    std::print("The initial norm is {:.15f}\n", mag);
     // spacer
     spacer(RESET);
     // console output
