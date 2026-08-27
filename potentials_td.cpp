@@ -9,6 +9,8 @@
 #include <iostream>
 #include <cmath>
 #include <string>
+#include <print>
+#include <chrono>
 
 // well + wave
 std::function<double(double, double)> electricBarrier(double start_pos, double end_pos,
