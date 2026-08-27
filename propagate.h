@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <functional>
+#include <memory>
 #include "filetools.h"
 #include "fftw3.h"
 #include "fftw_complex_tools.h"
