@@ -6,6 +6,8 @@
 #include "console_tools.h"
 #include <fstream>
 #include <memory>
+#include <print>
+#include <chrono>
 
 // gets potential and returns arrays
 std::vector<std::vector<double>> getPotential(const inputs& in, const std::string& data) {
