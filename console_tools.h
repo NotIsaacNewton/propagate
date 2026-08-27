@@ -24,5 +24,11 @@ void spacerChunky(const std::string& color);
 void spacerFancy(const std::string& color);
 // chain spacer
 void spacerChain(const std::string& color);
+// progress bar builder
+std::string makeBar(int progress);
+// simple progress bar
+void progressBar(const std::string& color, int progress);
+// reset
+void reset();
 
 #endif //CONSOLE_TOOLS_H

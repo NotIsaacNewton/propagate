@@ -5,6 +5,7 @@
 #ifndef FILETOOLS_H
 #define FILETOOLS_H
 
+#include <fstream>
 #include <string>
 #include <functional>
 
@@ -53,5 +54,14 @@ struct inputs {
 
 // read inputs from file
 inputs readInputs(const std::string& file);
+
+// wavefunction + buffer struct
+struct wfOutput {
+    std::ofstream wf;
+    std::vector<double> buffer;
+};
+
+// opens wavefunction output file
+wfOutput openWFOutputFile(const inputs& in, const std::string &data);
 
 #endif //FILETOOLS_H

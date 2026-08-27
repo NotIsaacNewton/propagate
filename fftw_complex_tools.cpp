@@ -9,7 +9,7 @@
 #include "fftw_complex_tools.h"
 
 // scales entire array by a scalar
-void scale_fftw_complex(double scalar, fftw_complex *complex_vec, const int size) {
+void scale_fftw_complex(const double scalar, fftw_complex *complex_vec, const int size) {
     for (int i = 0; i < size; i++) {
         complex_vec[i][0] *= scalar;
         complex_vec[i][1] *= scalar;
@@ -100,4 +100,18 @@ double fftw_complex_integrate(const int size, const double width, const std::vec
         sum += in[i]*width;
     }
     return sum;
+}
+
+// gets the norm of an fftw_complex vector
+double norm(const int gridpoints, const double gridwidth, const fftw_complex* psi) {
+    std::vector<double> psi_squared(gridpoints); // stores |psi|^2
+    fftw_complex_square(psi, psi_squared); // calculates |psi|^2
+    const double norm = fftw_complex_integrate(gridpoints, gridwidth, psi_squared); // calculate and store norm
+    return norm;
+}
+
+// normalizes an fftw_complex vector
+void normalize(const int gridpoints, const double gridwidth, fftw_complex* psi) {
+    const double mag = norm(gridpoints, gridwidth, psi); // get norm
+    scale_fftw_complex(1/sqrt(mag), psi, gridpoints); // normalize psi
 }

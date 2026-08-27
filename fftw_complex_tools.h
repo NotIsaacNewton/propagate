@@ -35,4 +35,9 @@ void fftw_complex_square(const fftw_complex* function, std::vector<double>& out)
 // integrates through array
 double fftw_complex_integrate(int size, double width, const std::vector<double>& in);
 
+// gets the norm of an fftw_complex vector
+double norm(int gridpoints, double gridwidth, const fftw_complex* psi);
+
+void normalize(int gridpoints, double gridwidth, fftw_complex* psi);
+
 #endif //FFTW_COMPLEX_TOOLS_H

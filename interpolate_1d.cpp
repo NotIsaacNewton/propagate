@@ -12,7 +12,7 @@
 int main(const int argc, char *argv[]) {
     if(argc < 6) {
         spacerFancy(RED);
-        std::cerr << RED << "Error: improper inputs.\n";
+       std::cerr << RED << "Error: improper inputs.\n";
         std::print("{}[location/of/input_file] [gridpoints_in] [gridpoints_out] [initial_abscissa] [final_abscissa]\n",
             GREEN);
         spacerFancy(RED);

@@ -3,6 +3,7 @@
 //
 
 #include "filetools.h"
+#include "console_tools.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -71,6 +72,7 @@ void writeFunction2D(const double& start_x, const double& start_y, const double&
     if (write.is_open()) {
         std::vector<double> temp(width);
         for (int i=0; i<height; i++) {
+            !((i+1) % (height / 10)) ? progressBar(GREEN, 100*(i+1)/height) : reset();
             for (int j=0; j<width; j++) {
                 temp[j] = function(j*dx + start_x, i*dy + start_y);
             }
@@ -150,4 +152,17 @@ inputs readInputs(const std::string& file) {
     }
     std::cerr << "Failed to open " << file << "." << "\n";
     exit(1);
+}
+
+// opens wavefunction output file
+wfOutput openWFOutputFile(const inputs& in, const std::string &data) {
+    const std::string output = data + "/psi_final.dat";
+    std::ofstream wf(output, std::ios::app | std::ios::binary);
+    if (!wf.is_open()) {
+        std::cerr << "Failed to open " << output << "." << "\n";
+    }
+    // prepare output buffer for entire set of points
+    std::vector<double> buffer;
+    buffer.reserve((in.time_grid / in.nt_prints + 1) * (in.space_grid / in.nx_prints) * 2);
+    return {.wf = std::move(wf), .buffer = buffer};
 }

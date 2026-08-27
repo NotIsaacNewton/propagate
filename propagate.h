@@ -45,8 +45,10 @@ struct fftwResources {
     std::unique_ptr<fftw_complex, void(*)(void*)> Tp;
 };
 
+// prepares fftw resources needed for the propagation
 fftwResources fftwPrep(const inputs& in, fftw_complex *psi, const std::string& data, bool imProp);
 
+// propagates wavefunction for one tick in V
 void propTick(int gridpoints, fftw_complex *psi, const fftw_complex* V, const fftw_complex* T,
     const fftw_plan* fft, const fftw_plan* ifft, double scale);
 

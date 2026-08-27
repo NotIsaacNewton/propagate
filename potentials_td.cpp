@@ -72,14 +72,14 @@ int main(const int argc, char *argv[]) {
     spacer(RESET);
 
     // write and save potential curve to file
+    std::print("Writing potential...\n");
     writeFunction2D(in.initial_pos, in.initial_t, in.dx, in.dt,
         in.space_grid, in.time_grid, potfile, buildPotentialTD(argv));
 
     // record end time and duration
     auto const end = std::chrono::steady_clock::now();
     const std::chrono::duration<double> sec = end - start;
-    std::print("{}Potential written!\n", GREEN);
-    spacerChunky(BLUE);
+    spacerChunky("\n" BLUE);
     std::print("{}Execution time: {} seconds\n\n", BLUE, sec.count());
 
     return 0;

@@ -207,41 +207,28 @@ void propagate(const inputs& in, const std::string& data, const bool imProp) {
     fftw_plan ifft = ifft_ptr.get();
     // scale for normalizing fft result
     const double scale = 1.0 / in.space_grid;
-    // open output file
-    const std::string output = data + "/psi_final.dat";
-    std::ofstream wf(output, std::ios::app | std::ios::binary);
-    if (!wf.is_open()) {
-        std::cerr << "Failed to open " << output << "." << "\n";
-    }
-    // prepare output buffer for entire set of points
-    std::vector<double> buffer;
-    buffer.reserve((in.time_grid / in.nt_prints + 1) * (in.space_grid / in.nx_prints) * 2);
+    // open output file and buffer
+    auto [wf, buffer] = openWFOutputFile(in, data);
     // norm psi (often slightly off norm) and check norm
-    std::vector<double> psi_squared(in.space_grid); // stores |psi|^2
-    fftw_complex_square(psi, psi_squared); // calculates |psi|^2
-    double norm = fftw_complex_integrate(in.space_grid, in.dx, psi_squared); // calculate and store norm
-    scale_fftw_complex(1/sqrt(norm), psi, in.space_grid); // normalize psi
-    fftw_complex_square(psi, psi_squared); // recalculate |psi|^2
-    norm = fftw_complex_integrate(in.space_grid, in.dx, psi_squared); // recalculate norm
+    normalize(in.space_grid, in.dx, psi); // normalize psi
+    double mag = norm(in.space_grid, in.dx, psi); // calculate norm
     std::cout << RED << "Check norm:\n" << RESET;
-    std::print("The initial norm is {}\n", norm);
+    std::print("The initial norm is {}\n", mag);
     // spacer
     spacer(RESET);
     // console output
     std::cout << "Propagation progress:\n";
     // propagation loop
-    for (int t = 0; t <= in.time_grid; t++) {
+    for (int t = 0; t < in.time_grid; t++) {
         // print completion % to console
-        !(t % (in.time_grid / 10)) ? std::cout << GREEN << "\r" << 100*t/in.time_grid << "%" : std::cout << RESET;
+        !((t+1) % (in.time_grid / 10)) ? progressBar(GREEN, 100*(t+1)/in.time_grid) : reset();
         // write lines in output file
         writeOutput(psi, t, in.space_grid, in.nx_prints, in.nt_prints, buffer);
         // propagate for one tick
         propTick(in.space_grid, psi, V, T, &fft, &ifft, scale);
         // naive renormalization if doing imaginary time propagation
         if (imProp && t % 10 == 0) {
-            fftw_complex_square(psi, psi_squared);
-            norm = fftw_complex_integrate(in.space_grid, in.dx, psi_squared);
-            scale_fftw_complex(1/sqrt(norm), psi, in.space_grid);
+            normalize(in.space_grid, in.dx, psi);
         }
     }
     // save buffer to output file and close the file
@@ -253,10 +240,9 @@ void propagate(const inputs& in, const std::string& data, const bool imProp) {
     // spacer
     spacer(RESET);
     // check norm
-    fftw_complex_square(psi, psi_squared);
+    mag = norm(in.space_grid, in.dx, psi);
     std::cout << RED << "Check norm:\n" << RESET;
-    norm = fftw_complex_integrate(in.space_grid, in.dx, psi_squared);
-    std::print("The final norm is {}\n", norm);
+    std::print("The final norm is {}\n", mag);
 }
 
 // NOTE: comment out this main() block when building propagate_td
