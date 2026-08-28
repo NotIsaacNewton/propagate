@@ -5,6 +5,7 @@
 #include <iostream>
 #include <print>
 #include <unordered_map>
+#include <chrono>
 #include "potentials.h"
 #include "fftw_complex_tools.h"
 #include "filetools.h"
@@ -80,9 +81,14 @@ int main(const int argc, char *argv[]) {
         return 1;
     }
 
+    // introduction
+    std::print("\n{}potential\n", BLUE);
+
+    // record the start time
+    auto const start = std::chrono::steady_clock::now();
+
     // spacer
     spacerChunky(BLUE);
-    std::print("\n");
 
     // file locations
     const std::string inputfile = argv[1];
@@ -101,8 +107,13 @@ int main(const int argc, char *argv[]) {
         potfile, buildPotential(argv));
 
     // console output
-    std::print("{}Potential written!\n\n", GREEN);
-    spacerChunky(BLUE);
+    std::print("{}Potential written!", GREEN);
+
+    // record end time and duration
+    auto const end = std::chrono::steady_clock::now();
+    const std::chrono::duration<double> sec = end - start;
+    spacerChunky("\n" BLUE);
+    std::print("{}Execution time: {} seconds\n\n", BLUE, sec.count());
 
     return 0;
 }

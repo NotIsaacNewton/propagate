@@ -256,6 +256,9 @@ int main(const int argc, const char* argv[]) {
         return 1;
     }
 
+    // introduction
+    std::print("\n{}propagate\n", BLUE);
+
     // record the start time
     auto start = std::chrono::steady_clock::now();
 
@@ -270,7 +273,6 @@ int main(const int argc, const char* argv[]) {
 
     // spacer
     spacerChunky(BLUE);
-    std::print("\n");
 
     // read input file
     const inputs in = readInputs(inputfile);
@@ -305,11 +307,9 @@ int main(const int argc, const char* argv[]) {
     // record end time and duration
     auto end = std::chrono::steady_clock::now();
     const std::chrono::duration<double> sec = end - start;
-    std::print("Done :)\n\n");
-    std::print("{}Execution time: {} seconds\n", BLUE, sec.count());
-
-    // spacer
+    std::print("Done :)\n");
     spacerChunky(BLUE);
+    std::print("{}Execution time: {} seconds\n\n", BLUE, sec.count());
 
     return 0;
 }
