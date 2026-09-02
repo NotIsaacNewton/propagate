@@ -4,13 +4,8 @@
 
 #include "potentials_td.h"
 #include "potentials.h"
-#include "console_tools.h"
-#include "filetools.h"
-#include <iostream>
 #include <cmath>
 #include <string>
-#include <print>
-#include <chrono>
 
 // well + wave
 std::function<double(double, double)> electricBarrier(double start_pos, double end_pos,
@@ -41,48 +36,4 @@ std::function<double(double, double)> buildPotentialTD(char* argv[]) {
             }}
     };
     return potentials.at(argv[3])();
-}
-
-// inputs: location/of/input_file location/of/data_directory potential_type pos1 pos2 strength1 strength2
-int main(const int argc, char *argv[]) {
-    if(argc < 5) {
-        spacerFancy(RED);
-        std::cerr << RED << "Error: improper inputs.\n";
-        std::print("{}[location/of/input_file] [location/of/data_directory] [potential_parameters]\n", GREEN);
-        spacerFancy(RED);
-        return 1;
-    }
-
-    // introduction
-    std::print("\n{}potential_td\n", BLUE);
-
-    // record the start time
-    auto const start = std::chrono::steady_clock::now();
-
-    // spacer
-    spacerChunky(BLUE);
-
-    // file locations
-    const std::string inputfile = argv[1];
-    const std::string data = argv[2];
-    const std::string potfile = data + "/potential.dat";
-
-    // read inputs
-    const inputs in = readInputs(inputfile);
-
-    // spacer
-    spacer(RESET);
-
-    // write and save potential curve to file
-    std::print("Writing potential...\n");
-    writeFunction2D(in.initial_pos, in.initial_t, in.dx, in.dt,
-        in.space_grid, in.time_grid, potfile, buildPotentialTD(argv));
-
-    // record end time and duration
-    auto const end = std::chrono::steady_clock::now();
-    const std::chrono::duration<double> sec = end - start;
-    spacerChunky("\n" BLUE);
-    std::print("{}Execution time: {} seconds\n\n", BLUE, sec.count());
-
-    return 0;
 }

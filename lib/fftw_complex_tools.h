@@ -7,7 +7,7 @@
 
 #include <string>
 #include "fftw3.h"
-#include "filetools.h"
+#include "file_tools.h"
 
 // scales entire array by a scalar
 void scale_fftw_complex(double scalar, fftw_complex *complex_vec, int size);

@@ -15,21 +15,28 @@ else()
     set(FFT_LIBS armpl)
 endif()
 
-add_executable(propagate propagate.cpp filetools.cpp fftw_complex_tools.cpp console_tools.cpp interpolate_1d.cpp)
-target_link_libraries(propagate ${FFT_LIBS})
+# find, add, and target library of shared tools
+file(GLOB_RECURSE lib CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/lib/*.cpp")
+add_library(LIB STATIC ${lib})
+target_include_directories(LIB PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 
-add_executable(propagate_td propagate_td.cpp propagate.cpp filetools.cpp fftw_complex_tools.cpp console_tools.cpp interpolate_1d.cpp)
-target_link_libraries(propagate_td ${FFT_LIBS})
+# find directories with main programs and source codes
+set(apps ${CMAKE_CURRENT_SOURCE_DIR}/apps)
+set(propagate ${apps}/propagate)
+set(potential ${apps}/potentials)
+set(wavepacket ${apps}/wavepackets)
+file(GLOB_RECURSE PROPAGATE CONFIGURE_DEPENDS "${propagate}/*.cpp")
+file(GLOB_RECURSE POTENTIAL CONFIGURE_DEPENDS "${potential}/*.cpp")
+file(GLOB_RECURSE WAVEPACKET CONFIGURE_DEPENDS "${wavepacket}/*.cpp")
 
-add_executable(wavepacket wavepackets.cpp filetools.cpp fftw_complex_tools.cpp console_tools.cpp interpolate_1d.cpp)
-target_link_libraries(wavepacket ${FFT_LIBS})
+# build propagate
+add_executable(propagate ${PROPAGATE})
+target_link_libraries(propagate LIB ${FFT_LIBS})
 
-add_executable(potential potentials.cpp filetools.cpp fftw_complex_tools.cpp console_tools.cpp interpolate_1d.cpp)
-target_link_libraries(potential ${FFT_LIBS})
+# build wavepacket
+add_executable(wavepacket ${WAVEPACKET})
+target_link_libraries(wavepacket LIB ${FFT_LIBS})
 
-add_executable(potential_td potentials_td.cpp potentials.cpp filetools.cpp fftw_complex_tools.cpp console_tools.cpp interpolate_1d.cpp)
-target_link_libraries(potential_td ${FFT_LIBS})
-
-# generally unused
-# add_executable(interpolate interpolate_1d.cpp filetools.cpp console_tools.cpp)
-# target_link_libraries(interpolate)
+# build potential
+add_executable(potential ${POTENTIAL})
+target_link_libraries(potential LIB ${FFT_LIBS})

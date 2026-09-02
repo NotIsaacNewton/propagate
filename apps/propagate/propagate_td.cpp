@@ -3,11 +3,13 @@
 //
 
 #include "propagate_td.h"
-#include "console_tools.h"
+#include "../../lib/console_tools.h"
+#include "../../lib/fftw_complex_tools.h"
 #include <fstream>
 #include <memory>
 #include <print>
 #include <chrono>
+#include <iostream>
 
 // gets potential and returns arrays
 std::vector<std::vector<double>> getPotential(const inputs& in, const std::string& data) {
@@ -125,68 +127,4 @@ void propagateTD(const inputs& in, const std::string& data) {
     mag = norm(in.space_grid, in.dx, psi);
     std::cout << RED << "Check norm:\n" << RESET;
     std::print("The final norm is {}\n", mag);
-}
-
-// inputs: location/of/input_file location/of/data_directory
-int main(const int argc, const char* argv[]) {
-    if (argc != 3) {
-        spacerFancy(RED);
-        std::cerr << RED << "Error: improper inputs.\n";
-        std::print("{}[location/of/input_file] [location/of/data_directory]\n", GREEN);
-        spacerFancy(RED);
-        return 1;
-    }
-
-    // introduction
-    std::print("\n{}propagate_td\n", BLUE);
-
-    // record the start time
-    auto const start = std::chrono::steady_clock::now();
-
-    // file locations
-    const std::string inputfile = argv[1];
-    const std::string data = argv[2];
-    const std::string psiout = data + "/psi_final.dat";
-
-    // spacer
-    spacerChunky(BLUE);
-
-    // read input file
-    const inputs in = readInputs(inputfile);
-
-    // warning if odd number of gridpoints
-    if (in.space_grid % 2 != 0) {
-        spacerFancy(YELLOW);
-        std::cerr << YELLOW << "WARNING: Odd number of gridpoints may produce asymmetric momentum grid.\n" << RESET;
-        spacerFancy(YELLOW);
-    }
-    // warning if large dt
-    if (in.time_grid < 1000) {
-        spacerFancy(YELLOW);
-        std::cerr << YELLOW << "WARNING: Large dt may fail to resolve rapid dynamics. Use dt < pi/E_max.\n" << RESET;
-        spacerFancy(YELLOW);
-    }
-
-    // clear output file
-    std::ofstream clearout;
-    clearout.open(psiout);
-    clearout.close();
-
-    // spacer
-    spacerThick(RESET);
-
-    // propagate wf
-    propagateTD(in, data);
-
-    // spacer
-    spacerThick(RESET);
-
-    // record end time and duration
-    auto const end = std::chrono::steady_clock::now();
-    const std::chrono::duration<double> sec = end - start;
-    std::print("Done :)\n");
-    spacerChunky(BLUE);
-    std::print("{}Execution time: {} seconds\n\n", BLUE, sec.count());
-
-    return 0;
 }

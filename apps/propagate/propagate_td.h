@@ -5,7 +5,7 @@
 #ifndef PROPAGATE_PROPOGATE_TD_H
 #define PROPAGATE_PROPOGATE_TD_H
 
-#include "interpolate_1d.h"
+#include "../../lib/interpolate_1d.h"
 #include "propagate.h"
 
 // gets potential and returns arrays

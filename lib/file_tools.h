@@ -2,8 +2,8 @@
 // Created by Arian Dovald on 6/23/25.
 //
 
-#ifndef FILETOOLS_H
-#define FILETOOLS_H
+#ifndef FILE_TOOLS_H
+#define FILE_TOOLS_H
 
 #include <fstream>
 #include <string>
@@ -64,4 +64,4 @@ struct wfOutput {
 // opens wavefunction output file
 wfOutput openWFOutputFile(const inputs& in, const std::string &data);
 
-#endif //FILETOOLS_H
+#endif //FILE_TOOLS_H

@@ -5,12 +5,10 @@
 #ifndef PROPAGATE_H
 #define PROPAGATE_H
 
-#include <iostream>
 #include <functional>
 #include <memory>
-#include "filetools.h"
+#include "../../lib/file_tools.h"
 #include "fftw3.h"
-#include "fftw_complex_tools.h"
 
 // calculates momentum-squared grid based on general values
 std::vector<double> psquared(int gridpoints, double space_width);

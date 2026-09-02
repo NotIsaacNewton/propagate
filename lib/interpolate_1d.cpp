@@ -5,7 +5,7 @@
 #include "interpolate_1d.h"
 #include "console_tools.h"
 #include <iostream>
-#include "filetools.h"
+#include "file_tools.h"
 
 // inputs: location/of/input_output_file gridpoints_in gridpoints_out initial_abscissa final_abscissa
 /*

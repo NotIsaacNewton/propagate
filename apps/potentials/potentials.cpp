@@ -2,14 +2,9 @@
 // Created by Arian Dovald on 9/9/25.
 //
 
-#include <iostream>
-#include <print>
 #include <unordered_map>
-#include <chrono>
 #include "potentials.h"
-#include "fftw_complex_tools.h"
-#include "filetools.h"
-#include "console_tools.h"
+#include "../../lib/file_tools.h"
 
 // TODO: add time-dependent potentials
 
@@ -68,53 +63,3 @@ std::function<double(double)> buildPotential(char* argv[]) {
     };
     return potentials.at(argv[3])();
 }
-
-// NOTE: comment out this main() block when building potentials_td
-// inputs: location/of/input_file location/of/data_directory potential_type pos1 pos2 strength1 strength2
-/*
-int main(const int argc, char *argv[]) {
-    if(argc < 5) {
-        spacerFancy(RED);
-        std::cerr << RED << "Error: improper inputs.\n";
-        std::print("{}[location/of/input_file] [location/of/data_directory] [potential_parameters]\n", GREEN);
-        spacerFancy(RED);
-        return 1;
-    }
-
-    // introduction
-    std::print("\n{}potential\n", BLUE);
-
-    // record the start time
-    auto const start = std::chrono::steady_clock::now();
-
-    // spacer
-    spacerChunky(BLUE);
-
-    // file locations
-    const std::string inputfile = argv[1];
-    const std::string data = argv[2];
-    const std::string potfile = data + "/potential.dat";
-
-    // read inputs
-    const inputs in = readInputs(inputfile);
-
-    // spacer
-    spacer(RESET);
-
-    // write and save potential curve to file
-    const double dx = (in.final_pos-in.initial_pos)/(in.space_grid_coarse-1);
-    writeFunction1D(in.initial_pos, dx, in.space_grid_coarse,
-        potfile, buildPotential(argv));
-
-    // console output
-    std::print("{}Potential written!", GREEN);
-
-    // record end time and duration
-    auto const end = std::chrono::steady_clock::now();
-    const std::chrono::duration<double> sec = end - start;
-    spacerChunky("\n" BLUE);
-    std::print("{}Execution time: {} seconds\n\n", BLUE, sec.count());
-
-    return 0;
-}
-*/
