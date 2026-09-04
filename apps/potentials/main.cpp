@@ -4,8 +4,8 @@
 
 #include "potentials_td.h"
 #include "potentials.h"
-#include "../../lib/console_tools.h"
-#include "../../lib/file_tools.h"
+#include "console_tools.h"
+#include "file_tools.h"
 #include <iostream>
 #include <string>
 #include <print>

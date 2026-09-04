@@ -4,9 +4,7 @@
 
 #include <unordered_map>
 #include "potentials.h"
-#include "../../lib/file_tools.h"
-
-// TODO: add time-dependent potentials
+#include "file_tools.h"
 
 // potential functions
 // step potential

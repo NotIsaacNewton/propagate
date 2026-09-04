@@ -22,7 +22,7 @@ struct diag_matrix {
 // off-diagonal matrix interface
 template <typename T>
 struct off_diag_matrix {
-    int N; // size of matrix
+    int N = 0; // size of matrix
     virtual ~off_diag_matrix() = default; // default constructor
     virtual const T& operator()(int i, int j) const = 0; // read-only accessor (to be overridden by inheritors)
     virtual T& operator()(int i, int j) = 0; // read-write accessor (to be overridden by inheritors)
@@ -34,7 +34,7 @@ struct u_tri_matrix : off_diag_matrix<T> {
     std::vector<T> u_tri; // holds upper-triangular matrix elements
     explicit u_tri_matrix(const int size) : u_tri(size * (size - 1) / 2) { this->N = size; } // constructor
     // maps indexes i and j into the correct index of the flat array
-    int mapIndex(int i, int j) const {
+    [[nodiscard]] int mapIndex(int i, int j) const {
         assert(i < j && j < this->N); // note: temporary
         return i * this->N - i * (i + 1) / 2 + (j - i - 1);
     }
@@ -42,6 +42,7 @@ struct u_tri_matrix : off_diag_matrix<T> {
     T& operator()(const int i, const int j) override { return u_tri[mapIndex(i, j)]; } // read-write accessor
 };
 
+// hermitian matrix
 struct hermitian_matrix {
     int N; // size of matrix
     diag_matrix<std::complex<double>> d_herm; // holds real-valued diagonal elements

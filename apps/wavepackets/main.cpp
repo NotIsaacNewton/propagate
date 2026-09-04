@@ -8,9 +8,9 @@
 #include <map>
 #include <print>
 #include <chrono>
-#include "../../lib/file_tools.h"
-#include "../../lib/console_tools.h"
-#include "../../lib/fftw_complex_tools.h"
+#include "file_tools.h"
+#include "console_tools.h"
+#include "fftw_complex_tools.h"
 #include "wavepackets.h"
 
 // inputs: location/of/input_file location/of/data_directory wavepacket_type delta momentum position

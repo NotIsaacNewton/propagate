@@ -11,10 +11,10 @@
 #include <print>
 #include <algorithm>
 #include "propagate.h"
-#include "../../lib/file_tools.h"
-#include "../../lib/fftw_complex_tools.h"
-#include "../../lib/console_tools.h"
-#include "../../lib/interpolate_1d.h"
+#include "file_tools.h"
+#include "fftw_complex_tools.h"
+#include "console_tools.h"
+#include "interpolate_1d.h"
 
 // TODO: more safety checks and error paths (try <expected>)
 //  implement coupling: propagation on multiple potential curves. make dimension-agnostic as much as possible.
@@ -193,7 +193,6 @@ void propTick(const int gridpoints, fftw_complex *psi, const fftw_complex* V, co
 }
 
 // propagates wavefunction based on general values
-// Note: FFT methods implicitly impose periodic boundary conditions
 void propagate(const inputs& in, const std::string& data, const bool imProp) {
     // get initial wavepacket
     auto psip = getWavepacket(in, data);

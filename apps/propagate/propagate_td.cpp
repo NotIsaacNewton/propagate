@@ -3,8 +3,8 @@
 //
 
 #include "propagate_td.h"
-#include "../../lib/console_tools.h"
-#include "../../lib/fftw_complex_tools.h"
+#include "console_tools.h"
+#include "fftw_complex_tools.h"
 #include <fstream>
 #include <memory>
 #include <print>

@@ -7,7 +7,7 @@
 
 #include <functional>
 
-// well + electric field
+// well + wave
 std::function<double(double, double)> electricBarrier(double start_pos, double end_pos,
     double strength_1, double strength_2);
 // harmonic oscillator + wave

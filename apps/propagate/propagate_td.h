@@ -5,13 +5,12 @@
 #ifndef PROPAGATE_PROPOGATE_TD_H
 #define PROPAGATE_PROPOGATE_TD_H
 
-#include "../../lib/interpolate_1d.h"
 #include "propagate.h"
 
 // gets potential and returns arrays
 std::vector<std::vector<double>> getPotential(const inputs& in, const std::string& data);
 
-// creates potential operator array from data file and outputs to op
+// creates potential operator array from data and outputs to op
 void definePotentialOperatorTD(const inputs& in, const int& tick, fftw_complex *op,
     const std::vector<std::vector<double>>& potential);
 

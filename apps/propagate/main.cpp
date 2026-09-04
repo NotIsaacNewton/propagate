@@ -7,8 +7,8 @@
 #include <fstream>
 #include <chrono>
 #include <print>
-#include "../../lib/file_tools.h"
-#include "../../lib/console_tools.h"
+#include "file_tools.h"
+#include "console_tools.h"
 #include "propagate.h"
 #include "propagate_td.h"
 

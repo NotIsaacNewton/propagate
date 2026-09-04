@@ -7,7 +7,7 @@
 
 #include <functional>
 #include <memory>
-#include "../../lib/file_tools.h"
+#include "file_tools.h"
 #include "fftw3.h"
 
 // calculates momentum-squared grid based on general values
