@@ -3,7 +3,7 @@ project(propagate)
 
 set(CMAKE_CXX_STANDARD 23)
 
-option(BUILD_INTEL "Build for x86_64 (homelab/Beocat) using real FFTW3" OFF)
+option(BUILD_INTEL "Build for x86_64 using real FFTW3" OFF)
 
 # option to build for intel chips. for HPCs, it may be necessary to do a static link.
 if(BUILD_INTEL)

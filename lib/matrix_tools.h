@@ -45,8 +45,8 @@ struct u_tri_matrix : off_diag_matrix<T> {
 // hermitian matrix
 struct hermitian_matrix {
     int N; // size of matrix
-    diag_matrix<std::complex<double>> d_herm; // holds real-valued diagonal elements
-    u_tri_matrix<std::complex<double>> c_herm; // holds complex-valued coupling elements
+    diag_matrix<std::complex<double>> d_herm; // holds diagonal elements
+    u_tri_matrix<std::complex<double>> c_herm; // holds coupling elements
     explicit hermitian_matrix(const int size) : N(size), d_herm(N), c_herm(N) {} // constructor
     // read-only accessor
     const std::complex<double>& operator()(const int i, const int j) const {

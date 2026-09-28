@@ -8,6 +8,7 @@
 #include <string>
 #include "fftw3.h"
 #include "file_tools.h"
+#include <complex>
 
 // scales entire array by a scalar
 void scale_fftw_complex(double scalar, fftw_complex *complex_vec, int size);
@@ -38,6 +39,26 @@ double fftw_complex_integrate(int size, double width, const std::vector<double>&
 // gets the norm of an fftw_complex vector
 double norm(int gridpoints, double gridwidth, const fftw_complex* psi);
 
+// normalizes an fftw_complex vector
 void normalize(int gridpoints, double gridwidth, fftw_complex* psi);
+
+// gets the norm of a vector of fftw_complex vectors, in parallel over the spatial grid
+double normCC(int gridpoints, double dx, int channels, const std::vector<fftw_complex*>& psi);
+
+// normalizes a vector of fftw_complex vectors, in parallel over channels
+void normalizeCC(int gridpoints, double dx, int channels, const std::vector<fftw_complex*>& psi);
+
+// fftw_complex to std::complex<double>
+std::complex<double> fftw_complex_to_std_complex(const fftw_complex& fftw);
+
+// std::complex<double> to fftw_complex
+void std_complex_to_fftw_complex(const std::complex<double>& std, fftw_complex& fftw);
+
+// multiplies fftw_complex and std::complex<double>
+std::complex<double> operator*(const double(&fftw)[2], const std::complex<double>& std);
+std::complex<double> operator*(const std::complex<double>& std, const double(&fftw)[2]);
+
+// adds two fftw_complex
+std::complex<double> fftw_complex_add(const fftw_complex& a, const fftw_complex& b);
 
 #endif //FFTW_COMPLEX_TOOLS_H

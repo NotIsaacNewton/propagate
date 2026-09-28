@@ -143,7 +143,7 @@ inputs readInputs(const std::string& file) {
             .final_t = inputarray[3],
             .time_grid = intinputarray[2],
             .nt_prints = intinputarray[4],
-            .time_grid_coarse = intinputarray[5]
+            .channels = intinputarray[5]
         };
         in.dx = (in.final_pos - in.initial_pos)/(in.space_grid - 1);
         in.dt = (in.final_t - in.initial_t)/(in.time_grid-1);
@@ -164,5 +164,17 @@ wfOutput openWFOutputFile(const inputs& in, const std::string &data) {
     // prepare output buffer for entire set of points
     std::vector<double> buffer;
     buffer.reserve((in.time_grid / in.nt_prints + 1) * (in.space_grid / in.nx_prints) * 2);
+    return {.wf = std::move(wf), .buffer = buffer};
+}
+
+// opens wavefunction output file, but with a larger buffer (by a factor of # of channels)
+wfOutput openWFOutputFileCC(const inputs& in, const std::string &data) {
+    const std::string output = data + "/psi_final.dat";
+    std::ofstream wf(output, std::ios::app | std::ios::binary);
+    if (!wf.is_open()) {
+        std::cerr << "Failed to open " << output << "." << "\n";
+    }
+    std::vector<double> buffer;
+    buffer.reserve((in.time_grid / in.nt_prints + 1) * (in.space_grid / in.nx_prints) * 2 * in.channels);
     return {.wf = std::move(wf), .buffer = buffer};
 }

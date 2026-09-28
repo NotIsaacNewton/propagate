@@ -116,3 +116,49 @@ void normalize(const int gridpoints, const double gridwidth, fftw_complex* psi) 
     const double mag = norm(gridpoints, gridwidth, psi); // get norm
     scale_fftw_complex(1/sqrt(mag), psi, gridpoints); // normalize psi
 }
+
+// gets the norm of a vector of fftw_complex vectors, in parallel over the spatial grid
+double normCC(const int gridpoints, const double dx, const int channels, const std::vector<fftw_complex*>& psi) {
+    double total = 0.0;
+    #pragma omp parallel for reduction(+:total)
+    for (int i = 0; i < gridpoints; i++) {
+        for (int c = 0; c < channels; c++) {
+            total += psi[c][i][0]*psi[c][i][0] + psi[c][i][1]*psi[c][i][1];
+        }
+    }
+    return total * dx;
+}
+
+// normalizes a vector of fftw_complex vectors, in parallel over channels
+void normalizeCC(const int gridpoints, const double dx, const int channels, const std::vector<fftw_complex*>& psi) {
+    const double mag = normCC(gridpoints, dx, channels, psi);
+    const double scale = 1.0 / sqrt(mag);
+    #pragma omp parallel for
+    for (int c = 0; c < channels; c++) {
+        scale_fftw_complex(scale, psi[c], gridpoints);
+    }
+}
+
+// fftw_complex to std::complex<double>
+std::complex<double> fftw_complex_to_std_complex(const fftw_complex& fftw) {
+    return {fftw[0], fftw[1]};
+}
+
+// std::complex<double> to fftw_complex
+void std_complex_to_fftw_complex(const std::complex<double>& std, fftw_complex& fftw) {
+    fftw[0] = std.real();
+    fftw[1] = std.imag();
+}
+
+// multiplies fftw_complex and std::complex<double>
+std::complex<double> operator*(const double(&fftw)[2], const std::complex<double>& std) {
+    return fftw_complex_to_std_complex(fftw) * std;
+}
+std::complex<double> operator*(const std::complex<double>& std, const double(&fftw)[2]) {
+    return fftw_complex_to_std_complex(fftw) * std;
+}
+
+// adds two fftw_complex
+std::complex<double> fftw_complex_add(const fftw_complex& a, const fftw_complex& b) {
+    return {a[0] + b[0], a[1] + b[1]};
+}

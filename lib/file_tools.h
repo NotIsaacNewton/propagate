@@ -46,10 +46,11 @@ struct inputs {
     double final_t;
     int time_grid;
     int nt_prints;
-    int time_grid_coarse;
     // space-time widths
     double dx;
     double dt;
+    //
+    int channels;
 };
 
 // read inputs from file
@@ -63,5 +64,8 @@ struct wfOutput {
 
 // opens wavefunction output file
 wfOutput openWFOutputFile(const inputs& in, const std::string &data);
+
+// opens wavefunction output file, but with a larger buffer (by a factor of # of channels)
+wfOutput openWFOutputFileCC(const inputs& in, const std::string &data);
 
 #endif //FILE_TOOLS_H
