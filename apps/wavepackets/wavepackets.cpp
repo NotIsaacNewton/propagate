@@ -59,6 +59,14 @@ std::function<void(double, fftw_complex)> test() {
     };
 }
 
+// utility function for filling intially-empty channels
+std::function<void(double, fftw_complex)> zeroState() {
+    return [](const double, fftw_complex out) {
+        out[0] = 0.0;
+        out[1] = 0.0;
+    };
+}
+
 // map of options
 std::function<void(double, fftw_complex)> buildWavepacket(char* argv[]) {
     const std::unordered_map<std::string, std::function<std::function<void(double, fftw_complex)>()>> wavepackets = {

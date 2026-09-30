@@ -85,12 +85,47 @@ void writeFunction2D(const double& start_x, const double& start_y, const double&
     }
 }
 
+// writes from 2D hermitian matrix to file
+void writeHermitian2D(const double& start_x, const double& start_y, const double& dx, const double& dy,
+    const int& width, const int& height, const std::string& file,
+    const std::function<hermitian_matrix(double, double)>& function) {
+    std::ofstream write(file, std::ios::binary);
+    if (!write.is_open()) {
+        std::cerr << "Failed to open " << file << "." << "\n";
+    }
+    if (write.is_open()) {
+        const int channels = function(start_x, start_y).N;
+        std::vector<double> temp(width*(channels*channels+channels));
+        for (int i = 0; i < height; i++) {
+            !((i+1) % (height / 10)) ? progressBar(GREEN, 100*(i+1)/height) : reset();
+            #pragma omp parallel for
+            for (int j = 0; j < width; j++) {
+                const hermitian_matrix matrix = function(j*dx + start_x, i*dy + start_y);
+                for (int c1 = 0; c1 < channels; c1++) {
+                    for (int c2 = c1; c2 < channels; c2++) {
+                        const auto value = matrix(c1,c2);
+                        temp[2*(j + c1*(channels-(c1+1)/2)*width + c2*width)]   = value.real();
+                        temp[2*(j + c1*(channels-(c1+1)/2)*width + c2*width)+1] = value.imag();
+                    }
+                }
+            }
+            write.write(
+                reinterpret_cast<const char*>(temp.data()),
+                static_cast<std::streamsize>(temp.size() * sizeof(double)));
+        }
+        write.close();
+    } else {
+        std::cerr << "Failed to open " << file << "." << "\n";
+    }
+}
+
 // reads from file to 2D array
 void readArray2D(const std::string& file, std::vector<std::vector<double>>& array,
     const int& width, const int& height) {
     if (std::ifstream read(file, std::ios::binary); read.is_open()) {
         array.assign(height, std::vector<double>(width));
         for (int i=0; i<height; i++) {
+            !((i+1) % (height / 10)) ? progressBar(GREEN, 100*(i+1)/height) : reset();
             read.read(reinterpret_cast<char*>(array[i].data()), static_cast<std::streamsize>(width * sizeof(double)));
         }
         read.close();

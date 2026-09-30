@@ -1,10 +1,10 @@
--100 // initial position
-100 // final position
-0 // initial time
-16 // final time
-16384 // space gridpoints
-0 // coarse space grid
-10000 // time gridpoints
-4 // print to file every nx space steps
-20 // print to file every nt time steps
-0 // coarse time grid
+-25     // initial position
+25       // final position
+0       // initial time
+3     	// final time
+8192    	// space gridpoints
+0	// coarse space grid
+8000    	// time gridpoints
+16	// print to file every nx space steps
+50	// print to file every nt time steps
+2	// number of channels

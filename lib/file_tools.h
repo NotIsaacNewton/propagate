@@ -8,6 +8,7 @@
 #include <fstream>
 #include <string>
 #include <functional>
+#include "matrix_tools.h"
 
 // writes from 1D double function to file
 void writeFunction1D(const double& start, const double& width,
@@ -24,6 +25,11 @@ void writeArray1D(const double& start, const double& width, const int& gridpoint
 void writeFunction2D(const double& start_x, const double& start_y, const double& dx, const double& dy,
     const int& width, const int& height, const std::string& file,
     const std::function<double(double, double)>& function);
+
+// writes from 2D double function of hermitian matrices to file
+void writeHermitian2D(const double& start_x, const double& start_y, const double& dx, const double& dy,
+    const int& width, const int& height, const std::string& file,
+    const std::function<hermitian_matrix(double, double)>& function);
 
 // reads from file to 2D array
 void readArray2D(const std::string& file, std::vector<std::vector<double>>& array,

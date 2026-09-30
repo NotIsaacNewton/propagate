@@ -11,14 +11,15 @@
 #include "console_tools.h"
 #include "propagate.h"
 #include "propagate_td.h"
+#include "propagate_td_cc.h"
 
-// inputs: location/of/input_file location/of/data_directory TD/improp
+// inputs: location/of/input_file location/of/data_directory TDCC/TD/improp
 int main(const int argc, const char* argv[]) {
     if (argc != 4) {
         spacerFancy(RED);
         std::cerr << RED << "Error: improper inputs.\n";
         std::print(
-            "{}[location/of/input_file] [location/of/data_directory] [TD/true/false] \n",
+            "{}[location/of/input_file] [location/of/data_directory] [TDCC/TD/true/false] \n",
             GREEN
             );
         spacerFancy(RED);
@@ -40,6 +41,8 @@ int main(const int argc, const char* argv[]) {
     const bool imProp = std::string(argv[3]) == "true";
     // TD propagation?
     const bool propTD = std::string(argv[3]) == "TD";
+    // TDCC propagation?
+    const bool propTDCC = std::string(argv[3]) == "TDCC";
 
     // spacer
     spacerChunky(BLUE);
@@ -69,7 +72,13 @@ int main(const int argc, const char* argv[]) {
     spacerThick(RESET);
 
     // propagate wf
-    if (propTD) { propagateTD(in, data); } else { propagate(in, data, imProp); }
+    if (propTD) {
+        propagateTD(in, data);
+    } else if (propTDCC) {
+        propagateTDCC(in, data);
+    } else {
+        propagate(in, data, imProp);
+    }
 
     // spacer
     spacerThick(RESET);

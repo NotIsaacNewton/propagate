@@ -3,6 +3,9 @@ project(propagate)
 
 set(CMAKE_CXX_STANDARD 23)
 
+set(OpenMP_ROOT "/opt/homebrew/opt/libomp")
+find_package(OpenMP REQUIRED)
+
 option(BUILD_INTEL "Build for x86_64 using real FFTW3" OFF)
 
 # option to build for intel chips. for HPCs, it may be necessary to do a static link.
@@ -18,7 +21,8 @@ endif()
 # find, add, and target library of shared tools
 file(GLOB_RECURSE lib CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/lib/*.cpp")
 add_library(LIB STATIC ${lib})
-target_include_directories(LIB PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/lib)
+target_include_directories(LIB PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/lib ${OpenMP_ROOT}/include)
+target_link_libraries(LIB PUBLIC OpenMP::OpenMP_CXX)
 
 # find directories with main programs and source codes
 set(apps ${CMAKE_CURRENT_SOURCE_DIR}/apps)
@@ -31,12 +35,12 @@ file(GLOB_RECURSE WAVEPACKET CONFIGURE_DEPENDS "${wavepacket}/*.cpp")
 
 # build propagate
 add_executable(propagate ${PROPAGATE})
-target_link_libraries(propagate LIB ${FFT_LIBS})
+target_link_libraries(propagate LIB ${FFT_LIBS} OpenMP::OpenMP_CXX)
 
 # build wavepacket
 add_executable(wavepacket ${WAVEPACKET})
-target_link_libraries(wavepacket LIB ${FFT_LIBS})
+target_link_libraries(wavepacket LIB ${FFT_LIBS} OpenMP::OpenMP_CXX)
 
 # build potential
 add_executable(potential ${POTENTIAL})
-target_link_libraries(potential LIB ${FFT_LIBS})
+target_link_libraries(potential LIB ${FFT_LIBS} OpenMP::OpenMP_CXX)

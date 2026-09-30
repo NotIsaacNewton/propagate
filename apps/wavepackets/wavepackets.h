@@ -25,6 +25,9 @@ std::function<void(double, fftw_complex)> shoExcited();
 // test state (for imaginary time propagation)
 std::function<void(double, fftw_complex)> test();
 
+// utility function for filling intially-empty channels
+std::function<void(double, fftw_complex)> zeroState();
+
 // map of options
 std::function<void(double, fftw_complex)> buildWavepacket(char* argv[]);
 

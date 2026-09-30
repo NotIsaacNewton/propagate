@@ -2,6 +2,7 @@
 // Created by Arian Dovald on 9/2/26.
 //
 
+#include "potentials_td_cc.h"
 #include "potentials_td.h"
 #include "potentials.h"
 #include "console_tools.h"
@@ -11,13 +12,13 @@
 #include <print>
 #include <chrono>
 
-// inputs: location/of/input_file location/of/data_directory potential_type pos1 pos2 strength1 strength2 TD/TI
+// inputs: location/of/input_file location/of/data_directory potential_type pos1 pos2 strength1 strength2 TD/TI/CC
 int main(const int argc, char *argv[]) {
     if(argc < 6) {
         spacerFancy(RED);
         std::cerr << RED << "Error: improper inputs.\n";
         std::print(
-            "{}[location/of/input_file] [location/of/data_directory] [potential_parameters] [TD: TD/TI]\n",
+            "{}[location/of/input_file] [location/of/data_directory] [potential_parameters] [mode: TDCC/TD/TI]\n",
             GREEN);
         spacerFancy(RED);
         return 1;
@@ -39,6 +40,8 @@ int main(const int argc, char *argv[]) {
 
     // TD potential?
     const bool potTD = std::string(argv[8]) == "TD";
+    // TDCC potential?
+    const bool potTDCC = std::string(argv[8]) == "TDCC";
 
     // read inputs
     const inputs in = readInputs(inputfile);
@@ -51,6 +54,11 @@ int main(const int argc, char *argv[]) {
         std::print("Writing potential...\n");
         writeFunction2D(in.initial_pos, in.initial_t, in.dx, in.dt,
             in.space_grid, in.time_grid, potfile, buildPotentialTD(argv));
+    } else if (potTDCC) {
+        std::print("Writing potential...\n");
+        // TODO: write this function
+        writeHermitian2D(in.initial_pos, in.initial_t, in.dx, in.dt,
+            in.space_grid, in.time_grid, potfile, buildPotentialTDCC(argv));
     } else {
         const double dx = (in.final_pos-in.initial_pos)/(in.space_grid_coarse-1);
         writeFunction1D(in.initial_pos, dx, in.space_grid_coarse,

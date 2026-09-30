@@ -12,13 +12,14 @@
 #include "console_tools.h"
 #include "fftw_complex_tools.h"
 #include "wavepackets.h"
+#include "wavepackets_cc.h"
 
-// inputs: location/of/input_file location/of/data_directory wavepacket_type delta momentum position
+// inputs: location/of/input_file location/of/data_directory wavepacket_type delta momentum position TDCC
 int main(const int argc, char* argv[]) {
-    if (argc < 4) {
+    if (argc < 5) {
         spacerFancy(RED);
         std::cerr << RED << "Error: improper inputs.\n";
-        std::print("{}[location/of/input_file] [location/of/data_directory] [wavepacket_parameters]\n", GREEN);
+        std::print("{}[location/of/input_file] [location/of/data_directory] [wavepacket_parameters] [mode: TDCC]\n", GREEN);
         spacerFancy(RED);
         return 1;
     }
@@ -37,6 +38,9 @@ int main(const int argc, char* argv[]) {
     const std::string data = argv[2];
     const std::string psifile = data+"/psi_initial.dat";
 
+    // CC wavepacket?
+    const bool CC = std::string(argv[7]) == "TDCC";
+
     // read input file
     const inputs in = readInputs(inputfile);
 
@@ -44,7 +48,12 @@ int main(const int argc, char* argv[]) {
     spacer(RESET);
 
     // write wavefunction
-    fftw_complex_func_to_file(in, psifile, buildWavepacket(argv));
+    if (CC) {
+        fftw_complex_func_array_to_file(in, data, "psi_initial",
+            buildWavepacketCC(argv, in.channels));
+    } else {
+        fftw_complex_func_to_file(in, psifile, buildWavepacket(argv));
+    }
 
     // record end time and duration
     const auto end = std::chrono::steady_clock::now();

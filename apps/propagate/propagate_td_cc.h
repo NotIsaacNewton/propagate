@@ -34,8 +34,13 @@ void defineCouplingOperator(const inputs& in, const int& tick, std::vector<std::
 void applyCouplingOperator(int point, int channels, const std::vector<std::vector<std::vector<coupling>>>& coup,
     const std::vector<fftw_complex*>& psi);
 
+void applyDiagonalOperator(int point, int channels, const std::vector<fftw_complex*>& diag,
+    const std::vector<fftw_complex*>& psi);
+
 // applies potential operator in parallel threads across spatial gridpoints
 void applyPotentialOperatorCC(const inputs& in, const std::vector<fftw_complex*>& diag,
+    const std::vector<std::vector<std::vector<coupling>>>& coup, const std::vector<fftw_complex*>& psi);
+void applyPotentialOperatorCCReverse(const inputs& in, const std::vector<fftw_complex*>& diag,
     const std::vector<std::vector<std::vector<coupling>>>& coup, const std::vector<fftw_complex*>& psi);
 
 // executes fft plans in parallel for all channels

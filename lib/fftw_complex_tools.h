@@ -24,6 +24,10 @@ void fftw_complex_func_to_array(const double& start, const int& size, const doub
 void fftw_complex_func_to_file(const inputs& in, const std::string& savefile,
     const std::function<void(double, fftw_complex)>& wavefunction);
 
+// writes array of fftw_complex functions to file
+void fftw_complex_func_array_to_file(const inputs& in, const std::string& save_dir, const std::string& savefile,
+    const std::vector<std::function<void(double, fftw_complex)>>& wavefunction);
+
 // reads to fftw_complex array from file
 void fftw_complex_array_from_file(const std::string& file, fftw_complex *function, const int& size);
 

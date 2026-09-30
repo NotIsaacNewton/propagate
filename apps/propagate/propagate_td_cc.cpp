@@ -12,19 +12,24 @@ std::vector<std::vector<hermitian_matrix> > getPotentialCC(const inputs &in, con
     // prepare potential arrays
     std::vector potential(in.time_grid,
     std::vector(in.space_grid, hermitian_matrix(in.channels))); // full potential array
-    std::vector temp(in.time_grid*in.channels, std::vector<double>(2*in.space_grid*in.channels)); // array containing raw values
+    std::vector<std::vector<double>> temp; // array containing raw values
+    std::print("Reading potential from {}/potential.dat...\n", data);
     readArray2D(data + "/potential.dat", temp,
-                in.space_grid, in.time_grid); // reads in potential file
+                in.space_grid*(in.channels*in.channels+in.channels),
+                in.time_grid); // reads in potential file
     for (int i = 0; i < in.time_grid; i++) {
-        for (int j = 0; j < in.space_grid; j++) {
-            for (int r = 0; r < in.channels; r++) {
-                for (int c = r; c < in.channels; c++) {
-                    potential[i][j](r,c) = std::complex(temp[i*in.channels + r][j*2*in.channels + 2*c],
-                        temp[i*in.channels + r][j*2*in.channels + 2*c+1]);
+        for (int c1 = 0; c1 < in.channels; c1++) {
+            for (int c2 = c1; c2 < in.channels; c2++) {
+                for (int j = 0; j < in.space_grid; j++) {
+                    potential[i][j](c1,c2) = std::complex(
+                        temp[i][2*(j + c1*(in.channels-(c1+1)/2)*in.space_grid + c2*in.space_grid)],
+                        temp[i][2*(j + c1*(in.channels-(c1+1)/2)*in.space_grid + c2*in.space_grid)+1]
+                        );
                 }
             }
         }
     }
+    std::print("\nPotential saved successfully!\n", data);
     return potential;
 }
 
@@ -72,9 +77,19 @@ void applyCouplingOperator(const int point, const int channels,
             const auto psi2_old = fftw_complex_to_std_complex(psi[c2][point]);
             std_complex_to_fftw_complex(psi1_old*coup[point][c1][c2].cos_factor +
                 psi2_old*coup[point][c1][c2].exp_phase*coup[point][c1][c2].sin_factor, psi[c1][point]);
-            std_complex_to_fftw_complex(psi2_old*coup[point][c1][c2].cos_factor +
+            std_complex_to_fftw_complex(psi2_old*coup[point][c1][c2].cos_factor -
                 psi1_old*std::conj(coup[point][c1][c2].exp_phase)*coup[point][c1][c2].sin_factor, psi[c2][point]);
         }
+    }
+}
+
+void applyDiagonalOperator(const int point, const int channels, const std::vector<fftw_complex*>& diag,
+    const std::vector<fftw_complex*>& psi) {
+    for (int c = 0; c < channels; c++) {
+        const double re = psi[c][point][0];
+        const double im = psi[c][point][1];
+        psi[c][point][0] = re*diag[c][point][0] - im*diag[c][point][1];
+        psi[c][point][1] = im*diag[c][point][0] + re*diag[c][point][1];
     }
 }
 
@@ -83,12 +98,15 @@ void applyPotentialOperatorCC(const inputs& in, const std::vector<fftw_complex*>
     const std::vector<std::vector<std::vector<coupling>>>& coup, const std::vector<fftw_complex*>& psi) {
     #pragma omp parallel for
     for (int i = 0; i < in.space_grid; i++) {
-        for (int c = 0; c < in.channels; c++) {
-            const double re = psi[c][i][0];
-            const double im = psi[c][i][1];
-            psi[c][i][0] = re*diag[c][i][0] - im*diag[c][i][1];
-            psi[c][i][1] = im*diag[c][i][0] + re*diag[c][i][1];
-        }
+        applyCouplingOperator(i, in.channels, coup, psi);
+        applyDiagonalOperator(i, in.channels, diag, psi);
+    }
+}
+void applyPotentialOperatorCCReverse(const inputs& in, const std::vector<fftw_complex*>& diag,
+    const std::vector<std::vector<std::vector<coupling>>>& coup, const std::vector<fftw_complex*>& psi) {
+    #pragma omp parallel for
+    for (int i = 0; i < in.space_grid; i++) {
+        applyDiagonalOperator(i, in.channels, diag, psi);
         applyCouplingOperator(i, in.channels, coup, psi);
     }
 }
@@ -186,7 +204,7 @@ void propTickTDCC(const int& tick, const inputs& in, const std::vector<fftw_comp
     // normalize fftw result (fftw uses non-normalized fft algorithm)
     fftwNormCC(in, scale, psi);
     // apply potential operators
-    applyPotentialOperatorCC(in, V_d, V_c, psi);
+    applyPotentialOperatorCCReverse(in, V_d, V_c, psi);
 }
 
 // gets initial wavepacket handled with RAII, outputing a vector of unique pointers
@@ -213,7 +231,9 @@ void propagateTDCC(const inputs& in, const std::string& data) {
     // NOTE: psip owns the lifetime of psi's data
     auto psip = getWavepacketCC(in, data); // vector of pointers
     std::vector<fftw_complex*> psi(in.channels);
-    for (auto& p : psip) psi.push_back(p.get());
+    for (int c = 0; c < in.channels; c++) {
+        psi[c] = psip[c].get();
+    }
     // prep fftw variables and plans
     auto [fft_ptrs,
         ifft_ptrs,
@@ -222,9 +242,11 @@ void propagateTDCC(const inputs& in, const std::string& data) {
         V_c] = fftwPrepTDCC(in, psi, data);
     std::vector<fftw_complex*> V_d(in.channels);
     std::vector<fftw_plan> fft(in.channels), ifft(in.channels);
-    for (auto& v : V_d_raw) V_d.push_back(v.get());
-    for (auto& p : fft_ptrs) fft.push_back(p.get());
-    for (auto& p : ifft_ptrs) ifft.push_back(p.get());
+    for (int c = 0; c < in.channels; c++) {
+        V_d[c] = V_d_raw[c].get();
+        fft[c] = fft_ptrs[c].get();
+        ifft[c] = ifft_ptrs[c].get();
+    }
     fftw_complex* T = Tp.get();
     // get potential
     auto potential = getPotentialCC(in, data);
