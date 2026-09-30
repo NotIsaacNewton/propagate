@@ -19,6 +19,7 @@ To configure build on x86_64 systems (Intel), use
 cmake -B build -DBUILD_INTEL=ON
 cmake --build build
 ```
+*NOTE: OpenMP flags may need to be changed*
 
 Static linking may be needed to compile on some systems (like HPCs). For example,
 
