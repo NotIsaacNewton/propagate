@@ -20,7 +20,7 @@ std::function<hermitian_matrix(double, double)> coupledSHO(const double coupling
         hermitian_matrix potential(2);
         potential(0,0) = std::complex(SHO(x), 0.0);
         potential(1,1) = std::complex(expDecay(x), 0.0);
-        potential(0,1) = std::complex(coupling_strength*gaussian(t, 0.5, 1), 0.0);
+        potential(0,1) = std::complex(coupling_strength*gaussian(t, 0.4, 1.3), 0.0);
         return potential;
     };
 }

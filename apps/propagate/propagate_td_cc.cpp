@@ -17,6 +17,7 @@ std::vector<std::vector<hermitian_matrix> > getPotentialCC(const inputs &in, con
     readArray2D(data + "/potential.dat", temp,
                 in.space_grid*(in.channels*in.channels+in.channels),
                 in.time_grid); // reads in potential file
+    #pragma omp parallel for
     for (int i = 0; i < in.time_grid; i++) {
         for (int c1 = 0; c1 < in.channels; c1++) {
             for (int c2 = c1; c2 < in.channels; c2++) {
@@ -29,7 +30,7 @@ std::vector<std::vector<hermitian_matrix> > getPotentialCC(const inputs &in, con
             }
         }
     }
-    std::print("\nPotential saved successfully!\n", data);
+    std::print("\nPotential read!\n", data);
     return potential;
 }
 
