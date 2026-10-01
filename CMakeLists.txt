@@ -5,15 +5,24 @@ set(CMAKE_CXX_STANDARD 23)
 
 # flag to build for intel chips
 option(BUILD_INTEL "Build for x86_64 using real FFTW3" OFF)
+# flag to build for picky HPCs
+option(BUILD_HPC "Build for HPC with static linking" OFF)
 
 # configure OpenMP
-if(NOT BUILD_INTEL)
+if(NOT BUILD_INTEL AND NOT BUILD_HPC)
     set(OpenMP_ROOT "/opt/homebrew/opt/libomp")
 endif()
 find_package(OpenMP REQUIRED)
 
 # configure fftw3
-if(BUILD_INTEL)
+if(BUILD_BEOCAT)
+    set(FFT_LIBS fftw3 m gomp pthread)
+    set(CMAKE_EXE_LINKER_FLAGS "-static")
+    find_path(FFTW3_INCLUDE fftw3.h)
+    find_library(FFTW3_LIB fftw3)
+    find_library(GOMP_LIB gomp)
+    include_directories(${FFTW3_INCLUDE})
+elseif(BUILD_INTEL)
     set(FFT_LIBS fftw3 m)
 else()
     set(ARMPL_DIR /opt/arm/armpl_25.04_flang-new_clang_19)
