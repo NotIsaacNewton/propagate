@@ -5,7 +5,6 @@
 #ifndef PROPAGATE_H
 #define PROPAGATE_H
 
-#include <functional>
 #include <memory>
 #include "file_tools.h"
 #include "fftw3.h"

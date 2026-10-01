@@ -4,6 +4,9 @@
 
 #include "potentials_td_cc.h"
 #include <numbers>
+#include <string>
+#include <cmath>
+#include <algorithm>
 
 // harmonic oscillator coupled to decaying exponential by constant
 double SHO(const double x) {

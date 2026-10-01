@@ -3,14 +3,16 @@ project(propagate)
 
 set(CMAKE_CXX_STANDARD 23)
 
-# configure OpenMP
-set(OpenMP_ROOT "/opt/homebrew/opt/libomp")
-find_package(OpenMP REQUIRED)
-
 # flag to build for intel chips
 option(BUILD_INTEL "Build for x86_64 using real FFTW3" OFF)
 
-# option to build for intel chips. for HPCs, it may be necessary to do a static link.
+# configure OpenMP
+if(NOT BUILD_INTEL)
+    set(OpenMP_ROOT "/opt/homebrew/opt/libomp")
+endif()
+find_package(OpenMP REQUIRED)
+
+# configure fftw3
 if(BUILD_INTEL)
     set(FFT_LIBS fftw3 m)
 else()

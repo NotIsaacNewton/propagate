@@ -6,6 +6,12 @@
 #include "fftw_complex_tools.h"
 #include "console_tools.h"
 #include <iostream>
+#include <string>
+#include <fstream>
+#include <cmath>
+#include <chrono>
+#include <print>
+#include <algorithm>
 
 // gets potential and returns arrays
 std::vector<std::vector<hermitian_matrix> > getPotentialCC(const inputs &in, const std::string &data) {
