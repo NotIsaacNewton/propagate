@@ -15,7 +15,7 @@ endif()
 find_package(OpenMP REQUIRED)
 
 # configure fftw3
-if(BUILD_BEOCAT)
+if(BUILD_HPC)
     set(FFT_LIBS fftw3 m gomp pthread)
     set(CMAKE_EXE_LINKER_FLAGS "-static")
     find_path(FFTW3_INCLUDE fftw3.h)
