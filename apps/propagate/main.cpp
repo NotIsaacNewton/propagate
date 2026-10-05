@@ -16,7 +16,7 @@
 // TODO: more safety checks and error paths (try <expected>)
 //  generalize to higher dimensions
 
-// inputs: location/of/input_file location/of/data_directory TDCC/TD/improp
+// inputs: location/of/input_file location/of/data_directory
 int main(const int argc, const char* argv[]) {
     if (argc != 3) {
         spacerFancy(RED);
@@ -61,7 +61,7 @@ int main(const int argc, const char* argv[]) {
     // warning if large dt
     if (in.time_grid < 1000) {
         spacerFancy(YELLOW);
-        std::cerr << YELLOW << "WARNING: Large dt may fail to resolve rapid dynamics. Use dt < pi/E_max.\n" << RESET;
+        std::cerr << YELLOW << "WARNING: Large dt may fail to resolve rapid dynamics. Try dt < pi/E_max.\n" << RESET;
         spacerFancy(YELLOW);
     }
 

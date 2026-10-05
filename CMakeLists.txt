@@ -16,11 +16,11 @@ find_package(OpenMP REQUIRED)
 
 # configure fftw3
 if(BUILD_HPC)
-    set(FFTW3_DIR /opt/software/software/FFTW/3.3.10-GCC-13.3.0)
+    set(FFTW3_DIR $ENV{HOME}/fftw)
     set(CMAKE_EXE_LINKER_FLAGS "-static-libstdc++ -static-libgcc")
     include_directories(${FFTW3_DIR}/include)
     link_directories(${FFTW3_DIR}/lib)
-    set(FFT_LIBS fftw3 m)
+    set(FFT_LIBS fftw3_omp fftw3 m)
 elseif(BUILD_INTEL)
     set(FFT_LIBS fftw3 m)
 else()
