@@ -35,6 +35,7 @@ void fftw_complex_array_to_file(const double& start, const int& size, const doub
 void fftw_complex_func_to_array(const double& start, const int& size, const double& width,
     const std::function<void(double, fftw_complex)>& function, fftw_complex *out) {
     fftw_complex temp;
+    #pragma omp parallel for default(none) shared(size, width, function, out, start, temp)
     for (int i = 0; i < size; i++) {
         function(i*width + start, temp);
         out[i][0] = temp[0];
@@ -98,6 +99,7 @@ void print_fftw_complex(const int size, const fftw_complex *in) {
 // finds square amplitude of fftw_complex
 void fftw_complex_square(const fftw_complex* function, std::vector<double>& out) {
     const std::size_t size = out.size();
+    #pragma omp parallel for default(none) shared(out, function, size)
     for (int i = 0; i < size; i++) {
         out[i] = function[i][0]*function[i][0] + function[i][1]*function[i][1];
     }
@@ -106,6 +108,7 @@ void fftw_complex_square(const fftw_complex* function, std::vector<double>& out)
 // integrates through array
 double fftw_complex_integrate(const int size, const double width, const std::vector<double>& in) {
     double sum = 0;
+    #pragma omp parallel for reduction(+:sum) default(none) shared(size, in, width)
     for (int i = 0; i < size; i++) {
         sum += in[i]*width;
     }
@@ -129,7 +132,7 @@ void normalize(const int gridpoints, const double gridwidth, fftw_complex* psi) 
 // gets the norm of a vector of fftw_complex vectors, in parallel over the spatial grid
 double normCC(const int gridpoints, const double dx, const int channels, const std::vector<fftw_complex*>& psi) {
     double total = 0.0;
-    #pragma omp parallel for reduction(+:total)
+    #pragma omp parallel for reduction(+:total) default(none) shared(channels, gridpoints, psi)
     for (int i = 0; i < gridpoints; i++) {
         for (int c = 0; c < channels; c++) {
             total += psi[c][i][0]*psi[c][i][0] + psi[c][i][1]*psi[c][i][1];
@@ -142,7 +145,7 @@ double normCC(const int gridpoints, const double dx, const int channels, const s
 void normalizeCC(const int gridpoints, const double dx, const int channels, const std::vector<fftw_complex*>& psi) {
     const double mag = normCC(gridpoints, dx, channels, psi);
     const double scale = 1.0 / sqrt(mag);
-    #pragma omp parallel for
+    #pragma omp parallel for default(none) shared(scale, channels, gridpoints, psi)
     for (int c = 0; c < channels; c++) {
         scale_fftw_complex(scale, psi[c], gridpoints);
     }

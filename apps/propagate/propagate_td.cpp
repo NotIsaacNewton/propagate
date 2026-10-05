@@ -24,6 +24,7 @@ std::vector<std::vector<double>> getPotential(const inputs& in, const std::strin
 void definePotentialOperatorTD(const inputs& in, const int& tick, fftw_complex *op,
     const std::vector<std::vector<double>>& potential) {
     // write potential operator
+    #pragma omp parallel for default(none) shared(potential, tick, in, op)
     for (int i = 0; i < in.space_grid; i++) {
         const double phase = potential[tick][i] * in.dt / 2.0;
         op[i][0] = cos(phase);

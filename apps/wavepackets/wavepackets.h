@@ -6,6 +6,7 @@
 #define WAVEPACKETS_H
 
 #include <functional>
+#include "file_tools.h"
 #include "fftw3.h"
 
 // Gaussian wave-packet
@@ -28,7 +29,10 @@ std::function<void(double, fftw_complex)> test();
 // utility function for filling intially-empty channels
 std::function<void(double, fftw_complex)> zeroState();
 
+// read function from file of raw doubles
+std::function<void(double, fftw_complex)> psiFromFile(const inputs& in, const std::string& file);
+
 // map of options
-std::function<void(double, fftw_complex)> buildWavepacket(char* argv[]);
+std::function<void(double, fftw_complex)> buildWavepacket(char* argv[], const inputs& in);
 
 #endif //WAVEPACKETS_H

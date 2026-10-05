@@ -13,7 +13,8 @@
 // base class used by all 1D interpolation routines
 struct base_interp {
     // integers and pointers
-    int n, mm, jsav, cor, dj;
+    int n, mm;
+    mutable int jsav, cor, dj;
     std::span<const double> xx, yy;
     // constructor
     base_interp(const std::span<const double> x, const std::span<const double> y, const int m)
@@ -21,21 +22,21 @@ struct base_interp {
         dj = std::min(1, static_cast<int>(std::pow(static_cast<double>(n), 0.25)));
     }
     // given x, return interpolated value from data pointed to by xx and yy
-    double interp(const double x) {
+    double interp(const double x) const {
         const int jlo = cor ? hunt(x) : locate(x);
         return rawinterp(jlo, x);
     }
     // locate and hunt routines for finding a section of xx data for which x is the midpoint
-    int locate(double x);
-    int hunt(double x);
+    int locate(double x) const;
+    int hunt(double x) const;
     // classes derived from this class must provide the actual interpolation method below
-    double virtual rawinterp(int jlo, double x) = 0;
+    double virtual rawinterp(int jlo, double x) const = 0;
     // destructor
     virtual ~base_interp() = default;
 };
 
 // locate routine
-inline int base_interp::locate(const double x) {
+inline int base_interp::locate(const double x) const {
     if (n < 2 || mm < 2 || mm > n) throw "locate size error during interpolation";
     const bool ascnd = xx[n-1] >= xx[0];
     int jl = 0;
@@ -50,7 +51,7 @@ inline int base_interp::locate(const double x) {
 }
 
 // hunt routine
-inline int base_interp::hunt(const double x) {
+inline int base_interp::hunt(const double x) const {
     int jl = jsav, ju;
     if (n < 2 || mm < 2 || mm > n) throw "hunt size error during interpolation";
     const bool ascnd = xx[n-1] >= xx[0];
@@ -97,7 +98,7 @@ struct spline_interp : base_interp {
     // calculate derivatives routine
     void sety2(const double* xv, const double* yv, double yp1, double ypn);
     // rawinterp routine
-    double rawinterp(int jl, double x) override;
+    double rawinterp(int jl, double x) const override;
 };
 
 // second derivatives routine
@@ -121,7 +122,7 @@ inline void spline_interp::sety2(const double* xv, const double* yv, const doubl
 }
 
 // returns cubic spline interpolated value y(x) given pointers to data xx and yy, and stored y2
-inline double spline_interp::rawinterp(const int jl, const double x) {
+inline double spline_interp::rawinterp(const int jl, const double x) const {
     const int klo = jl, khi = jl + 1;
     const double h = xx[khi] - xx[klo];
     if (h == 0.0) throw "bad input to spline interpolation routine";

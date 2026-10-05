@@ -73,6 +73,7 @@ void writeFunction2D(const double& start_x, const double& start_y, const double&
         std::vector<double> temp(width);
         for (int i=0; i<height; i++) {
             !((i+1) % (height / 10)) ? progressBar(GREEN, 100*(i+1)/height) : reset();
+            #pragma omp parallel for default(none) shared(i, temp, width, start_x, start_y, dx, dy, function)
             for (int j=0; j<width; j++) {
                 temp[j] = function(j*dx + start_x, i*dy + start_y);
             }
@@ -98,7 +99,7 @@ void writeHermitian2D(const double& start_x, const double& start_y, const double
         std::vector<double> temp(width*(channels*channels+channels));
         for (int i = 0; i < height; i++) {
             !((i+1) % (height / 10)) ? progressBar(GREEN, 100*(i+1)/height) : reset();
-            #pragma omp parallel for
+            #pragma omp parallel for default(none) shared(i, width, channels, function, start_x, start_y, dx, dy, temp)
             for (int j = 0; j < width; j++) {
                 const hermitian_matrix matrix = function(j*dx + start_x, i*dy + start_y);
                 for (int c1 = 0; c1 < channels; c1++) {

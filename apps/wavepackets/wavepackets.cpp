@@ -9,6 +9,8 @@
 #include <map>
 #include <unordered_map>
 #include "wavepackets.h"
+#include "file_tools.h"
+#include "interpolate_1d.h"
 
 double gaussian(const double x, const double delta, const double pos) {
     return pow(1/(std::numbers::pi * (delta*delta)), 1.0/4.0)*exp(-(x-pos)*(x-pos)/(2*(delta*delta)));
@@ -67,15 +69,34 @@ std::function<void(double, fftw_complex)> zeroState() {
     };
 }
 
+// read function from file of raw doubles
+std::function<void(double, fftw_complex)> psiFromFile(const inputs& in, const std::string& file) {
+    std::vector<double> temp(in.space_grid_coarse); // stores temp wavefunction for interpolation
+    readArray1D(file, temp); // reads from file
+    std::vector<double> grid(in.space_grid_coarse); // stores coarse grid on which wavefunction is defined
+    const double dx = (in.final_pos-in.initial_pos)/(in.space_grid_coarse-1); // width of coarse grid
+    // write grid
+    #pragma omp parallel for default(none) shared(in, grid, dx)
+    for (int i = 0; i < in.space_grid_coarse; i++) {
+        grid[i] = in.initial_pos + i*dx;
+    }
+    spline_interp interpolator(grid, temp); // spline interpolation object
+    return [interpolator](const double x, fftw_complex out) {
+        out[0] = interpolator.interp(x);
+        out[1] = 0.0;
+    };
+}
+
 // map of options
-std::function<void(double, fftw_complex)> buildWavepacket(char* argv[]) {
+std::function<void(double, fftw_complex)> buildWavepacket(char* argv[], const inputs& in) {
     const std::unordered_map<std::string, std::function<std::function<void(double, fftw_complex)>()>> wavepackets = {
         {"gaussian",    [argv] {
             return gaussianWP(std::stod(argv[4]),std::stod(argv[5]), std::stod(argv[6]));
             }},
         {"shoground",   [] { return shoGround(); }},
         {"shoexcited",  [] { return shoExcited(); }},
-        {"test",        [] { return test(); }}
+        {"test",        [] { return test(); }},
+        {"file",        [in] { return psiFromFile(in, "psi_initial.dat"); }},
     };
     return wavepackets.at(argv[3])();
 }

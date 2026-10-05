@@ -56,7 +56,6 @@ int main(const int argc, char *argv[]) {
             in.space_grid, in.time_grid, potfile, buildPotentialTD(argv));
     } else if (potTDCC) {
         std::print("Writing potential...\n");
-        // TODO: write this function
         writeHermitian2D(in.initial_pos, in.initial_t, in.dx, in.dt,
             in.space_grid, in.time_grid, potfile, buildPotentialTDCC(argv));
     } else {

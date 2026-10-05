@@ -23,7 +23,7 @@ std::vector<std::vector<hermitian_matrix> > getPotentialCC(const inputs &in, con
     readArray2D(data + "/potential.dat", temp,
                 in.space_grid*(in.channels*in.channels+in.channels),
                 in.time_grid); // reads in potential file
-    #pragma omp parallel for
+    #pragma omp parallel for default(none) shared(in, potential, temp)
     for (int i = 0; i < in.time_grid; i++) {
         for (int c1 = 0; c1 < in.channels; c1++) {
             for (int c2 = c1; c2 < in.channels; c2++) {
@@ -103,7 +103,7 @@ void applyDiagonalOperator(const int point, const int channels, const std::vecto
 // applies potential operator in parallel threads across spatial gridpoints
 void applyPotentialOperatorCC(const inputs& in, const std::vector<fftw_complex*>& diag,
     const std::vector<std::vector<std::vector<coupling>>>& coup, const std::vector<fftw_complex*>& psi) {
-    #pragma omp parallel for
+    #pragma omp parallel for default(none) shared(in, coup, psi, diag)
     for (int i = 0; i < in.space_grid; i++) {
         applyCouplingOperator(i, in.channels, coup, psi);
         applyDiagonalOperator(i, in.channels, diag, psi);
@@ -111,7 +111,7 @@ void applyPotentialOperatorCC(const inputs& in, const std::vector<fftw_complex*>
 }
 void applyPotentialOperatorCCReverse(const inputs& in, const std::vector<fftw_complex*>& diag,
     const std::vector<std::vector<std::vector<coupling>>>& coup, const std::vector<fftw_complex*>& psi) {
-    #pragma omp parallel for
+    #pragma omp parallel for default(none) shared(in, coup, psi, diag)
     for (int i = 0; i < in.space_grid; i++) {
         applyDiagonalOperator(i, in.channels, diag, psi);
         applyCouplingOperator(i, in.channels, coup, psi);
@@ -121,7 +121,7 @@ void applyPotentialOperatorCCReverse(const inputs& in, const std::vector<fftw_co
 // executes fft plans in parallel for all channels
 void fftExecuteCC(const int gridpoints, const int channels, const std::vector<fftw_complex*>& psi,
     const std::vector<fftw_plan>& fft_plans) {
-    #pragma omp parallel for
+    #pragma omp parallel for default(none) shared(channels, gridpoints, psi, fft_plans)
     for (int c = 0; c < channels; c++) {
         for (int i = 0; i < gridpoints; i++) {
             const int sign = i % 2 == 0 ? 1 : -1;
@@ -135,7 +135,7 @@ void fftExecuteCC(const int gridpoints, const int channels, const std::vector<ff
 // executes ifft plans in parallel for all channels
 void ifftExecuteCC(const int gridpoints, const int channels, const std::vector<fftw_complex*>& psi,
     const std::vector<fftw_plan>& ifft_plans) {
-    #pragma omp parallel for
+    #pragma omp parallel for default(none) shared(channels, gridpoints, psi, ifft_plans)
     for (int c = 0; c < channels; c++) {
         fftw_execute(ifft_plans[c]);
         for (int i = 0; i < gridpoints; i++) {
@@ -149,7 +149,7 @@ void ifftExecuteCC(const int gridpoints, const int channels, const std::vector<f
 // applies kinetic energy operator using applyKineticOperator from propagate.cpp in parallel
 void applyKineticOperatorCC(const int gridpoints, const int channels, const std::vector<fftw_complex*>& psi,
     const fftw_complex* T) {
-    #pragma omp parallel for
+    #pragma omp parallel for default(none) shared(channels, gridpoints, psi, T)
     for (int c = 0; c < channels; c++) {
         applyKineticOperator(gridpoints, psi[c], T);
     }
@@ -186,7 +186,7 @@ fftwResourcesCC fftwPrepTDCC(const inputs& in, const std::vector<fftw_complex*>&
 
 // normalizes fftw results in parallel for all channels
 void fftwNormCC(const inputs& in, const double scale, const std::vector<fftw_complex*>& psi) {
-    #pragma omp parallel for
+    #pragma omp parallel for default(none) shared(in, scale, psi)
     for (int c = 0; c < in.channels; c++) {
         scale_fftw_complex(scale, psi[c], in.space_grid);
     }

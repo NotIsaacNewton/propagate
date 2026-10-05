@@ -50,9 +50,9 @@ int main(const int argc, char* argv[]) {
     // write wavefunction
     if (CC) {
         fftw_complex_func_array_to_file(in, data, "psi_initial",
-            buildWavepacketCC(argv, in.channels));
+            buildWavepacketCC(argv, in, in.channels));
     } else {
-        fftw_complex_func_to_file(in, psifile, buildWavepacket(argv));
+        fftw_complex_func_to_file(in, psifile, buildWavepacket(argv, in));
     }
 
     // record end time and duration

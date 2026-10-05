@@ -17,7 +17,6 @@
 #include "interpolate_1d.h"
 
 // TODO: more safety checks and error paths (try <expected>)
-//  implement coupling: propagation on multiple potential curves. make dimension-agnostic as much as possible.
 //  generalize to higher dimensions
 
 // creates array of squared momenta
@@ -25,6 +24,7 @@ std::vector<double> psquared(const int gridpoints, const double space_width) {
     const double scale = 2 * std::numbers::pi / (gridpoints * space_width);
     const double shift = - std::numbers::pi / space_width;
     std::vector<double> mom(gridpoints);
+    #pragma omp parallel for default(none) shared(gridpoints, mom, scale, shift)
     for (int i = 0; i < gridpoints; i++) {
         mom[i] = scale * i + shift;
         mom[i] *= mom[i];
@@ -45,14 +45,16 @@ std::unique_ptr<fftw_complex, void(*)(void*)> getWavepacket(const inputs& in, co
 // reshapes potential using interpolation
 void reshapePotential(const inputs& in, std::vector<double> potential) {
     std::vector<double> grid(in.space_grid_coarse); // stores grid on which potential is defined
-    const double dx = (in.final_pos-in.initial_pos)/(in.space_grid_coarse-1); // width of potential grid
+    const double dx = (in.final_pos-in.initial_pos)/(in.space_grid_coarse-1); // width of coarse potential grid
     // write potential grid
+    #pragma omp parallel for default(none) shared(in, grid, dx)
     for (int i = 0; i < in.space_grid_coarse; i++) {
         grid[i] = in.initial_pos + i*dx;
     }
     spline_interp interpolator(grid, potential); // spline interpolation object
     std::vector<double> pot(in.space_grid); // temporary potential array
     // write temp array
+    #pragma omp parallel for default(none) shared(pot, in, interpolator)
     for (int i = 0; i < in.space_grid; i++) {
         pot[i] = interpolator.interp(in.initial_pos + i*in.dx);
     }
@@ -71,12 +73,14 @@ void definePotentialOperator(const inputs& in, fftw_complex *op, const std::stri
     // write potential operator
     if (imProp) {
         // imaginary propagation
+        #pragma omp parallel for default(none) shared(potential, in, op)
         for (int i = 0; i < in.space_grid; i++) {
             op[i][0] = exp(-potential[i] * in.dt / 2.0);
             op[i][1] = 0;
         }
     } else {
         // real propagation
+        #pragma omp parallel for default(none) shared(potential, in, op)
         for (int i = 0; i < in.space_grid; i++) {
             const double phase = potential[i] * in.dt / 2.0;
             op[i][0] = cos(phase);
@@ -90,12 +94,14 @@ void defineKineticOperator(const inputs& in, fftw_complex *op, const bool imProp
     const std::vector<double> mom = psquared(in.space_grid, in.dx);
     if (imProp) {
         // imaginary propagation
+        #pragma omp parallel for default(none) shared(mom, in, op)
         for (int i = 0; i < in.space_grid; i++) {
             op[i][0] = exp(-in.dt * mom[i] / 2);
             op[i][1] = 0;
         }
     } else {
         // real propagation
+        #pragma omp parallel for default(none) shared(mom, in, op)
         for (int i = 0; i < in.space_grid; i++) {
             const double phase = in.dt * mom[i] / 2;
             op[i][0] = cos(phase);
@@ -106,6 +112,7 @@ void defineKineticOperator(const inputs& in, fftw_complex *op, const bool imProp
 
 // applies potential energy exponential operator to psi
 void applyPotentialOperator(const int gridpoints, fftw_complex *psi, const fftw_complex *V) {
+    #pragma omp parallel for default(none) shared(gridpoints, psi, V)
     for (int i = 0; i < gridpoints; i++) {
         // sign flip for dft
         const int sign = i % 2 == 0 ? 1 : -1;
@@ -122,6 +129,7 @@ void applyPotentialOperator(const int gridpoints, fftw_complex *psi, const fftw_
 
 // applies kinetic energy exponential operator to psi
 void applyKineticOperator(const int gridpoints, fftw_complex *psi, const fftw_complex *T) {
+    #pragma omp parallel for default(none) shared(gridpoints, psi, T)
     for (int i = 0; i < gridpoints; i++) {
         const double re = psi[i][0];
         const double im = psi[i][1];
