@@ -1,7 +1,22 @@
+psi_initial          // psi input file
+psi_final.dat         // psi output file
+potential.dat          // potential file
+TDCC        // run type
+coupledsho        // type of potential
+pot_coarse.dat    // input potential
+shoground         // type of wavepacket
+     // input wavepacket
 -100     // initial position
 100       // final position
 0       // initial time
 10     	// final time
+0        // potential position 1
+0        // potential position 2
+50   // potential strength 1
+0   // potential strength 2
+0          // wavepacket delta
+0       // wavepacket momentum
+0          // wavepacket position
 8192    	// space gridpoints
 0	// coarse space grid
 20000    	// time gridpoints

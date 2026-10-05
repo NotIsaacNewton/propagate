@@ -16,9 +16,6 @@
 #include "console_tools.h"
 #include "interpolate_1d.h"
 
-// TODO: more safety checks and error paths (try <expected>)
-//  generalize to higher dimensions
-
 // creates array of squared momenta
 std::vector<double> psquared(const int gridpoints, const double space_width) {
     const double scale = 2 * std::numbers::pi / (gridpoints * space_width);
@@ -38,7 +35,7 @@ std::unique_ptr<fftw_complex, void(*)(void*)> getWavepacket(const inputs& in, co
     const auto psi = fftw_alloc_complex(in.space_grid);
     std::unique_ptr<fftw_complex, void(*)(void*)> psip{psi, fftw_free};
     // get wavefunction from psifile and save it to psi
-    fftw_complex_array_from_file(data + "/psi_initial.dat", psi, in.space_grid);
+    fftw_complex_array_from_file(data + "/" + in.input_psi_file + ".dat", psi, in.space_grid);
     return psip;
 }
 
@@ -169,7 +166,7 @@ fftwResources fftwPrep(const inputs& in, fftw_complex *psi, const std::string& d
     // save fftw wisdom to file
     fftw_export_wisdom_to_filename(wisdomfile.c_str());
     // locate potential curve file
-    const std::string potfile = data + "/potential.dat";
+    const std::string potfile = data + "/" + in.pot_file;
     // define potential and kinetic terms
     const auto V = fftw_alloc_complex(in.space_grid);
     const auto T = fftw_alloc_complex(in.space_grid);

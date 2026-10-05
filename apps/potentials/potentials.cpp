@@ -4,7 +4,6 @@
 
 #include <unordered_map>
 #include "potentials.h"
-#include "file_tools.h"
 
 // potential functions
 // step potential
@@ -41,23 +40,23 @@ std::function<double(double)> wall(const double pos, const double strength) {
 }
 
 // potential builder + map of options
-std::function<double(double)> buildPotential(char* argv[]) {
+std::function<double(double)> buildPotential(const inputs& in) {
     std::unordered_map<std::string, std::function<std::function<double(double)>()>> const potentials = {
-        {"step",    [argv] {
-            return step(std::stod(argv[4]),std::stod(argv[6]),std::stod(argv[7]));
+        {"step",    [in] {
+            return step(in.pot_position_1,in.strength_1,in.strength_2);
             }},
-        {"sho",     [argv] {
-            return sho(std::stod(argv[6]));
+        {"sho",     [in] {
+            return sho(in.strength_1);
             }},
-        {"well",    [argv] {
-            return barrier(std::stod(argv[4]),std::stod(argv[5]),std::stod(argv[6]));
+        {"well",    [in] {
+            return barrier(in.pot_position_1,in.pot_position_2,in.strength_1);
             }},
-        {"triangle",[argv] {
-            return triangle(std::stod(argv[6]),std::stod(argv[4]));
+        {"triangle",[in] {
+            return triangle(in.strength_1,in.pot_position_1);
             }},
-        {"wall",    [argv] {
-            return wall(std::stod(argv[4]),std::stod(argv[6]));
+        {"wall",    [in] {
+            return wall(in.pot_position_1,in.strength_1);
             }}
     };
-    return potentials.at(argv[3])();
+    return potentials.at(in.potential_type)();
 }

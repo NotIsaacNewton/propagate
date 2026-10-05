@@ -10,6 +10,6 @@
 #include "file_tools.h"
 
 // wavepacket builder for CC
-std::vector<std::function<void(double, fftw_complex)>> buildWavepacketCC(char* argv[], const inputs& in, int channels);
+std::vector<std::function<void(double, fftw_complex)>> buildWavepacketCC(const inputs& in);
 
 #endif //PROPAGATE_WAVEPACKETS_CC_H

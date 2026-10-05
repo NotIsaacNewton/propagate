@@ -6,11 +6,10 @@
 #include "wavepackets.h"
 
 // wavepacket builder for CC
-std::vector<std::function<void(double, fftw_complex)>> buildWavepacketCC(char* argv[], const inputs& in,
-    const int channels) {
-    std::vector<std::function<void(double, fftw_complex)>> wavepacket(channels);
-    wavepacket[0] = buildWavepacket(argv, in);
-    for (int c = 1; c < channels; c++) {
+std::vector<std::function<void(double, fftw_complex)>> buildWavepacketCC(const inputs& in) {
+    std::vector<std::function<void(double, fftw_complex)>> wavepacket(in.channels);
+    wavepacket[0] = buildWavepacket(in);
+    for (int c = 1; c < in.channels; c++) {
         wavepacket[c] = zeroState();
     }
     return wavepacket;

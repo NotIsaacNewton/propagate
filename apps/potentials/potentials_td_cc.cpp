@@ -29,12 +29,12 @@ std::function<hermitian_matrix(double, double)> coupledSHO(const double coupling
 }
 
 // potential builder + map of options
-std::function<hermitian_matrix(double, double)> buildPotentialTDCC(char* argv[]) {
+std::function<hermitian_matrix(double, double)> buildPotentialTDCC(const inputs& in) {
     std::unordered_map<std::string,
     std::function<std::function<hermitian_matrix(double, double)>()>> const potentials = {
-        {"coupledsho",    [argv] {
-            return coupledSHO(std::stod(argv[6]));
+        {"coupledsho",    [in] {
+            return coupledSHO(in.strength_1);
         }}
     };
-    return potentials.at(argv[3])();
+    return potentials.at(in.potential_type)();
 }

@@ -7,6 +7,7 @@
 
 #include <functional>
 #include "matrix_tools.h"
+#include "file_tools.h"
 
 
 // TODO:
@@ -20,6 +21,6 @@ double gaussian(double x, double delta, double pos);
 std::function<hermitian_matrix(double, double)> coupledSHO(double coupling_strength);
 
 // potential builder + map of options
-std::function<hermitian_matrix(double, double)> buildPotentialTDCC(char* argv[]);
+std::function<hermitian_matrix(double, double)> buildPotentialTDCC(const inputs& in);
 
 #endif //PROPAGATE_POTENTIALS_TD_CC_H

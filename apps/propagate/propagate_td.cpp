@@ -15,7 +15,7 @@
 std::vector<std::vector<double>> getPotential(const inputs& in, const std::string& data) {
     // prepare potential arrays
     std::vector<std::vector<double>> potential; // full potential array
-    readArray2D(data + "/potential.dat", potential,
+    readArray2D(data + "/" + in.pot_file, potential,
         in.space_grid, in.time_grid); // reads in potential
     return potential;
 }
@@ -49,7 +49,7 @@ fftwResources fftwPrepTD(const inputs& in, fftw_complex *psi, const std::string&
     // save fftw wisdom to file
     fftw_export_wisdom_to_filename(wisdomfile.c_str());
     // locate potential curve file
-    const std::string potfile = data + "/potential.dat";
+    const std::string potfile = data + "/" + in.pot_file;
     // define only kinetic term since potential is defined at each time step
     const auto V = fftw_alloc_complex(in.space_grid);
     const auto T = fftw_alloc_complex(in.space_grid);

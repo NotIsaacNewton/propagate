@@ -6,6 +6,7 @@
 #define POTENTIALS_H
 
 #include <functional>
+#include "file_tools.h"
 
 // potential functions
 // step potential
@@ -20,6 +21,6 @@ std::function<double(double)> triangle(double strength, double pos);
 std::function<double(double)> wall(double pos, double strength);
 
 // map of options
-std::function<double(double)> buildPotential(char* argv[]);
+std::function<double(double)> buildPotential(const inputs& in);
 
 #endif //POTENTIALS_H

@@ -30,9 +30,9 @@ std::function<void(double, fftw_complex)> test();
 std::function<void(double, fftw_complex)> zeroState();
 
 // read function from file of raw doubles
-std::function<void(double, fftw_complex)> psiFromFile(const inputs& in, const std::string& file);
+std::function<void(double, fftw_complex)> psiFromFile(const inputs& in);
 
 // map of options
-std::function<void(double, fftw_complex)> buildWavepacket(char* argv[], const inputs& in);
+std::function<void(double, fftw_complex)> buildWavepacket(const inputs& in);
 
 #endif //WAVEPACKETS_H

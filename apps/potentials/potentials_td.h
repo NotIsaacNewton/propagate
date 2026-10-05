@@ -6,6 +6,7 @@
 #define PROPAGATE_POTENTIALS_TD_H
 
 #include <functional>
+#include "file_tools.h"
 
 // well + wave
 std::function<double(double, double)> electricBarrier(double start_pos, double end_pos,
@@ -14,6 +15,6 @@ std::function<double(double, double)> electricBarrier(double start_pos, double e
 std::function<double(double, double)> electricSho(double strength, double k);
 
 // potential builder + map of options
-std::function<double(double, double)> buildPotentialTD(char* argv[]);
+std::function<double(double, double)> buildPotentialTD(const inputs& in);
 
 #endif //PROPAGATE_POTENTIALS_TD_H

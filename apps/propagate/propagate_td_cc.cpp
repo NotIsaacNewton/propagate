@@ -20,7 +20,7 @@ std::vector<std::vector<hermitian_matrix> > getPotentialCC(const inputs &in, con
     std::vector(in.space_grid, hermitian_matrix(in.channels))); // full potential array
     std::vector<std::vector<double>> temp; // array containing raw values
     std::print("Reading potential from {}/potential.dat...\n", data);
-    readArray2D(data + "/potential.dat", temp,
+    readArray2D(data + "/" + in.pot_file, temp,
                 in.space_grid*(in.channels*in.channels+in.channels),
                 in.time_grid); // reads in potential file
     #pragma omp parallel for default(none) shared(in, potential, temp)
@@ -219,7 +219,8 @@ std::vector<std::unique_ptr<fftw_complex, void(*)(void*)>> getWavepacketCC(const
     std::vector<std::unique_ptr<fftw_complex, void(*)(void*)>> psip;
     for (int c = 0; c < in.channels; c++) {
         const auto psi = fftw_alloc_complex(in.space_grid);
-        fftw_complex_array_from_file(data + "/psi_initial_" + std::to_string(c) + ".dat", psi, in.space_grid);
+        fftw_complex_array_from_file(data + "/" + in.input_psi_file + "_" + std::to_string(c) + ".dat",
+            psi, in.space_grid);
         psip.emplace_back(psi, fftw_free);
     }
     return psip;

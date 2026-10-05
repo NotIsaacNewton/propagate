@@ -13,18 +13,22 @@
 #include "propagate_td.h"
 #include "propagate_td_cc.h"
 
+// TODO: more safety checks and error paths (try <expected>)
+//  generalize to higher dimensions
+
 // inputs: location/of/input_file location/of/data_directory TDCC/TD/improp
 int main(const int argc, const char* argv[]) {
-    if (argc != 4) {
+    if (argc != 3) {
         spacerFancy(RED);
         std::cerr << RED << "Error: improper inputs.\n";
-        std::print(
-            "{}[location/of/input_file] [location/of/data_directory] [TDCC/TD/true/false] \n",
-            GREEN
-            );
+        std::print("{}[location/of/input_file] [location/of/data_directory]\n", GREEN);
         spacerFancy(RED);
         return 1;
     }
+
+    // file locations
+    const std::string inputfile = argv[1];
+    const std::string data = argv[2];
 
     // introduction
     std::print("\n{}propagate\n", BLUE);
@@ -32,23 +36,21 @@ int main(const int argc, const char* argv[]) {
     // record the start time
     auto start = std::chrono::steady_clock::now();
 
-    // file locations
-    const std::string inputfile = argv[1];
-    const std::string data = argv[2];
-    const std::string psiout = data + "/psi_final.dat";
-
-    // imaginary propagation?
-    const bool imProp = std::string(argv[3]) == "true";
-    // TD propagation?
-    const bool propTD = std::string(argv[3]) == "TD";
-    // TDCC propagation?
-    const bool propTDCC = std::string(argv[3]) == "TDCC";
-
     // spacer
     spacerChunky(BLUE);
 
     // read input file
     const inputs in = readInputs(inputfile);
+
+    // psi output file location
+    const std::string psiout = data + "/" + in.output_psi_file;
+
+    // imaginary propagation?
+    const bool imProp = in.run_type == "true";
+    // TD propagation?
+    const bool propTD = in.run_type == "TD";
+    // TDCC propagation?
+    const bool propTDCC = in.run_type == "TDCC";
 
     // warning if odd number of gridpoints
     if (in.space_grid % 2 != 0) {

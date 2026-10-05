@@ -39,24 +39,44 @@ void readArray2D(const std::string& file, std::vector<std::vector<double>>& arra
 void writeArray2D(const std::string& file, const std::vector<std::vector<double>>& array,
     const int& width, const int& height);
 
+// TODO: make readInputs define all new fields here
+//  modify calculate.sh to write inputs.txt with all fields below
+//  document all input options and behavior
 // inputs go here
 struct inputs {
-    // space stuff
+    // main file names
+    std::string input_psi_file;
+    std::string output_psi_file;
+    std::string pot_file;
+    // system data
+    std::string run_type;
+    int channels;
+    // space data
     double initial_pos;
     double final_pos;
     int space_grid;
     int nx_prints;
     int space_grid_coarse;
-    // time stuff
+    double dx;
+    // time data
     double initial_t;
     double final_t;
     int time_grid;
     int nt_prints;
-    // space-time widths
-    double dx;
     double dt;
-    //
-    int channels;
+    // potential data
+    std::string potential_type;
+    std::string pot_read_from_file;
+    double pot_position_1;
+    double pot_position_2;
+    double strength_1;
+    double strength_2;
+    // wavepacket data
+    std::string wavepacket_type;
+    std::string wp_read_from_file;
+    double delta;
+    double momentum;
+    double wp_position;
 };
 
 // read inputs from file

@@ -12,17 +12,19 @@
 #include <print>
 #include <chrono>
 
-// inputs: location/of/input_file location/of/data_directory potential_type pos1 pos2 strength1 strength2 TD/TI/CC
+// inputs: location/of/input_file location/of/data_directory
 int main(const int argc, char *argv[]) {
-    if(argc < 6) {
+    if(argc != 3) {
         spacerFancy(RED);
         std::cerr << RED << "Error: improper inputs.\n";
-        std::print(
-            "{}[location/of/input_file] [location/of/data_directory] [potential_parameters] [mode: TDCC/TD/TI]\n",
-            GREEN);
+        std::print("{}[location/of/input_file] [location/of/data_directory]\n", GREEN);
         spacerFancy(RED);
         return 1;
     }
+
+    // file locations
+    const std::string inputfile = argv[1];
+    const std::string data = argv[2];
 
     // introduction
     std::print("\n{}potential\n", BLUE);
@@ -33,18 +35,16 @@ int main(const int argc, char *argv[]) {
     // spacer
     spacerChunky(BLUE);
 
-    // file locations
-    const std::string inputfile = argv[1];
-    const std::string data = argv[2];
-    const std::string potfile = data + "/potential.dat";
-
-    // TD potential?
-    const bool potTD = std::string(argv[8]) == "TD";
-    // TDCC potential?
-    const bool potTDCC = std::string(argv[8]) == "TDCC";
-
     // read inputs
     const inputs in = readInputs(inputfile);
+
+    // potential file
+    const std::string potfile = data + "/" + in.pot_file;
+
+    // TD potential?
+    const bool potTD = in.run_type == "TD";
+    // TDCC potential?
+    const bool potTDCC = in.run_type == "TDCC";
 
     // spacer
     spacer(RESET);
@@ -53,15 +53,15 @@ int main(const int argc, char *argv[]) {
     if (potTD) {
         std::print("Writing potential...\n");
         writeFunction2D(in.initial_pos, in.initial_t, in.dx, in.dt,
-            in.space_grid, in.time_grid, potfile, buildPotentialTD(argv));
+            in.space_grid, in.time_grid, potfile, buildPotentialTD(in));
     } else if (potTDCC) {
         std::print("Writing potential...\n");
         writeHermitian2D(in.initial_pos, in.initial_t, in.dx, in.dt,
-            in.space_grid, in.time_grid, potfile, buildPotentialTDCC(argv));
+            in.space_grid, in.time_grid, potfile, buildPotentialTDCC(in));
     } else {
         const double dx = (in.final_pos-in.initial_pos)/(in.space_grid_coarse-1);
         writeFunction1D(in.initial_pos, dx, in.space_grid_coarse,
-            potfile, buildPotential(argv));
+            potfile, buildPotential(in));
     }
 
     // record end time and duration

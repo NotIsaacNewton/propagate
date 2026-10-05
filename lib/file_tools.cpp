@@ -158,28 +158,50 @@ inputs readInputs(const std::string& file) {
     std::ifstream read;
     read.open(file);
     if (read.is_open()) {
-        double inputarray[4];
-        int intinputarray[6];
+        std::string strings[8];
+        double doubles[11];
+        int ints[6];
         std::string line;
         int n = 0;
         while (std::getline(read, line)) {
             std::istringstream readline(line);
-            n < 4 ? readline >> inputarray[n] : readline >> intinputarray[n-4];
+            if (n < 8) {
+                readline >> strings[n];
+            } else if (n < 19) {
+                readline >> doubles[n-8];
+            } else {
+                readline >> ints[n-19];
+            }
             ++n;
         }
         read.close();
         // initialize inputs
         inputs in{
-            .initial_pos = inputarray[0],
-            .final_pos = inputarray[1],
-            .space_grid = intinputarray[0],
-            .nx_prints = intinputarray[3],
-            .space_grid_coarse = intinputarray[1],
-            .initial_t = inputarray[2],
-            .final_t = inputarray[3],
-            .time_grid = intinputarray[2],
-            .nt_prints = intinputarray[4],
-            .channels = intinputarray[5]
+            .input_psi_file = strings[0],
+            .output_psi_file = strings[1],
+            .pot_file = strings[2],
+            .run_type = strings[3],
+            .channels = ints[5],
+            .initial_pos = doubles[0],
+            .final_pos = doubles[1],
+            .space_grid = ints[0],
+            .nx_prints = ints[3],
+            .space_grid_coarse = ints[1],
+            .initial_t = doubles[2],
+            .final_t = doubles[3],
+            .time_grid = ints[2],
+            .nt_prints = ints[4],
+            .potential_type = strings[4],
+            .pot_read_from_file = strings[5],
+            .pot_position_1 = doubles[4],
+            .pot_position_2 = doubles[5],
+            .strength_1 = doubles[6],
+            .strength_2 = doubles[7],
+            .wavepacket_type = strings[6],
+            .wp_read_from_file = strings[7],
+            .delta = doubles[8],
+            .momentum = doubles[9],
+            .wp_position = doubles[10],
         };
         in.dx = (in.final_pos - in.initial_pos)/(in.space_grid - 1);
         in.dt = (in.final_t - in.initial_t)/(in.time_grid-1);
@@ -192,7 +214,7 @@ inputs readInputs(const std::string& file) {
 
 // opens wavefunction output file
 wfOutput openWFOutputFile(const inputs& in, const std::string &data) {
-    const std::string output = data + "/psi_final.dat";
+    const std::string output = data + "/" + in.output_psi_file;
     std::ofstream wf(output, std::ios::app | std::ios::binary);
     if (!wf.is_open()) {
         std::cerr << "Failed to open " << output << "." << "\n";
@@ -205,7 +227,7 @@ wfOutput openWFOutputFile(const inputs& in, const std::string &data) {
 
 // opens wavefunction output file, but with a larger buffer (by a factor of # of channels)
 wfOutput openWFOutputFileCC(const inputs& in, const std::string &data) {
-    const std::string output = data + "/psi_final.dat";
+    const std::string output = data + "/" + in.output_psi_file;
     std::ofstream wf(output, std::ios::app | std::ios::binary);
     if (!wf.is_open()) {
         std::cerr << "Failed to open " << output << "." << "\n";

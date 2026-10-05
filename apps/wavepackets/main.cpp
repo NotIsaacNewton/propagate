@@ -14,15 +14,19 @@
 #include "wavepackets.h"
 #include "wavepackets_cc.h"
 
-// inputs: location/of/input_file location/of/data_directory wavepacket_type delta momentum position TDCC
+// inputs: location/of/input_file location/of/data_directory
 int main(const int argc, char* argv[]) {
-    if (argc < 5) {
+    if (argc != 3) {
         spacerFancy(RED);
         std::cerr << RED << "Error: improper inputs.\n";
-        std::print("{}[location/of/input_file] [location/of/data_directory] [wavepacket_parameters] [mode: TDCC]\n", GREEN);
+        std::print("{}[location/of/input_file] [location/of/data_directory]\n", GREEN);
         spacerFancy(RED);
         return 1;
     }
+
+    // file locations
+    const std::string inputfile = argv[1];
+    const std::string data = argv[2];
 
     // introduction
     std::print("\n{}wavepacket\n", BLUE);
@@ -33,26 +37,24 @@ int main(const int argc, char* argv[]) {
     // spacer
     spacerChunky(BLUE);
 
-    // file locations
-    const std::string inputfile = argv[1];
-    const std::string data = argv[2];
-    const std::string psifile = data+"/psi_initial.dat";
-
-    // CC wavepacket?
-    const bool CC = std::string(argv[7]) == "TDCC";
-
     // read input file
     const inputs in = readInputs(inputfile);
+
+    // output psi file
+    const std::string psifile = data + "/" + in.input_psi_file;
+
+    // CC wavepacket?
+    const bool CC = in.run_type == "TDCC";
 
     // spacer
     spacer(RESET);
 
     // write wavefunction
     if (CC) {
-        fftw_complex_func_array_to_file(in, data, "psi_initial",
-            buildWavepacketCC(argv, in, in.channels));
+        fftw_complex_func_array_to_file(in, data, in.input_psi_file,
+            buildWavepacketCC(in));
     } else {
-        fftw_complex_func_to_file(in, psifile, buildWavepacket(argv, in));
+        fftw_complex_func_to_file(in, psifile, buildWavepacket(in));
     }
 
     // record end time and duration

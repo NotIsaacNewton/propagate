@@ -25,15 +25,15 @@ std::function<double(double, double)> electricSho(const double strength, const d
 }
 
 // potential builder + map of options
-std::function<double(double, double)> buildPotentialTD(char* argv[]) {
+std::function<double(double, double)> buildPotentialTD(const inputs& in) {
     std::unordered_map<std::string, std::function<std::function<double(double, double)>()>> const potentials = {
-        {"electricwell",    [argv] {
-            return electricBarrier(std::stod(argv[4]),std::stod(argv[5]),
-                std::stod(argv[6]), std::stod(argv[7]));
+        {"electricwell",    [in] {
+            return electricBarrier(in.pot_position_1,in.pot_position_2,
+                in.strength_1, in.strength_2);
             }},
-        {"electricsho",    [argv] {
-            return electricSho(std::stod(argv[6]),std::stod(argv[7]));
+        {"electricsho",    [in] {
+            return electricSho(in.strength_1,in.strength_2);
             }}
     };
-    return potentials.at(argv[3])();
+    return potentials.at(in.potential_type)();
 }

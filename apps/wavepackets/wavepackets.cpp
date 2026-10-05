@@ -70,9 +70,9 @@ std::function<void(double, fftw_complex)> zeroState() {
 }
 
 // read function from file of raw doubles
-std::function<void(double, fftw_complex)> psiFromFile(const inputs& in, const std::string& file) {
+std::function<void(double, fftw_complex)> psiFromFile(const inputs& in) {
     std::vector<double> temp(in.space_grid_coarse); // stores temp wavefunction for interpolation
-    readArray1D(file, temp); // reads from file
+    readArray1D(in.input_psi_file, temp); // reads from file
     std::vector<double> grid(in.space_grid_coarse); // stores coarse grid on which wavefunction is defined
     const double dx = (in.final_pos-in.initial_pos)/(in.space_grid_coarse-1); // width of coarse grid
     // write grid
@@ -88,15 +88,15 @@ std::function<void(double, fftw_complex)> psiFromFile(const inputs& in, const st
 }
 
 // map of options
-std::function<void(double, fftw_complex)> buildWavepacket(char* argv[], const inputs& in) {
+std::function<void(double, fftw_complex)> buildWavepacket(const inputs& in) {
     const std::unordered_map<std::string, std::function<std::function<void(double, fftw_complex)>()>> wavepackets = {
-        {"gaussian",    [argv] {
-            return gaussianWP(std::stod(argv[4]),std::stod(argv[5]), std::stod(argv[6]));
+        {"gaussian",    [in] {
+            return gaussianWP(in.delta,in.momentum, in.wp_position);
             }},
         {"shoground",   [] { return shoGround(); }},
         {"shoexcited",  [] { return shoExcited(); }},
         {"test",        [] { return test(); }},
-        {"file",        [in] { return psiFromFile(in, "psi_initial.dat"); }},
+        {"file",        [in] { return psiFromFile(in); }},
     };
-    return wavepackets.at(argv[3])();
+    return wavepackets.at(in.wavepacket_type)();
 }
