@@ -16,6 +16,9 @@ std::vector<std::vector<hermitian_matrix>> getPotentialCC(const inputs& in, cons
 // NOTE: op at first level is indexed for each channel and at second level for spatial grid
 void definePotentialOperatorDiag(const inputs& in, const int& tick, const std::vector<fftw_complex*>& op,
     const std::vector<std::vector<hermitian_matrix>>& potential);
+// creates array of diagonal potential operator arrays from potential at tick and outputs to op
+void definePotentialOperatorDiag(const inputs& in, const int& tick, const std::vector<fftw_complex*>& op,
+    const std::function<hermitian_matrix(double, double)>& potential);
 
 // struct used to carry usable information of coupling elements
 // NOTE: should contain cos(|V_{ij}|*dt/2), sin(|V_{ij}|*dt/2), -i*V_{ij}/|V_{ij}|
@@ -29,11 +32,15 @@ struct coupling {
 // NOTE: op at first level is indexed for spatial grid and at second and third levels for each pair of channels
 void defineCouplingOperator(const inputs& in, const int& tick, std::vector<std::vector<std::vector<coupling>>>& op,
     const std::vector<std::vector<hermitian_matrix>>& potential);
+// creates array of coupling operator arrays from data at tick and outputs to op
+void defineCouplingOperator(const inputs& in, const int& tick, std::vector<std::vector<std::vector<coupling>>>& op,
+    const std::function<hermitian_matrix(double,double)>& potential);
 
 // applies coupling part of potential operator for all channels at a specific gridpoint
 void applyCouplingOperator(int point, int channels, const std::vector<std::vector<std::vector<coupling>>>& coup,
     const std::vector<fftw_complex*>& psi);
 
+// applies diagonal part of potential operator
 void applyDiagonalOperator(int point, int channels, const std::vector<fftw_complex*>& diag,
     const std::vector<fftw_complex*>& psi);
 
@@ -70,8 +77,10 @@ fftwResourcesCC fftwPrepTDCC(const inputs& in, const std::vector<fftw_complex*>&
 void fftwNormCC(const inputs& in, double scale, const std::vector<fftw_complex*>& psi);
 
 // propagates psi in potential from tick to tick + 1
+using potCC = std::variant<std::vector<std::vector<hermitian_matrix>>,
+    std::function<hermitian_matrix(double, double)>>;
 void propTickTDCC(const int& tick, const inputs& in, const std::vector<fftw_complex*>& psi,
-    const std::vector<std::vector<hermitian_matrix>>& potential, const std::vector<fftw_complex*>& V_d,
+    const potCC& potential, const std::vector<fftw_complex*>& V_d,
     std::vector<std::vector<std::vector<coupling>>>& V_c, const fftw_complex* T,
     const std::vector<fftw_plan>& fft, const std::vector<fftw_plan>& ifft, double scale);
 

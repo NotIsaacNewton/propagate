@@ -12,6 +12,8 @@
 #include <chrono>
 #include <print>
 #include <algorithm>
+#include <variant>
+#include "../potentials/potentials_td_cc.h"
 
 // gets potential and returns arrays
 std::vector<std::vector<hermitian_matrix> > getPotentialCC(const inputs &in, const std::string &data) {
@@ -51,8 +53,41 @@ void definePotentialOperatorDiag(const inputs& in, const int& tick, const std::v
         }
     }
 }
+void definePotentialOperatorDiag(const inputs& in, const int& tick, const std::vector<fftw_complex*>& op,
+    const std::function<hermitian_matrix(double, double)>& potential) {
+    for (int i = 0; i < in.space_grid; i++) {
+        for (int c = 0; c < in.channels; c++) {
+            const double phase = std::real(potential(i*in.dx + in.initial_pos,
+                tick*in.dt + in.initial_t)(c,c) * in.dt / 2.0);
+            op[c][i][0] = cos(phase);
+            op[c][i][1] = -sin(phase);
+        }
+    }
+}
 
 // creates array of coupling operator arrays from data at tick and outputs to op
+void defineCouplingOperator(const inputs& in, const int& tick, std::vector<std::vector<std::vector<coupling>>>& op,
+    const std::function<hermitian_matrix(double,double)>& potential) {
+    for (int i = 0; i < in.space_grid; i++) {
+        for (int c1 = 0; c1 < in.channels; c1++) {
+            for (int c2 = c1+1; c2 < in.channels; c2++) {
+                const std::complex<double> coupling = potential(i*in.dx + in.initial_pos,
+                tick*in.dt + in.initial_t)(c1,c2);
+                if (const double coupling_strength = std::abs(coupling); coupling_strength < 1e-15) {
+                    op[i][c1][c2].cos_factor = 1.0;
+                    op[i][c1][c2].sin_factor = 0.0;
+                    op[i][c1][c2].exp_phase = std::complex(0.0, 0.0);
+                } else {
+                    const double phase = coupling_strength * in.dt / 2.0;
+                    op[i][c1][c2].cos_factor = cos(phase);
+                    op[i][c1][c2].sin_factor = sin(phase);
+                    op[i][c1][c2].exp_phase = std::complex(coupling.imag()/coupling_strength,
+                        -coupling.real()/coupling_strength);
+                }
+            }
+        }
+    }
+}
 void defineCouplingOperator(const inputs& in, const int& tick, std::vector<std::vector<std::vector<coupling>>>& op,
     const std::vector<std::vector<hermitian_matrix>>& potential) {
     for (int i = 0; i < in.space_grid; i++) {
@@ -90,6 +125,7 @@ void applyCouplingOperator(const int point, const int channels,
     }
 }
 
+// applies diagonal part of potential operator
 void applyDiagonalOperator(const int point, const int channels, const std::vector<fftw_complex*>& diag,
     const std::vector<fftw_complex*>& psi) {
     for (int c = 0; c < channels; c++) {
@@ -194,12 +230,14 @@ void fftwNormCC(const inputs& in, const double scale, const std::vector<fftw_com
 
 // propagates psi in potential from tick to tick + 1
 void propTickTDCC(const int& tick, const inputs& in, const std::vector<fftw_complex*>& psi,
-    const std::vector<std::vector<hermitian_matrix>>& potential, const std::vector<fftw_complex*>& V_d,
+    const potCC& potential, const std::vector<fftw_complex*>& V_d,
     std::vector<std::vector<std::vector<coupling>>>& V_c, const fftw_complex* T,
     const std::vector<fftw_plan>& fft, const std::vector<fftw_plan>& ifft, const double scale) {
     // define diagonal and coupling potential operators
-    definePotentialOperatorDiag(in, tick, V_d, potential);
-    defineCouplingOperator(in, tick, V_c, potential);
+    std::visit([&](const auto& pot) {
+        definePotentialOperatorDiag(in, tick, V_d, pot);
+        defineCouplingOperator(in, tick, V_c, pot);
+    }, potential);
     // apply potential operators
     applyPotentialOperatorCC(in, V_d, V_c, psi);
     // execute fft
@@ -257,7 +295,9 @@ void propagateTDCC(const inputs& in, const std::string& data) {
     }
     fftw_complex* T = Tp.get();
     // get potential
-    auto potential = getPotentialCC(in, data);
+    potCC potential = in.potential_type == "file"
+        ? potCC(getPotentialCC(in, data))
+        : potCC(buildPotentialTDCC(in));
     // scale for normalizing fft result
     const double scale = 1.0 / in.space_grid;
     // open output file and buffer

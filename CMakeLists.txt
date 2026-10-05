@@ -49,7 +49,7 @@ file(GLOB_RECURSE WAVEPACKET CONFIGURE_DEPENDS "${wavepacket}/*.cpp")
 target_compile_options(LIB PUBLIC -O3 -march=native)
 
 # build propagate
-add_executable(propagate ${PROPAGATE})
+add_executable(propagate ${PROPAGATE} ${potential}/potentials_td_cc.cpp)
 target_link_libraries(propagate LIB ${FFT_LIBS} OpenMP::OpenMP_CXX)
 
 # build wavepacket
