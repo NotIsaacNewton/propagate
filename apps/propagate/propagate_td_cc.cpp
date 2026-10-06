@@ -13,6 +13,7 @@
 #include <print>
 #include <algorithm>
 #include <variant>
+#include <omp.h>
 #include "../potentials/potentials_td_cc.h"
 
 // gets potential and returns arrays
@@ -281,6 +282,9 @@ void propagateTDCC(const inputs& in, const std::string& data) {
         psi[c] = psip[c].get();
     }
     // prep fftw variables and plans
+    fftw_init_threads();
+    fftw_plan_with_nthreads(omp_get_max_threads());
+    std::print("\nDEBUG: {} threads\n", omp_get_max_threads());
     auto [fft_ptrs,
         ifft_ptrs,
         Tp,
