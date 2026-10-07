@@ -12,7 +12,7 @@ shoground         // type of wavepacket
 10     	// final time
 0        // potential position 1
 0        // potential position 2
-50   // potential strength 1
+35   // potential strength 1
 0   // potential strength 2
 0          // wavepacket delta
 0       // wavepacket momentum
@@ -20,6 +20,6 @@ shoground         // type of wavepacket
 8192    	// space gridpoints
 0	// coarse space grid
 20000    	// time gridpoints
-16	// print to file every nx space steps
-50	// print to file every nt time steps
-2	// number of channels
+4	// print to file every nx space steps
+25	// print to file every nt time steps
+10	// number of channels

@@ -46,6 +46,7 @@ std::vector<std::vector<hermitian_matrix> > getPotentialCC(const inputs &in, con
 // creates array of diagonal potential operator arrays from potential at tick and outputs to op
 void definePotentialOperatorDiag(const inputs& in, const int& tick, const std::vector<fftw_complex*>& op,
     const std::vector<std::vector<hermitian_matrix>>& potential) {
+    #pragma omp parallel for default(none) shared(in, potential, tick, op)
     for (int i = 0; i < in.space_grid; i++) {
         for (int c = 0; c < in.channels; c++) {
             const double phase = std::real(potential[tick][i](c,c) * in.dt / 2.0);
@@ -56,6 +57,7 @@ void definePotentialOperatorDiag(const inputs& in, const int& tick, const std::v
 }
 void definePotentialOperatorDiag(const inputs& in, const int& tick, const std::vector<fftw_complex*>& op,
     const std::function<hermitian_matrix(double, double)>& potential) {
+    #pragma omp parallel for default(none) shared(in, potential, tick, op)
     for (int i = 0; i < in.space_grid; i++) {
         for (int c = 0; c < in.channels; c++) {
             const double phase = std::real(potential(i*in.dx + in.initial_pos,
@@ -69,6 +71,7 @@ void definePotentialOperatorDiag(const inputs& in, const int& tick, const std::v
 // creates array of coupling operator arrays from data at tick and outputs to op
 void defineCouplingOperator(const inputs& in, const int& tick, std::vector<std::vector<std::vector<coupling>>>& op,
     const std::function<hermitian_matrix(double,double)>& potential) {
+    #pragma omp parallel for default(none) shared(in, potential, tick, op)
     for (int i = 0; i < in.space_grid; i++) {
         for (int c1 = 0; c1 < in.channels; c1++) {
             for (int c2 = c1+1; c2 < in.channels; c2++) {
@@ -91,6 +94,7 @@ void defineCouplingOperator(const inputs& in, const int& tick, std::vector<std::
 }
 void defineCouplingOperator(const inputs& in, const int& tick, std::vector<std::vector<std::vector<coupling>>>& op,
     const std::vector<std::vector<hermitian_matrix>>& potential) {
+    #pragma omp parallel for default(none) shared(in, potential, tick, op)
     for (int i = 0; i < in.space_grid; i++) {
         for (int c1 = 0; c1 < in.channels; c1++) {
             for (int c2 = c1+1; c2 < in.channels; c2++) {
@@ -284,7 +288,6 @@ void propagateTDCC(const inputs& in, const std::string& data) {
     // prep fftw variables and plans
     fftw_init_threads();
     fftw_plan_with_nthreads(omp_get_max_threads());
-    std::print("\nDEBUG: {} threads\n", omp_get_max_threads());
     auto [fft_ptrs,
         ifft_ptrs,
         Tp,

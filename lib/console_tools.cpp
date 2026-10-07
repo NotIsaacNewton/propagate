@@ -32,7 +32,7 @@ std::string makeBar(const int progress) {
         bar += '=';
     }
     if (progress != 100) {
-        bar += ">>";
+        bar += ">>  ";
     }
     for (int i = 10; i < 100 - progress; i+=2) {
         bar += ' ';

@@ -12,18 +12,24 @@
 double SHO(const double x) {
     return x*x/2;
 }
-double expDecay(const double x) {
-    return 500*exp(-x);
+double expDecay(const double x, const int c) {
+    return 500*exp(-x) + (c-1)*20;
 }
 double gaussian(const double x, const double delta, const double pos) {
     return pow(1/(std::numbers::pi * (delta*delta)), 1.0/4.0)*exp(-(x-pos)*(x-pos)/(2*(delta*delta)));
 }
-std::function<hermitian_matrix(double, double)> coupledSHO(const double coupling_strength) {
-    return [coupling_strength](const double x, const double t) {
-        hermitian_matrix potential(2);
+std::function<hermitian_matrix(double, double)> coupledSHO(const double coupling_strength, const int channels) {
+    return [coupling_strength, channels](const double x, const double t) {
+        hermitian_matrix potential(channels);
         potential(0,0) = std::complex(SHO(x), 0.0);
-        potential(1,1) = std::complex(expDecay(x), 0.0);
-        potential(0,1) = std::complex(coupling_strength*gaussian(t, 0.4, 1.3), 0.0);
+        for (int c = 1; c < channels; c++) {
+            potential(c,c) = std::complex(expDecay(x, c), 0.0);
+        }
+        for (int c1 = 0; c1 < channels; c1++) {
+            for (int c2 = c1+1; c2 < channels; c2++) {
+                potential(c1,c2) = std::complex(coupling_strength*gaussian(t, 0.4, 2), 0.0);
+            }
+        }
         return potential;
     };
 }
@@ -33,7 +39,7 @@ std::function<hermitian_matrix(double, double)> buildPotentialTDCC(const inputs&
     std::unordered_map<std::string,
     std::function<std::function<hermitian_matrix(double, double)>()>> const potentials = {
         {"coupledsho",    [in] {
-            return coupledSHO(in.strength_1);
+            return coupledSHO(in.strength_1, in.channels);
         }}
     };
     return potentials.at(in.potential_type)();
