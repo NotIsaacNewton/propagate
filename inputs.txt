@@ -22,4 +22,4 @@ shoground         // type of wavepacket
 20000    	// time gridpoints
 4	// print to file every nx space steps
 25	// print to file every nt time steps
-10	// number of channels
+40	// number of channels

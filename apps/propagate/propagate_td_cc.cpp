@@ -59,9 +59,9 @@ void definePotentialOperatorDiag(const inputs& in, const int& tick, const std::v
     const std::function<hermitian_matrix(double, double)>& potential) {
     #pragma omp parallel for default(none) shared(in, potential, tick, op)
     for (int i = 0; i < in.space_grid; i++) {
+        auto intermediate = potential(i*in.dx + in.initial_pos, tick*in.dt + in.initial_t);
         for (int c = 0; c < in.channels; c++) {
-            const double phase = std::real(potential(i*in.dx + in.initial_pos,
-                tick*in.dt + in.initial_t)(c,c) * in.dt / 2.0);
+            const double phase = std::real(intermediate(c,c) * in.dt / 2.0);
             op[c][i][0] = cos(phase);
             op[c][i][1] = -sin(phase);
         }
@@ -73,10 +73,10 @@ void defineCouplingOperator(const inputs& in, const int& tick, std::vector<std::
     const std::function<hermitian_matrix(double,double)>& potential) {
     #pragma omp parallel for default(none) shared(in, potential, tick, op)
     for (int i = 0; i < in.space_grid; i++) {
+        auto intermediate = potential(i*in.dx + in.initial_pos, tick*in.dt + in.initial_t);
         for (int c1 = 0; c1 < in.channels; c1++) {
             for (int c2 = c1+1; c2 < in.channels; c2++) {
-                const std::complex<double> coupling = potential(i*in.dx + in.initial_pos,
-                tick*in.dt + in.initial_t)(c1,c2);
+                const std::complex<double> coupling = intermediate(c1,c2);
                 if (const double coupling_strength = std::abs(coupling); coupling_strength < 1e-15) {
                     op[i][c1][c2].cos_factor = 1.0;
                     op[i][c1][c2].sin_factor = 0.0;
@@ -96,9 +96,10 @@ void defineCouplingOperator(const inputs& in, const int& tick, std::vector<std::
     const std::vector<std::vector<hermitian_matrix>>& potential) {
     #pragma omp parallel for default(none) shared(in, potential, tick, op)
     for (int i = 0; i < in.space_grid; i++) {
+        auto intermediate = potential[tick][i];
         for (int c1 = 0; c1 < in.channels; c1++) {
             for (int c2 = c1+1; c2 < in.channels; c2++) {
-                const std::complex<double> coupling = potential[tick][i](c1,c2);
+                const std::complex<double> coupling = intermediate(c1,c2);
                 if (const double coupling_strength = std::abs(coupling); coupling_strength < 1e-15) {
                     op[i][c1][c2].cos_factor = 1.0;
                     op[i][c1][c2].sin_factor = 0.0;

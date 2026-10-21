@@ -12,8 +12,8 @@
 double SHO(const double x) {
     return x*x/2;
 }
-double expDecay(const double x, const int c) {
-    return 500*exp(-x) + (c-1)*20;
+double expDecay(const double x, const int c, const int channels) {
+    return 500*exp(-x) + (c-1)*(30.0/(channels-1));
 }
 double gaussian(const double x, const double delta, const double pos) {
     return pow(1/(std::numbers::pi * (delta*delta)), 1.0/4.0)*exp(-(x-pos)*(x-pos)/(2*(delta*delta)));
@@ -23,11 +23,14 @@ std::function<hermitian_matrix(double, double)> coupledSHO(const double coupling
         hermitian_matrix potential(channels);
         potential(0,0) = std::complex(SHO(x), 0.0);
         for (int c = 1; c < channels; c++) {
-            potential(c,c) = std::complex(expDecay(x, c), 0.0);
+            potential(c,c) = std::complex(expDecay(x, c, channels), 0.0);
         }
-        for (int c1 = 0; c1 < channels; c1++) {
+        for (int c2 = 1; c2 < channels; c2++) {
+            potential(0,c2) = std::complex(coupling_strength*gaussian(t, 0.4, 2), 0.0);
+        }
+        for (int c1 = 1; c1 < channels; c1++) {
             for (int c2 = c1+1; c2 < channels; c2++) {
-                potential(c1,c2) = std::complex(coupling_strength*gaussian(t, 0.4, 2), 0.0);
+                potential(c1,c2) = std::complex(coupling_strength/(channels-1)*gaussian(t, 0.4, 2), 0.0);
             }
         }
         return potential;

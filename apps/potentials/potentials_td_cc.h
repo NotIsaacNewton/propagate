@@ -16,7 +16,7 @@
 
 // harmonic oscillator coupled to decaying exponential by constant
 double SHO(double x);
-double expDecay(double x, int c);
+double expDecay(double x, int c, int channels);
 double gaussian(double x, double delta, double pos);
 std::function<hermitian_matrix(double, double)> coupledSHO(double coupling_strength, int channels);
 
