@@ -277,6 +277,15 @@ void writeOutputCC(const std::vector<fftw_complex*>& psi, const int t, const inp
     }
 }
 
+// calculate and save PEY to file
+void savePEY(const std::vector<fftw_complex*>& psi, const inputs& in) {
+    std::vector<double> PEY(in.channels-1);
+    for (int c = 1; c < in.channels; c++) {
+        PEY[c-1] = norm(in.space_grid, in.dx, psi[c]);
+    }
+    writeArray1D(0, 30.0/(in.channels-1), in.channels-1, "data/PEY.dat", PEY);
+}
+
 // propagates wavefunction based on general values
 void propagateTDCC(const inputs& in, const std::string& data) {
     // get initial wavepacket with RAII
@@ -340,4 +349,6 @@ void propagateTDCC(const inputs& in, const std::string& data) {
     mag = normCC(in.space_grid, in.dx, in.channels, psi);
     std::cout << RED << "Check norm:\n" << RESET;
     std::print("The final norm is {}\n", mag);
+    // save PEY
+    savePEY(psi, in);
 }

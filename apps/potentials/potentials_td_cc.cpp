@@ -30,7 +30,7 @@ std::function<hermitian_matrix(double, double)> coupledSHO(const double coupling
         }
         for (int c1 = 1; c1 < channels; c1++) {
             for (int c2 = c1+1; c2 < channels; c2++) {
-                potential(c1,c2) = std::complex(coupling_strength/(channels-1)*gaussian(t, 0.4, 2), 0.0);
+                potential(c1,c2) = std::complex(coupling_strength*30.0/(channels-1)*gaussian(t, 0.4, 2), 0.0);
             }
         }
         return potential;

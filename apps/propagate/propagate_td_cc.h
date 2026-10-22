@@ -90,6 +90,9 @@ std::vector<std::unique_ptr<fftw_complex, void(*)(void*)>> getWavepacketCC(const
 // writes output serially across channels (cannot be done in parallel)
 void writeOutputCC(const std::vector<fftw_complex*>& psi, int t, const inputs& in, std::vector<double>& buffer);
 
+// calculate and save PEY to file
+void savePEY(const std::vector<fftw_complex*>& psi, const inputs& in);
+
 // sets up and propagates psi (here many channels) in a TD CC potential based on general values
 void propagateTDCC(const inputs& in, const std::string& data);
 
