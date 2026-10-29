@@ -154,12 +154,12 @@ void writeArray2D(const std::string& file, const std::vector<std::vector<double>
 }
 
 // read inputs from file
-inputs readInputs(const std::string& file) {
+inputs::inputs(const std::string& file) {
     std::ifstream read;
     read.open(file);
     if (read.is_open()) {
         std::string strings[8];
-        double doubles[11];
+        double doubles[13];
         int ints[6];
         std::string line;
         int n = 0;
@@ -167,49 +167,52 @@ inputs readInputs(const std::string& file) {
             std::istringstream readline(line);
             if (n < 8) {
                 readline >> strings[n];
-            } else if (n < 19) {
+            } else if (n < 21) {
                 readline >> doubles[n-8];
             } else {
-                readline >> ints[n-19];
+                readline >> ints[n-21];
             }
             ++n;
         }
         read.close();
         // initialize inputs
-        inputs in{
-            .input_psi_file = strings[0],
-            .output_psi_file = strings[1],
-            .pot_file = strings[2],
-            .run_type = strings[3],
-            .channels = ints[5],
-            .initial_pos = doubles[0],
-            .final_pos = doubles[1],
-            .space_grid = ints[0],
-            .nx_prints = ints[3],
-            .space_grid_coarse = ints[1],
-            .initial_t = doubles[2],
-            .final_t = doubles[3],
-            .time_grid = ints[2],
-            .nt_prints = ints[4],
-            .potential_type = strings[4],
-            .pot_read_from_file = strings[5],
-            .pot_position_1 = doubles[4],
-            .pot_position_2 = doubles[5],
-            .strength_1 = doubles[6],
-            .strength_2 = doubles[7],
-            .wavepacket_type = strings[6],
-            .wp_read_from_file = strings[7],
-            .delta = doubles[8],
-            .momentum = doubles[9],
-            .wp_position = doubles[10],
-        };
-        in.dx = (in.final_pos - in.initial_pos)/(in.space_grid - 1);
-        in.dt = (in.final_t - in.initial_t)/(in.time_grid-1);
+        {
+            input_psi_file = strings[0],
+            output_psi_file = strings[1],
+            pot_file = strings[2],
+            run_type = strings[3],
+            min_energy = doubles[11],
+            max_energy = doubles[12],
+            channels = ints[5],
+            initial_pos = doubles[0],
+            final_pos = doubles[1],
+            space_grid = ints[0],
+            nx_prints = ints[3],
+            space_grid_coarse = ints[1],
+            initial_t = doubles[2],
+            final_t = doubles[3],
+            time_grid = ints[2],
+            nt_prints = ints[4],
+            potential_type = strings[4],
+            pot_read_from_file = strings[5],
+            pot_position_1 = doubles[4],
+            pot_position_2 = doubles[5],
+            strength_1 = doubles[6],
+            strength_2 = doubles[7],
+            wavepacket_type = strings[6],
+            wp_read_from_file = strings[7],
+            delta = doubles[8],
+            momentum = doubles[9],
+            wp_position = doubles[10];
+        }
+        dx = (final_pos - initial_pos)/(space_grid - 1);
+        dt = (final_t - initial_t)/(time_grid-1);
+        dE = (max_energy - min_energy)/(channels-1);
         std::print("Read {}\n",file);
-        return in;
+    } else {
+        std::cerr << "Failed to open " << file << "." << "\n";
+        exit(1);
     }
-    std::cerr << "Failed to open " << file << "." << "\n";
-    exit(1);
 }
 
 // opens wavefunction output file

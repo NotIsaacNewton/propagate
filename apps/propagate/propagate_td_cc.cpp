@@ -258,7 +258,7 @@ void propTickTDCC(const int& tick, const inputs& in, const std::vector<fftw_comp
     applyPotentialOperatorCCReverse(in, V_d, V_c, psi);
 }
 
-// gets initial wavepacket handled with RAII, outputing a vector of unique pointers
+// gets initial wavepacket handled with RAII, outputs a vector of unique pointers
 std::vector<std::unique_ptr<fftw_complex, void(*)(void*)>> getWavepacketCC(const inputs& in, const std::string& data) {
     std::vector<std::unique_ptr<fftw_complex, void(*)(void*)>> psip;
     for (int c = 0; c < in.channels; c++) {
@@ -280,10 +280,13 @@ void writeOutputCC(const std::vector<fftw_complex*>& psi, const int t, const inp
 // calculate and save PEY to file
 void savePEY(const std::vector<fftw_complex*>& psi, const inputs& in) {
     std::vector<double> PEY(in.channels-1);
+    double total_PEY = 0;
     for (int c = 1; c < in.channels; c++) {
-        PEY[c-1] = norm(in.space_grid, in.dx, psi[c]);
+        PEY[c-1] = norm(in.space_grid, in.dx, psi[c])/in.dE;
+        total_PEY += PEY[c-1]*in.dE;
     }
-    writeArray1D(0, 30.0/(in.channels-1), in.channels-1, "data/PEY.dat", PEY);
+    writeArray1D(in.min_energy, in.dE, in.channels-1, "data/PEY.dat", PEY);
+    std::print("\nPEY saved! Total yield is {}.\n", total_PEY);
 }
 
 // propagates wavefunction based on general values
@@ -332,7 +335,7 @@ void propagateTDCC(const inputs& in, const std::string& data) {
     for (int t = 0; t < in.time_grid; t++) {
         // print completion % to console
         !((t+1) % (in.time_grid / 10)) ? progressBar(GREEN, 100*(t+1)/in.time_grid) : reset();
-        // write lines in output file
+        // write lines in output buffer
         writeOutputCC(psi, t, in, buffer);
         // propagate for one tick
         propTickTDCC(t, in, psi, potential, V_d, V_c, T, fft, ifft, scale);

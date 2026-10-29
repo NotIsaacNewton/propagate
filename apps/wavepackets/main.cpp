@@ -38,9 +38,9 @@ int main(const int argc, char* argv[]) {
     spacerChunky(BLUE);
 
     // read input file
-    const inputs in = readInputs(inputfile);
+    const inputs in(inputfile);
 
-    // output psi file
+    // output to psi file for propagation input
     const std::string psifile = data + "/" + in.input_psi_file;
 
     // CC wavepacket?

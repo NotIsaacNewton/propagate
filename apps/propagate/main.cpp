@@ -40,7 +40,7 @@ int main(const int argc, const char* argv[]) {
     spacerChunky(BLUE);
 
     // read input file
-    const inputs in = readInputs(inputfile);
+    const inputs in(inputfile);
 
     // psi output file location
     const std::string psiout = data + "/" + in.output_psi_file;

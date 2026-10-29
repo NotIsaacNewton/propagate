@@ -36,7 +36,7 @@ int main(const int argc, char *argv[]) {
     spacerChunky(BLUE);
 
     // read inputs
-    const inputs in = readInputs(inputfile);
+    const inputs in(inputfile);
 
     // potential file
     const std::string potfile = data + "/" + in.pot_file;

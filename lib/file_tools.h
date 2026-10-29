@@ -50,6 +50,9 @@ struct inputs {
     std::string pot_file;
     // system data
     std::string run_type;
+    double min_energy;
+    double max_energy;
+    double dE;
     int channels;
     // space data
     double initial_pos;
@@ -77,10 +80,10 @@ struct inputs {
     double delta;
     double momentum;
     double wp_position;
-};
 
-// read inputs from file
-inputs readInputs(const std::string& file);
+    // constructor
+    explicit inputs(const std::string& file);
+};
 
 // wavefunction + buffer struct
 struct wfOutput {
