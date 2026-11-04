@@ -29,14 +29,14 @@ std::function<hermitian_matrix(double, double)> coupledSHO(const inputs& in) {
         for (int c2 = 1; c2 < in.channels; c2++) {
             potential(0,c2) = std::complex(
                 in.strength_1*exp(-(c2*in.dE-5)*(c2*in.dE-5)/(2*(0.5*0.5)))
-                *gaussian(x, t, 0.4, 2.5)*cos(in.strength_2/137*x-in.strength_2*t), 0.0
+                *gaussian(x, t, 0.4, 1.5)*cos(in.strength_2/137*x-in.strength_2*t), 0.0
                 );
         }
         for (int c1 = 1; c1 < in.channels; c1++) {
             for (int c2 = c1+1; c2 < in.channels; c2++) {
                 potential(c1,c2) = std::complex(
                     in.strength_1*exp(-(c2*in.dE-5)*(c2*in.dE-5)/(2*(0.5*0.5)))
-                    *gaussian(x, t, 0.4, 2.5)*cos(in.strength_2/137*x-in.strength_2*t), 0.0
+                    *gaussian(x, t, 0.4, 1.5)*cos(in.strength_2/137*x-in.strength_2*t), 0.0
                     );
             }
         }
