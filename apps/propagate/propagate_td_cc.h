@@ -39,6 +39,8 @@ void defineCouplingOperator(const inputs& in, const int& tick, std::vector<std::
 // applies coupling part of potential operator for all channels at a specific gridpoint
 void applyCouplingOperator(int point, int channels, const std::vector<std::vector<std::vector<coupling>>>& coup,
     const std::vector<fftw_complex*>& psi);
+void applyCouplingOperatorReverse(int point, int channels, const std::vector<std::vector<std::vector<coupling>>>& coup,
+    const std::vector<fftw_complex*>& psi);
 
 // applies diagonal part of potential operator
 void applyDiagonalOperator(int point, int channels, const std::vector<fftw_complex*>& diag,

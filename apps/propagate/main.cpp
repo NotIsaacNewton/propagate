@@ -13,9 +13,6 @@
 #include "propagate_td.h"
 #include "propagate_td_cc.h"
 
-// TODO: more safety checks and error paths (try <expected>)
-//  generalize to higher dimensions
-
 // inputs: location/of/input_file location/of/data_directory
 int main(const int argc, const char* argv[]) {
     if (argc != 3) {

@@ -130,6 +130,19 @@ void applyCouplingOperator(const int point, const int channels,
         }
     }
 }
+void applyCouplingOperatorReverse(const int point, const int channels,
+    const std::vector<std::vector<std::vector<coupling>>>& coup, const std::vector<fftw_complex*>& psi) {
+    for (int c1 = channels-2; c1 > 0; c1--) {
+        for (int c2 = channels-1; c2 > c1; c2--) {
+            const auto psi1_old = fftw_complex_to_std_complex(psi[c1][point]);
+            const auto psi2_old = fftw_complex_to_std_complex(psi[c2][point]);
+            std_complex_to_fftw_complex(psi1_old*coup[point][c1][c2].cos_factor +
+                psi2_old*coup[point][c1][c2].exp_phase*coup[point][c1][c2].sin_factor, psi[c1][point]);
+            std_complex_to_fftw_complex(psi2_old*coup[point][c1][c2].cos_factor -
+                psi1_old*std::conj(coup[point][c1][c2].exp_phase)*coup[point][c1][c2].sin_factor, psi[c2][point]);
+        }
+    }
+}
 
 // applies diagonal part of potential operator
 void applyDiagonalOperator(const int point, const int channels, const std::vector<fftw_complex*>& diag,
@@ -156,7 +169,7 @@ void applyPotentialOperatorCCReverse(const inputs& in, const std::vector<fftw_co
     #pragma omp parallel for default(none) shared(in, coup, psi, diag)
     for (int i = 0; i < in.space_grid; i++) {
         applyDiagonalOperator(i, in.channels, diag, psi);
-        applyCouplingOperator(i, in.channels, coup, psi);
+        applyCouplingOperatorReverse(i, in.channels, coup, psi);
     }
 }
 

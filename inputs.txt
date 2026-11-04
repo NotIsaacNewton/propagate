@@ -22,6 +22,6 @@ eg_molpro_output.dat     // input wavepacket
 8192    	// space gridpoints
 0	// coarse space grid
 20000    	// time gridpoints
-32	// print to file every nx space steps
-500	// print to file every nt time steps
-6	// number of channels
+16	// print to file every nx space steps
+250	// print to file every nt time steps
+12	// number of channels
