@@ -274,12 +274,24 @@ void propTickTDCC(const int& tick, const inputs& in, const std::vector<fftw_comp
 // gets initial wavepacket handled with RAII, outputs a vector of unique pointers
 std::vector<std::unique_ptr<fftw_complex, void(*)(void*)>> getWavepacketCC(const inputs& in, const std::string& data) {
     std::vector<std::unique_ptr<fftw_complex, void(*)(void*)>> psip;
-    for (int c = 0; c < in.channels; c++) {
+    const auto psi = fftw_alloc_complex(in.space_grid);
+    fftw_complex_array_from_file(data + "/" + in.input_psi_file + ".dat", psi, in.space_grid);
+    psip.emplace_back(psi, fftw_free);
+    for (int c = 1; c < in.channels; c++) {
+        const auto psic = fftw_alloc_complex(in.space_grid);
+        #pragma omp parallel for default(none) shared(in, psic)
+        for (int i = 0; i < in.space_grid; i++) {
+            psic[i][0] = 0.0;
+            psic[i][1] = 0.0;
+        }
+        psip.emplace_back(psic, fftw_free);
+    }
+    /* for (int c = 0; c < in.channels; c++) {
         const auto psi = fftw_alloc_complex(in.space_grid);
         fftw_complex_array_from_file(data + "/" + in.input_psi_file + "_" + std::to_string(c) + ".dat",
             psi, in.space_grid);
         psip.emplace_back(psi, fftw_free);
-    }
+    } */
     return psip;
 }
 

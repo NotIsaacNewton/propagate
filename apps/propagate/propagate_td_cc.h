@@ -52,6 +52,10 @@ void applyPotentialOperatorCC(const inputs& in, const std::vector<fftw_complex*>
 void applyPotentialOperatorCCReverse(const inputs& in, const std::vector<fftw_complex*>& diag,
     const std::vector<std::vector<std::vector<coupling>>>& coup, const std::vector<fftw_complex*>& psi);
 
+// applies potential operator using dense matrix diagonalization DSYEVR routine from LAPACK
+void applyPotentialOperatorDense(const inputs& in, const std::vector<std::vector<hermitian_matrix>>& potential,
+    const std::vector<fftw_complex*>& psi);
+
 // executes fft plans in parallel for all channels
 void fftExecuteCC(int gridpoints, int channels, const std::vector<fftw_complex*>& psi,
     const std::vector<fftw_plan>& fft_plans);

@@ -44,7 +44,8 @@ int main(const int argc, char* argv[]) {
     const std::string psifile = data + "/" + in.input_psi_file;
 
     // CC wavepacket?
-    const bool CC = in.run_type == "TDCC";
+    //const bool CC = in.run_type == "TDCC";
+    const bool CC = false;
 
     // spacer
     spacer(RESET);
@@ -54,7 +55,7 @@ int main(const int argc, char* argv[]) {
         fftw_complex_func_array_to_file(in, data, in.input_psi_file,
             buildWavepacketCC(in));
     } else {
-        fftw_complex_func_to_file(in, psifile, buildWavepacket(in));
+        fftw_complex_func_to_file(in, psifile + ".dat", buildWavepacket(in));
     }
 
     // record end time and duration
