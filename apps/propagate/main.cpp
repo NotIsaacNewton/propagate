@@ -47,7 +47,7 @@ int main(const int argc, const char* argv[]) {
     // TD propagation?
     const bool propTD = in.run_type == "TD";
     // TDCC propagation?
-    const bool propTDCC = in.run_type == "TDCC";
+    const bool propTDCC = in.run_type == "TDCC" || in.run_type == "dense";
 
     // warning if odd number of gridpoints
     if (in.space_grid % 2 != 0) {

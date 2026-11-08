@@ -44,7 +44,7 @@ int main(const int argc, char* argv[]) {
     const std::string psifile = data + "/" + in.input_psi_file;
 
     // CC wavepacket?
-    //const bool CC = in.run_type == "TDCC";
+    //const bool CC = in.run_type == "TDCC" || in.run_type == "dense";
     const bool CC = false;
 
     // spacer

@@ -44,7 +44,7 @@ int main(const int argc, char *argv[]) {
     // TD potential?
     const bool potTD = in.run_type == "TD";
     // TDCC potential?
-    const bool potTDCC = in.run_type == "TDCC";
+    const bool potTDCC = in.run_type == "TDCC" || in.run_type == "dense";
 
     // spacer
     spacer(RESET);
