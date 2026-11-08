@@ -5,6 +5,7 @@
 #include "propagate_td_cc.h"
 #include "fftw_complex_tools.h"
 #include "console_tools.h"
+#include "lapacke.h"
 #include <iostream>
 #include <string>
 #include <fstream>
@@ -39,7 +40,7 @@ std::vector<std::vector<hermitian_matrix> > getPotentialCC(const inputs &in, con
             }
         }
     }
-    std::print("\nPotential read!\n", data);
+    std::print("\nPotential read!\n");
     return potential;
 }
 
@@ -140,6 +141,172 @@ void applyCouplingOperatorReverse(const int point, const int channels,
                 psi2_old*coup[point][c1][c2].exp_phase*coup[point][c1][c2].sin_factor, psi[c1][point]);
             std_complex_to_fftw_complex(psi2_old*coup[point][c1][c2].cos_factor -
                 psi1_old*std::conj(coup[point][c1][c2].exp_phase)*coup[point][c1][c2].sin_factor, psi[c2][point]);
+        }
+    }
+}
+
+// applies potential operator using dense hermitian matrix diagonalization ZHEEVR routine from LAPACK
+void applyPotentialOperatorDense(const inputs& in, const int tick,
+    const std::vector<std::vector<hermitian_matrix>>& potential, const std::vector<fftw_complex*>& psi) {
+    // parallel over the spatial grid
+    #pragma omp parallel for default(none) shared(in, tick, potential, psi)
+    for (int i = 0; i < in.space_grid; i++) {
+        const hermitian_matrix H = potential[tick][i];
+        // unpack hermitian_matrix into column-major dense array for LAPACKE
+        // NOTE: lapack_complex_double* is ABI-compatible with std::complex<double>
+        std::vector<lapack_complex_double> A(in.channels * in.channels, {0.0, 0.0});
+        for (int col = 0; col < in.channels; col++) {
+            for (int row = 0; row <= col; row++) {
+                // index = row + col*channels
+                const auto val = H(row, col);
+                A[row + col * in.channels] = {val.real(), val.imag()};
+                // lower triangle (conjugate) — needed if uplo='U' isn't enough
+                // A[col + row * N] = {val.real(), -val.imag()};
+            }
+        }
+
+        // allocate eigenvalue and eigenvector arrays
+        std::vector<double> eigenvalues(in.channels);
+        std::vector<lapack_complex_double> eigenvectors(in.channels * in.channels);
+        std::vector<lapack_int> isuppz(2 * in.channels);
+        lapack_int m = 0;
+
+        // call ZHEEVR
+        lapack_int info = LAPACKE_zheevr(
+            LAPACK_COL_MAJOR,           // storage order
+            'V',                        // compute eigenvectors
+            'A',                        // all eigenvalues
+            'U',                        // upper triangle stored
+            in.channels,                // matrix size
+            A.data(),                   // matrix (overwritten)
+            in.channels,                // leading dimension
+            0.0, 0.0,                // vl, vu (unused for range='A')
+            0, 0,                     // il, iu (unused for range='A')
+            LAPACKE_dlamch('S'),  // abstol: safe minimum for reliability
+            &m,                         // number of eigenvalues found
+            eigenvalues.data(),
+            eigenvectors.data(),
+            in.channels,                // ldz
+            isuppz.data()
+        );
+        // error check
+        if (info != 0) {
+            std::print("ZHEEVR failed at spatial point {} with info={}\n", i, info);
+            continue;
+        }
+
+        // apply e^{-i * eigenvalue * dt/2} in eigenbasis
+        // project psi onto eigenvectors
+        std::vector<lapack_complex_double> psi_vec(in.channels);
+        for (int c = 0; c < in.channels; c++) {
+            psi_vec[c] = {psi[c][i][0], psi[c][i][1]};
+        }
+        // coefficients = psi^* * psi
+        std::vector<std::complex<double>> coeff(in.channels, {0.0, 0.0});
+        for (int k = 0; k < in.channels; k++) {
+            for (int c = 0; c < in.channels; c++) {
+                const auto z = reinterpret_cast<const std::complex<double>*>(eigenvectors.data())[c + k*in.channels];
+                coeff[k] += std::conj(z) * std::complex(psi_vec[c].real(), psi_vec[c].imag());
+            }
+        }
+
+        // apply e^{-i * lambda[k] * dt/2}
+        for (int k = 0; k < in.channels; k++) {
+            const double phase = -eigenvalues[k] * in.dt / 2.0;
+            coeff[k] *= std::complex(std::cos(phase), std::sin(phase));
+        }
+
+        // transform back: psi = Z * coeff
+        for (int c = 0; c < in.channels; c++) {
+            std::complex val = {0.0, 0.0};
+            for (int k = 0; k < in.channels; k++) {
+                const auto z = reinterpret_cast<const std::complex<double>*>(eigenvectors.data())[c + k*in.channels];
+                val += z * coeff[k];
+            }
+            psi[c][i][0] = val.real();
+            psi[c][i][1] = val.imag();
+        }
+    }
+}
+void applyPotentialOperatorDense(const inputs& in, const int tick,
+    const std::function<hermitian_matrix(double,double)>& potential, const std::vector<fftw_complex*>& psi) {
+    // parallel over the spatial grid
+    #pragma omp parallel for default(none) shared(in, tick, potential, psi)
+    for (int i = 0; i < in.space_grid; i++) {
+        const hermitian_matrix H = potential(i*in.dx + in.initial_pos, tick*in.dt + in.initial_t);
+        // unpack hermitian_matrix into column-major dense array for LAPACKE
+        // NOTE: lapack_complex_double* is ABI-compatible with std::complex<double>
+        std::vector<lapack_complex_double> A(in.channels * in.channels, {0.0, 0.0});
+        for (int col = 0; col < in.channels; col++) {
+            for (int row = 0; row <= col; row++) {
+                // index = row + col*channels
+                const auto val = H(row, col);
+                A[row + col * in.channels] = {val.real(), val.imag()};
+                // lower triangle (conjugate) — needed if uplo='U' isn't enough
+                // A[col + row * N] = {val.real(), -val.imag()};
+            }
+        }
+
+        // allocate eigenvalue and eigenvector arrays
+        std::vector<double> eigenvalues(in.channels);
+        std::vector<lapack_complex_double> eigenvectors(in.channels * in.channels);
+        std::vector<lapack_int> isuppz(2 * in.channels);
+        lapack_int m = 0;
+
+        // call ZHEEVR
+        lapack_int info = LAPACKE_zheevr(
+            LAPACK_COL_MAJOR,           // storage order
+            'V',                        // compute eigenvectors
+            'A',                        // all eigenvalues
+            'U',                        // upper triangle stored
+            in.channels,                // matrix size
+            A.data(),                   // matrix (overwritten)
+            in.channels,                // leading dimension
+            0.0, 0.0,                // vl, vu (unused for range='A')
+            0, 0,                     // il, iu (unused for range='A')
+            LAPACKE_dlamch('S'),  // abstol: safe minimum for reliability
+            &m,                         // number of eigenvalues found
+            eigenvalues.data(),
+            eigenvectors.data(),
+            in.channels,                // ldz
+            isuppz.data()
+        );
+        // error check
+        if (info != 0) {
+            std::print("ZHEEVR failed at spatial point {} with info={}\n", i, info);
+            continue;
+        }
+
+        // apply e^{-i * eigenvalue * dt/2} in eigenbasis
+        // project psi onto eigenvectors
+        std::vector<lapack_complex_double> psi_vec(in.channels);
+        for (int c = 0; c < in.channels; c++) {
+            psi_vec[c] = {psi[c][i][0], psi[c][i][1]};
+        }
+        // coefficients = psi^* * psi
+        std::vector<std::complex<double>> coeff(in.channels, {0.0, 0.0});
+        for (int k = 0; k < in.channels; k++) {
+            for (int c = 0; c < in.channels; c++) {
+                const auto z = reinterpret_cast<const std::complex<double>*>(eigenvectors.data())[c + k*in.channels];
+                coeff[k] += std::conj(z) * std::complex(psi_vec[c].real(), psi_vec[c].imag());
+            }
+        }
+
+        // apply e^{-i * lambda[k] * dt/2}
+        for (int k = 0; k < in.channels; k++) {
+            const double phase = -eigenvalues[k] * in.dt / 2.0;
+            coeff[k] *= std::complex(std::cos(phase), std::sin(phase));
+        }
+
+        // transform back: psi = Z * coeff
+        for (int c = 0; c < in.channels; c++) {
+            std::complex val = {0.0, 0.0};
+            for (int k = 0; k < in.channels; k++) {
+                const auto z = reinterpret_cast<const std::complex<double>*>(eigenvectors.data())[c + k*in.channels];
+                val += z * coeff[k];
+            }
+            psi[c][i][0] = val.real();
+            psi[c][i][1] = val.imag();
         }
     }
 }
@@ -270,6 +437,26 @@ void propTickTDCC(const int& tick, const inputs& in, const std::vector<fftw_comp
     // apply potential operators
     applyPotentialOperatorCCReverse(in, V_d, V_c, psi);
 }
+void propTickDense(const int& tick, const inputs& in, const std::vector<fftw_complex*>& psi,
+    const potCC& potential, const fftw_complex* T,
+    const std::vector<fftw_plan>& fft, const std::vector<fftw_plan>& ifft, const double scale) {
+    // apply potential operators
+    std::visit([&](const auto& pot) {
+        applyPotentialOperatorDense(in, tick, pot, psi);
+    }, potential);
+    // execute fft
+    fftExecuteCC(in.space_grid, in.channels, psi, fft);
+    // apply kinetic energy operator
+    applyKineticOperatorCC(in.space_grid, in.channels, psi, T);
+    // execute ifft
+    ifftExecuteCC(in.space_grid, in.channels, psi, ifft);
+    // normalize fftw result (fftw uses non-normalized fft algorithm)
+    fftwNormCC(in, scale, psi);
+    // apply potential operators
+    std::visit([&](const auto& pot) {
+        applyPotentialOperatorDense(in, tick, pot, psi);
+    }, potential);
+}
 
 // gets initial wavepacket handled with RAII, outputs a vector of unique pointers
 std::vector<std::unique_ptr<fftw_complex, void(*)(void*)>> getWavepacketCC(const inputs& in, const std::string& data) {
@@ -311,7 +498,7 @@ void savePEY(const std::vector<fftw_complex*>& psi, const inputs& in) {
         total_PEY += PEY[c-1]*in.dE;
     }
     writeArray1D(in.min_energy, in.dE, in.channels-1, "data/PEY.dat", PEY);
-    std::print("\nPEY saved! Total yield is {}.\n", total_PEY);
+    std::print("\nPEY saved! Total yield is {}\n", total_PEY);
 }
 
 // propagates wavefunction based on general values
@@ -357,13 +544,14 @@ void propagateTDCC(const inputs& in, const std::string& data) {
     // console output
     std::cout << "Propagating...\n";
     // propagation loop
+    bool dense = true;
     for (int t = 0; t < in.time_grid; t++) {
         // print completion % to console
         !((t+1) % (in.time_grid / 10)) ? progressBar(GREEN, 100*(t+1)/in.time_grid) : reset();
         // write lines in output buffer
         writeOutputCC(psi, t, in, buffer);
         // propagate for one tick
-        propTickTDCC(t, in, psi, potential, V_d, V_c, T, fft, ifft, scale);
+        dense?  propTickDense(t, in, psi, potential, T, fft, ifft, scale) : propTickTDCC(t, in, psi, potential, V_d, V_c, T, fft, ifft, scale);
     }
     // save buffer to output file and close the file
     wf.write(reinterpret_cast<const char*>(buffer.data()),

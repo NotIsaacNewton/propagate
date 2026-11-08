@@ -52,9 +52,11 @@ void applyPotentialOperatorCC(const inputs& in, const std::vector<fftw_complex*>
 void applyPotentialOperatorCCReverse(const inputs& in, const std::vector<fftw_complex*>& diag,
     const std::vector<std::vector<std::vector<coupling>>>& coup, const std::vector<fftw_complex*>& psi);
 
-// applies potential operator using dense matrix diagonalization DSYEVR routine from LAPACK
-void applyPotentialOperatorDense(const inputs& in, const std::vector<std::vector<hermitian_matrix>>& potential,
-    const std::vector<fftw_complex*>& psi);
+// applies potential operator using dense matrix diagonalization ZHEEVR
+void applyPotentialOperatorDense(const inputs& in, int tick,
+    const std::vector<std::vector<hermitian_matrix>>& potential, const std::vector<fftw_complex*>& psi);
+void applyPotentialOperatorDense(const inputs& in, int tick,
+    const std::function<hermitian_matrix(double,double)>& potential, const std::vector<fftw_complex*>& psi);
 
 // executes fft plans in parallel for all channels
 void fftExecuteCC(int gridpoints, int channels, const std::vector<fftw_complex*>& psi,
@@ -88,6 +90,9 @@ using potCC = std::variant<std::vector<std::vector<hermitian_matrix>>,
 void propTickTDCC(const int& tick, const inputs& in, const std::vector<fftw_complex*>& psi,
     const potCC& potential, const std::vector<fftw_complex*>& V_d,
     std::vector<std::vector<std::vector<coupling>>>& V_c, const fftw_complex* T,
+    const std::vector<fftw_plan>& fft, const std::vector<fftw_plan>& ifft, double scale);
+void propTickDense(const int& tick, const inputs& in, const std::vector<fftw_complex*>& psi,
+    const potCC& potential, const fftw_complex* T,
     const std::vector<fftw_plan>& fft, const std::vector<fftw_plan>& ifft, double scale);
 
 // gets initial wavepacket handled with RAII, outputing a vector of unique pointers
