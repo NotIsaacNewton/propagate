@@ -288,7 +288,7 @@ void applyPotentialOperatorDense(const inputs& in, const int tick,
         for (int k = 0; k < in.channels; k++) {
             for (int c = 0; c < in.channels; c++) {
                 const auto z = reinterpret_cast<const std::complex<double>*>(eigenvectors.data())[c + k*in.channels];
-                coeff[k] += std::conj(z) * std::complex(psi_vec[c].real(), psi_vec[c].imag());
+                coeff[k] += std::conj(z) * std::complex(psi_vec[c].real, psi_vec[c].imag);
             }
         }
 
