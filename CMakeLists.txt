@@ -26,10 +26,9 @@ if(BUILD_HPC)
             PATHS $ENV{MKLROOT}/lib/intel64
             REQUIRED
     )
-    target_compile_definitions(LIB PUBLIC USE_MKL)
-    target_include_directories(LIB PUBLIC ${MKL_INCLUDE_DIR})
-    target_link_libraries(LIB PUBLIC ${MKL_LIBRARY})
-    set(FFT_LIBS fftw3_omp fftw3 m)
+    set(LAPACK_INCLUDE_DIR ${MKL_INCLUDE_DIR})
+    set(LAPACK_LIBRARIES ${MKL_LIBRARY})
+    set(LAPACK_DEFINITIONS USE_MKL)
 elseif(BUILD_INTEL)
     find_package(LAPACK REQUIRED)
     find_path(LAPACKE_INCLUDE_DIR
@@ -40,12 +39,8 @@ elseif(BUILD_INTEL)
             NAMES lapacke
             REQUIRED
     )
-    target_include_directories(LIB PUBLIC ${LAPACKE_INCLUDE_DIR})
-    target_link_libraries(LIB PUBLIC
-            ${LAPACKE_LIBRARY}
-            LAPACK::LAPACK
-    )
-    set(FFT_LIBS fftw3 m)
+    set(LAPACK_INCLUDE_DIR ${LAPACKE_INCLUDE_DIR})
+    set(LAPACK_LIBRARIES ${LAPACKE_LIBRARY} ${LAPACK_LIBRARIES})
 endif()
 
 # configure fftw3
@@ -67,8 +62,8 @@ endif()
 # find, add, and target library of shared tools
 file(GLOB_RECURSE lib CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/lib/*.cpp")
 add_library(LIB STATIC ${lib})
-target_include_directories(LIB PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/lib ${OpenMP_ROOT}/include)
-target_link_libraries(LIB PUBLIC OpenMP::OpenMP_CXX)
+target_include_directories(LIB PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/lib ${OpenMP_ROOT}/include ${LAPACK_INCLUDE_DIR})
+target_link_libraries(LIB PUBLIC OpenMP::OpenMP_CXX ${LAPACK_LIBRARIES})
 
 # find directories with main programs and source codes
 set(apps ${CMAKE_CURRENT_SOURCE_DIR}/apps)
@@ -79,8 +74,11 @@ file(GLOB_RECURSE PROPAGATE CONFIGURE_DEPENDS "${propagate}/*.cpp")
 file(GLOB_RECURSE POTENTIAL CONFIGURE_DEPENDS "${potential}/*.cpp")
 file(GLOB_RECURSE WAVEPACKET CONFIGURE_DEPENDS "${wavepacket}/*.cpp")
 
-# compile with optimizations
+# compile with optimizations + extra HPC definition
 target_compile_options(LIB PUBLIC -O3 -march=native)
+if(LAPACK_DEFINITIONS)
+    target_compile_definitions(LIB PUBLIC ${LAPACK_DEFINITIONS})
+endif()
 
 # build propagate
 add_executable(propagate ${PROPAGATE} ${potential}/potentials_td_cc.cpp)
