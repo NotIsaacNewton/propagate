@@ -5,7 +5,11 @@
 #include "propagate_td_cc.h"
 #include "fftw_complex_tools.h"
 #include "console_tools.h"
-#include "lapacke.h"
+#ifdef USE_MKL
+    #include <mkl_lapacke.h>
+#else
+    #include <lapacke.h>
+#endif
 #include <iostream>
 #include <string>
 #include <fstream>

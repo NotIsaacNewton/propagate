@@ -15,16 +15,37 @@ endif()
 find_package(OpenMP REQUIRED)
 
 # configure LAPACK and LAPACKE
-if (BUILD_HPC OR BUILD_INTEL)
+if(BUILD_HPC)
+    find_path(MKL_INCLUDE_DIR
+            NAMES mkl_lapacke.h
+            PATHS $ENV{MKLROOT}/include
+            REQUIRED
+    )
+    find_library(MKL_LIBRARY
+            NAMES mkl_rt
+            PATHS $ENV{MKLROOT}/lib/intel64
+            REQUIRED
+    )
+    target_compile_definitions(LIB PUBLIC USE_MKL)
+    target_include_directories(LIB PUBLIC ${MKL_INCLUDE_DIR})
+    target_link_libraries(LIB PUBLIC ${MKL_LIBRARY})
+    set(FFT_LIBS fftw3_omp fftw3 m)
+elseif(BUILD_INTEL)
     find_package(LAPACK REQUIRED)
-    find_path(LAPACKE_INCLUDE_DIR lapacke.h REQUIRED)
-    find_library(LAPACKE_LIBRARY NAMES lapacke REQUIRED)
-    add_library(LAPACKE INTERFACE)
-    target_include_directories(LAPACKE INTERFACE ${LAPACKE_INCLUDE_DIR})
-    target_link_libraries(LAPACKE INTERFACE
+    find_path(LAPACKE_INCLUDE_DIR
+            NAMES lapacke.h
+            REQUIRED
+    )
+    find_library(LAPACKE_LIBRARY
+            NAMES lapacke
+            REQUIRED
+    )
+    target_include_directories(LIB PUBLIC ${LAPACKE_INCLUDE_DIR})
+    target_link_libraries(LIB PUBLIC
             ${LAPACKE_LIBRARY}
             LAPACK::LAPACK
     )
+    set(FFT_LIBS fftw3 m)
 endif()
 
 # configure fftw3
