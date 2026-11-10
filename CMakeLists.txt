@@ -14,6 +14,19 @@ if(NOT BUILD_INTEL AND NOT BUILD_HPC)
 endif()
 find_package(OpenMP REQUIRED)
 
+# configure LAPACK and LAPACKE
+if (BUILD_HPC OR BUILD_INTEL)
+    find_package(LAPACK REQUIRED)
+    find_path(LAPACKE_INCLUDE_DIR lapacke.h REQUIRED)
+    find_library(LAPACKE_LIBRARY NAMES lapacke REQUIRED)
+    add_library(LAPACKE INTERFACE)
+    target_include_directories(LAPACKE INTERFACE ${LAPACKE_INCLUDE_DIR})
+    target_link_libraries(LAPACKE INTERFACE
+            ${LAPACKE_LIBRARY}
+            LAPACK::LAPACK
+    )
+endif()
+
 # configure fftw3
 if(BUILD_HPC)
     set(FFTW3_DIR $ENV{HOME}/fftw)
