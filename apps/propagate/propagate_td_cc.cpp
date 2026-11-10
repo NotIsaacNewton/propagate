@@ -195,7 +195,7 @@ void applyPotentialOperatorDense(const inputs& in, const int tick,
 
         // apply e^{-i * eigenvalue * dt/2} in eigenbasis
         // project psi onto eigenvectors
-        std::vector<lapack_complex_double> psi_vec(in.channels);
+        std::vector<std::complex<double>> psi_vec(in.channels);
         for (int c = 0; c < in.channels; c++) {
             psi_vec[c] = {psi[c][i][0], psi[c][i][1]};
         }
