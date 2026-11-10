@@ -6,22 +6,22 @@ coupledsho        // type of potential
 eg_pot_coarse.dat    // input potential
 shoground         // type of wavepacket
 eg_molpro_output.dat     // input wavepacket
--15     // initial position
-25       // final position
+-20     // initial position
+20       // final position
 -1       // initial time
-7     	// final time
+20     	// final time
 0        // potential position 1
 0        // potential position 2
-35   // potential strength 1
-0.8   // potential strength 2
+5   // potential strength 1
+15   // potential strength 2
 0          // wavepacket delta
 0       // wavepacket momentum
 0          // wavepacket position
-0      // min continuum energy
-7      // max continuum energy
+1      // min continuum energy
+2      // max continuum energy
 300    	// space gridpoints
 0	// coarse space grid
-1000    	// time gridpoints
-2	// print to file every nx space steps
-20	// print to file every nt time steps
-91	// number of channels
+10000    	// time gridpoints
+1	// print to file every nx space steps
+25	// print to file every nt time steps
+3	// number of channels

@@ -91,6 +91,10 @@ void propTickTDCC(const int& tick, const inputs& in, const std::vector<fftw_comp
     const potCC& potential, const std::vector<fftw_complex*>& V_d,
     std::vector<std::vector<std::vector<coupling>>>& V_c, const fftw_complex* T,
     const std::vector<fftw_plan>& fft, const std::vector<fftw_plan>& ifft, double scale);
+void propTickTDCCInverse(const int& tick, const inputs& in, const std::vector<fftw_complex*>& psi,
+    const potCC& potential, const std::vector<fftw_complex*>& V_d,
+    std::vector<std::vector<std::vector<coupling>>>& V_c, const fftw_complex* T,
+    const std::vector<fftw_plan>& fft, const std::vector<fftw_plan>& ifft, double scale);
 void propTickDense(const int& tick, const inputs& in, const std::vector<fftw_complex*>& psi,
     const potCC& potential, const fftw_complex* T,
     const std::vector<fftw_plan>& fft, const std::vector<fftw_plan>& ifft, double scale);

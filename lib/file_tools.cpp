@@ -207,7 +207,7 @@ inputs::inputs(const std::string& file) {
         }
         dx = (final_pos - initial_pos)/(space_grid - 1);
         dt = (final_t - initial_t)/(time_grid-1);
-        dE = (max_energy - min_energy)/(channels-1);
+        dE = (max_energy - min_energy)/(channels-2);
         std::print("Read {}\n",file);
     } else {
         std::cerr << "Failed to open " << file << "." << "\n";

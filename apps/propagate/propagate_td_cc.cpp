@@ -60,7 +60,7 @@ void definePotentialOperatorDiag(const inputs& in, const int& tick, const std::v
     const std::function<hermitian_matrix(double, double)>& potential) {
     #pragma omp parallel for default(none) shared(in, potential, tick, op)
     for (int i = 0; i < in.space_grid; i++) {
-        auto intermediate = potential(i*in.dx + in.initial_pos, tick*in.dt + in.initial_t);
+        auto intermediate = potential(i*in.dx + in.initial_pos, (tick+0.5)*in.dt + in.initial_t);
         for (int c = 0; c < in.channels; c++) {
             const double phase = std::real(intermediate(c,c) * in.dt / 2.0);
             op[c][i][0] = cos(phase);
@@ -74,7 +74,7 @@ void defineCouplingOperator(const inputs& in, const int& tick, std::vector<std::
     const std::function<hermitian_matrix(double,double)>& potential) {
     #pragma omp parallel for default(none) shared(in, potential, tick, op)
     for (int i = 0; i < in.space_grid; i++) {
-        auto intermediate = potential(i*in.dx + in.initial_pos, tick*in.dt + in.initial_t);
+        auto intermediate = potential(i*in.dx + in.initial_pos, (tick+0.5)*in.dt + in.initial_t);
         for (int c1 = 0; c1 < in.channels; c1++) {
             for (int c2 = c1+1; c2 < in.channels; c2++) {
                 const std::complex<double> coupling = intermediate(c1,c2);
@@ -133,7 +133,7 @@ void applyCouplingOperator(const int point, const int channels,
 }
 void applyCouplingOperatorReverse(const int point, const int channels,
     const std::vector<std::vector<std::vector<coupling>>>& coup, const std::vector<fftw_complex*>& psi) {
-    for (int c1 = channels-2; c1 > 0; c1--) {
+    for (int c1 = channels-2; c1 >= 0; c1--) {
         for (int c2 = channels-1; c2 > c1; c2--) {
             const auto psi1_old = fftw_complex_to_std_complex(psi[c1][point]);
             const auto psi2_old = fftw_complex_to_std_complex(psi[c2][point]);
@@ -160,8 +160,6 @@ void applyPotentialOperatorDense(const inputs& in, const int tick,
                 // index = row + col*channels
                 const auto val = H(row, col);
                 A[row + col * in.channels] = {val.real(), val.imag()};
-                // lower triangle (conjugate) — needed if uplo='U' isn't enough
-                // A[col + row * N] = {val.real(), -val.imag()};
             }
         }
 
@@ -233,7 +231,7 @@ void applyPotentialOperatorDense(const inputs& in, const int tick,
     // parallel over the spatial grid
     #pragma omp parallel for default(none) shared(in, tick, potential, psi)
     for (int i = 0; i < in.space_grid; i++) {
-        const hermitian_matrix H = potential(i*in.dx + in.initial_pos, tick*in.dt + in.initial_t);
+        const hermitian_matrix H = potential(i*in.dx + in.initial_pos, (tick+0.5)*in.dt + in.initial_t);
         // unpack hermitian_matrix into column-major dense array for LAPACKE
         // NOTE: lapack_complex_double* is ABI-compatible with std::complex<double>
         std::vector<lapack_complex_double> A(in.channels * in.channels, {0.0, 0.0});
@@ -279,7 +277,7 @@ void applyPotentialOperatorDense(const inputs& in, const int tick,
 
         // apply e^{-i * eigenvalue * dt/2} in eigenbasis
         // project psi onto eigenvectors
-        std::vector<lapack_complex_double> psi_vec(in.channels);
+        std::vector<std::complex<double>> psi_vec(in.channels);
         for (int c = 0; c < in.channels; c++) {
             psi_vec[c] = {psi[c][i][0], psi[c][i][1]};
         }
@@ -288,7 +286,7 @@ void applyPotentialOperatorDense(const inputs& in, const int tick,
         for (int k = 0; k < in.channels; k++) {
             for (int c = 0; c < in.channels; c++) {
                 const auto z = reinterpret_cast<const std::complex<double>*>(eigenvectors.data())[c + k*in.channels];
-                coeff[k] += std::conj(z) * std::complex(psi_vec[c].real, psi_vec[c].imag);
+                coeff[k] += std::conj(z) * std::complex(psi_vec[c].real(), psi_vec[c].imag());
             }
         }
 

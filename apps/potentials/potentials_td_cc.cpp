@@ -21,21 +21,21 @@ double gaussian(const double x, const double t, const double delta, const double
 std::function<hermitian_matrix(double, double)> coupledSHO(const inputs& in) {
     return [in](const double x, const double t) {
         hermitian_matrix potential(in.channels);
-        potential(0,0) = std::complex(SHO(x)-2, 0.0);
+        potential(0,0) = std::complex(SHO(x)-350, 0.0);
         for (int c = 1; c < in.channels; c++) {
             potential(c,c) = std::complex(expDecay(x, c, in.channels,
                 in.max_energy-in.min_energy), 0.0);
         }
         for (int c2 = 1; c2 < in.channels; c2++) {
             potential(0,c2) = std::complex(
-                in.strength_1*exp(-(c2*in.dE-5)*(c2*in.dE-5)/(2*(0.5*0.5)))
+                in.strength_1*exp(-(c2*in.dE-2)*(c2*in.dE-2)/(2*(0.5*0.5)))
                 *gaussian(x, t, 0.4, 1.5)*cos(in.strength_2/137*x-in.strength_2*t), 0.0
                 );
         }
         for (int c1 = 1; c1 < in.channels; c1++) {
             for (int c2 = c1+1; c2 < in.channels; c2++) {
                 potential(c1,c2) = std::complex(
-                    in.strength_1*exp(-(c2*in.dE-5)*(c2*in.dE-5)/(2*(0.5*0.5)))
+                    in.strength_1*exp(-(c2*in.dE-2)*(c2*in.dE-2)/(2*(0.5*0.5)))
                     *gaussian(x, t, 0.4, 1.5)*cos(in.strength_2/137*x-in.strength_2*t), 0.0
                     );
             }
