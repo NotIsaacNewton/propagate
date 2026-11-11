@@ -8,6 +8,11 @@
 #include <cassert>
 #include <vector>
 #include <complex>
+#ifdef USE_MKL
+    #include <mkl_lapacke.h>
+#else
+    #include <lapacke.h>
+#endif
 
 // diagonal matrix
 template <typename T>
@@ -35,7 +40,7 @@ struct u_tri_matrix : off_diag_matrix<T> {
     explicit u_tri_matrix(const int size) : u_tri(size * (size - 1) / 2) { this->N = size; } // constructor
     // maps indexes i and j into the correct index of the flat array
     [[nodiscard]] int mapIndex(int i, int j) const {
-        assert(i < j && j < this->N); // NOTE: temporary
+        assert(i < j && j < this->N);
         return i * this->N - i * (i + 1) / 2 + (j - i - 1);
     }
     const T& operator()(const int i, const int j) const override { return u_tri[mapIndex(i, j)]; } // read-only accessor
@@ -57,5 +62,8 @@ struct hermitian_matrix {
         return i==j? d_herm(i) : c_herm(i,j);
     }
 };
+
+void diagonalizeHermitianMatrix(const hermitian_matrix& H, std::vector<double>& eigenvalues,
+    std::vector<lapack_complex_double>& eigenvectors, std::vector<lapack_int>& isuppz);
 
 #endif //PROPAGATE_MATRIX_TOOLS_H

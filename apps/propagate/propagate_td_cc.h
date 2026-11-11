@@ -52,6 +52,10 @@ void applyPotentialOperatorCC(const inputs& in, const std::vector<fftw_complex*>
 void applyPotentialOperatorCCReverse(const inputs& in, const std::vector<fftw_complex*>& diag,
     const std::vector<std::vector<std::vector<coupling>>>& coup, const std::vector<fftw_complex*>& psi);
 
+// prep low-rank approximation method
+diag_matrix<double> prepCouplingOperatorLR(const inputs& in,
+    const std::function<hermitian_matrix(double,double)>& potential);
+
 // applies potential operator using dense matrix diagonalization ZHEEVR
 void applyPotentialOperatorDense(const inputs& in, int tick,
     const std::vector<std::vector<hermitian_matrix>>& potential, const std::vector<fftw_complex*>& psi);
