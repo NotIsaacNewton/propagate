@@ -19,7 +19,9 @@ template <typename T>
 struct diag_matrix {
     const int N; // number of diagonal matrix elements
     std::vector<T> diag; // holds matrix elements in flat vector
+    explicit diag_matrix() : N(0) {}
     explicit diag_matrix(const int size) : N(size), diag(size) {} // constructs N and diag
+    explicit diag_matrix(const int size, std::vector<T> data) : N(size), diag(data) {} // constructs N and diag
     const T& operator()(int i) const { return diag[i]; } // read-only accessor
     T& operator()(int i) { return diag[i]; } // read-write accessor
 };

@@ -145,10 +145,11 @@ void applyCouplingOperatorReverse(const int point, const int channels,
 }
 
 // prep low-rank approximation method
-diag_matrix<double> prepCouplingOperatorLR(const inputs& in,
+coupling_lr prepCouplingOperatorLR(const inputs& in,
     const std::function<hermitian_matrix(double,double)>& potential) {
     hermitian_matrix coupling_matrix(in.channels);
     // grab dipole coupling matrix
+    #pragma omp parallel for default(none) shared(in, potential, coupling_matrix)
     for (int c1 = 0; c1 < in.channels; c1++) {
         for (int c2 = c1+1; c2 < in.channels; c2++) {
             coupling_matrix(c1,c2) = potential(0.0,0.0)(c1,c2);
@@ -160,9 +161,60 @@ diag_matrix<double> prepCouplingOperatorLR(const inputs& in,
     std::vector<lapack_int> isuppz(2 * in.channels);
     // diagonalize dipole coupling matrix
     diagonalizeHermitianMatrix(coupling_matrix, eigenvalues, eigenvectors, isuppz);
-    diag_matrix<double> coup(in.channels);
-    coup.diag = eigenvalues;
-    return coup;
+    const diag_matrix coup(in.channels, eigenvalues);
+    return { .diag_coup = coup, .eigenvectors = eigenvectors };
+}
+coupling_lr prepCouplingOperatorLR(const inputs& in,
+    const std::vector<std::vector<hermitian_matrix>>& potential) {
+    hermitian_matrix coupling_matrix(in.channels);
+    // grab dipole coupling matrix
+    #pragma omp parallel for default(none) shared(in, potential, coupling_matrix)
+    for (int c1 = 0; c1 < in.channels; c1++) {
+        for (int c2 = c1+1; c2 < in.channels; c2++) {
+            coupling_matrix(c1,c2) = potential[0][0](c1,c2);
+        }
+    }
+    // allocate eigenvalue and eigenvector arrays
+    std::vector<double> eigenvalues(in.channels);
+    std::vector<lapack_complex_double> eigenvectors(in.channels * in.channels);
+    std::vector<lapack_int> isuppz(2 * in.channels);
+    // diagonalize dipole coupling matrix
+    diagonalizeHermitianMatrix(coupling_matrix, eigenvalues, eigenvectors, isuppz);
+    const diag_matrix coup(in.channels, eigenvalues);
+    return { .diag_coup = coup, .eigenvectors = eigenvectors };
+}
+
+// apply low-rank coupling operator
+void applyCouplingOperatorLR(const inputs& in, const coupling_lr& coup,
+    const std::vector<fftw_complex*>& psi, const int point, const int tick) {
+    // project psi onto eigenvectors
+    std::vector<std::complex<double>> psi_vec(in.channels);
+    for (int c = 0; c < in.channels; c++) { psi_vec[c] = {psi[c][point][0], psi[c][point][1]}; }
+    // coefficients
+    std::vector<std::complex<double>> coeff(in.channels, {0.0, 0.0});
+    for (int k = 0; k < in.channels; k++) {
+        for (int c = 0; c < in.channels; c++) {
+            const auto z = coup.eigenvectors[c + k*in.channels];
+            coeff[k] += std::conj(z) * std::complex(psi_vec[c].real(), psi_vec[c].imag());
+        }
+    }
+    // apply e^{-i * E(x,t) * lambda[k] * dt/2}
+    for (int k = 0; k < in.channels; k++) {
+        const double phase = - electricField(
+            in.initial_pos + point*in.dx, in.initial_t + (tick + 0.5)*in.dt, in.strength_2
+            ) * coup.diag_coup(k) * in.dt / 2.0;
+        coeff[k] *= std::complex(std::cos(phase), std::sin(phase));
+    }
+    // transform back: psi = Z * coeff
+    for (int c = 0; c < in.channels; c++) {
+        std::complex val = {0.0, 0.0};
+        for (int k = 0; k < in.channels; k++) {
+            const auto z = coup.eigenvectors[c + k*in.channels];
+            val += z * coeff[k];
+        }
+        psi[c][point][0] = val.real();
+        psi[c][point][1] = val.imag();
+    }
 }
 
 // applies potential operator using dense hermitian matrix diagonalization ZHEEVR routine from LAPACK
@@ -184,7 +236,7 @@ void applyPotentialOperatorDense(const inputs& in, const int tick,
         for (int c = 0; c < in.channels; c++) {
             psi_vec[c] = {psi[c][i][0], psi[c][i][1]};
         }
-        // coefficients = psi^* * psi
+        // coefficients
         std::vector<std::complex<double>> coeff(in.channels, {0.0, 0.0});
         for (int k = 0; k < in.channels; k++) {
             for (int c = 0; c < in.channels; c++) {
@@ -261,6 +313,24 @@ void applyDiagonalOperator(const int point, const int channels, const std::vecto
         const double im = psi[c][point][1];
         psi[c][point][0] = re*diag[c][point][0] - im*diag[c][point][1];
         psi[c][point][1] = im*diag[c][point][0] + re*diag[c][point][1];
+    }
+}
+
+// applies potential operator in parallel threads across spatial gridpoints for low-rank approximation
+void applyPotentialOperatorLR(const inputs& in, const int tick, const std::vector<fftw_complex*>& diag,
+    const coupling_lr& coup, const std::vector<fftw_complex*>& psi) {
+    #pragma omp parallel for default(none) shared(in, coup, psi, diag, tick)
+    for (int i = 0; i < in.space_grid; i++) {
+        applyCouplingOperatorLR(in, coup, psi, i, tick);
+        applyDiagonalOperator(i, in.channels, diag, psi);
+    }
+}
+void applyPotentialOperatorLRReverse(const inputs& in, const int tick, const std::vector<fftw_complex*>& diag,
+    const coupling_lr& coup, const std::vector<fftw_complex*>& psi) {
+    #pragma omp parallel for default(none) shared(in, coup, psi, diag, tick)
+    for (int i = 0; i < in.space_grid; i++) {
+        applyDiagonalOperator(i, in.channels, diag, psi);
+        applyCouplingOperatorLR(in, coup, psi, i, tick);
     }
 }
 
@@ -399,6 +469,27 @@ void propTickDense(const int& tick, const inputs& in, const std::vector<fftw_com
         applyPotentialOperatorDense(in, tick, pot, psi);
     }, potential);
 }
+void propTickLR(const int& tick, const inputs& in, const std::vector<fftw_complex*>& psi,
+    const potCC& potential, const std::vector<fftw_complex*>& V_d,
+    const coupling_lr& V_c, const fftw_complex* T,
+    const std::vector<fftw_plan>& fft, const std::vector<fftw_plan>& ifft, const double scale) {
+    // define diagonal potential operator
+    std::visit([&](const auto& pot) {
+        definePotentialOperatorDiag(in, tick, V_d, pot);
+    }, potential);
+    // apply potential operators
+    applyPotentialOperatorLR(in, tick, V_d, V_c, psi);
+    // execute fft
+    fftExecuteCC(in.space_grid, in.channels, psi, fft);
+    // apply kinetic energy operator
+    applyKineticOperatorCC(in.space_grid, in.channels, psi, T);
+    // execute ifft
+    ifftExecuteCC(in.space_grid, in.channels, psi, ifft);
+    // normalize fftw result (fftw uses non-normalized fft algorithm)
+    fftwNormCC(in, scale, psi);
+    // apply potential operators
+    applyPotentialOperatorLRReverse(in, tick, V_d, V_c, psi);
+}
 
 // gets initial wavepacket handled with RAII, outputs a vector of unique pointers
 std::vector<std::unique_ptr<fftw_complex, void(*)(void*)>> getWavepacketCC(const inputs& in, const std::string& data) {
@@ -472,6 +563,9 @@ void propagateTDCC(const inputs& in, const std::string& data) {
     potCC potential = in.potential_type == "file"
         ? potCC(getPotentialCC(in, data))
         : potCC(buildPotentialTDCC(in));
+    coupling_lr coup = in.potential_type == "file"
+        ? prepCouplingOperatorLR(in, getPotentialCC(in, data))
+        : prepCouplingOperatorLR(in, buildPotentialTDCC(in));
     // scale for normalizing fft result
     const double scale = 1.0 / in.space_grid;
     // open output file and buffer
@@ -486,15 +580,16 @@ void propagateTDCC(const inputs& in, const std::string& data) {
     // console output
     std::cout << "Propagating...\n";
     // propagation loop
-    bool dense = in.run_type=="dense";
+    //bool dense = in.run_type=="dense";
     for (int t = 0; t < in.time_grid; t++) {
         // print completion % to console
         !((t+1) % (in.time_grid / 10)) ? progressBar(GREEN, 100*(t+1)/in.time_grid) : reset();
         // write lines in output buffer
         writeOutputCC(psi, t, in, buffer);
         // propagate for one tick
-        dense?  propTickDense(t, in, psi, potential, T, fft, ifft, scale) :
-        propTickTDCC(t, in, psi, potential, V_d, V_c, T, fft, ifft, scale);
+        propTickLR(t, in, psi, potential, V_d, coup, T, fft, ifft, scale);
+        /*dense?  propTickDense(t, in, psi, potential, T, fft, ifft, scale) :
+        propTickTDCC(t, in, psi, potential, V_d, V_c, T, fft, ifft, scale);*/
     }
     // save buffer to output file and close the file
     wf.write(reinterpret_cast<const char*>(buffer.data()),
