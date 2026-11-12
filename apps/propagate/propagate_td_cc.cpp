@@ -580,16 +580,19 @@ void propagateTDCC(const inputs& in, const std::string& data) {
     // console output
     std::cout << "Propagating...\n";
     // propagation loop
-    //bool dense = in.run_type=="dense";
     for (int t = 0; t < in.time_grid; t++) {
         // print completion % to console
         !((t+1) % (in.time_grid / 10)) ? progressBar(GREEN, 100*(t+1)/in.time_grid) : reset();
         // write lines in output buffer
         writeOutputCC(psi, t, in, buffer);
         // propagate for one tick
-        propTickLR(t, in, psi, potential, V_d, coup, T, fft, ifft, scale);
-        /*dense?  propTickDense(t, in, psi, potential, T, fft, ifft, scale) :
-        propTickTDCC(t, in, psi, potential, V_d, V_c, T, fft, ifft, scale);*/
+        if (in.run_type=="dense") {
+            propTickDense(t, in, psi, potential, T, fft, ifft, scale);
+        } else if (in.run_type=="TDCCLR") {
+            propTickLR(t, in, psi, potential, V_d, coup, T, fft, ifft, scale);
+        } else {
+            propTickTDCC(t, in, psi, potential, V_d, V_c, T, fft, ifft, scale);
+        }
     }
     // save buffer to output file and close the file
     wf.write(reinterpret_cast<const char*>(buffer.data()),
