@@ -12,7 +12,7 @@
 #include "console_tools.h"
 #include "fftw_complex_tools.h"
 #include "wavepackets.h"
-#include "wavepackets_cc.h"
+//#include "wavepackets_cc.h"
 
 // inputs: location/of/input_file location/of/data_directory
 int main(const int argc, char* argv[]) {
@@ -45,18 +45,20 @@ int main(const int argc, char* argv[]) {
 
     // CC wavepacket?
     //const bool CC = in.run_type == "TDCC" || in.run_type == "dense";
-    const bool CC = false;
+    //const bool CC = false;
 
     // spacer
     spacer(RESET);
 
     // write wavefunction
-    if (CC) {
+    /*if (CC) {
         fftw_complex_func_array_to_file(in, data, in.input_psi_file,
             buildWavepacketCC(in));
     } else {
         fftw_complex_func_to_file(in, psifile + ".dat", buildWavepacket(in));
-    }
+    }*/
+
+    fftw_complex_func_to_file(in, psifile + ".dat", buildWavepacket(in));
 
     // record end time and duration
     const auto end = std::chrono::steady_clock::now();

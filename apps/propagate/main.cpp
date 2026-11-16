@@ -11,7 +11,9 @@
 #include "console_tools.h"
 #include "propagate.h"
 #include "propagate_td.h"
-#include "propagate_td_cc.h"
+#include "propagate_td_cc_seq.h"
+#include "propagate_td_cc_lr.h"
+#include "propagate_td_cc_dense.h"
 
 // inputs: location/of/input_file location/of/data_directory
 int main(const int argc, const char* argv[]) {
@@ -46,8 +48,12 @@ int main(const int argc, const char* argv[]) {
     const bool imProp = in.run_type == "true";
     // TD propagation?
     const bool propTD = in.run_type == "TD";
-    // TDCC propagation?
-    const bool propTDCC = in.run_type == "TDCC" || in.run_type == "dense" || in.run_type == "TDCCLR";
+    // TDCC real-space two propagation?
+    const bool propTDCCSeq = in.run_type == "TDCCSeq";
+    // TDCC dense-diagonalization propagation?
+    const bool propTDCCDense = in.run_type == "TDCCDense";
+    // TDCC low-rank propagation?
+    const bool propTDCCLR = in.run_type == "TDCCLR";
 
     // warning if odd number of gridpoints
     if (in.space_grid % 2 != 0) {
@@ -73,8 +79,12 @@ int main(const int argc, const char* argv[]) {
     // propagate wf
     if (propTD) {
         propagateTD(in, data);
-    } else if (propTDCC) {
-        propagateTDCC(in, data);
+    } else if (propTDCCSeq) {
+        propagateTDCCSeq(in, data);
+    } else if (propTDCCDense) {
+        propagateTDCCDense(in, data);
+    } else if (propTDCCLR) {
+        propagateTDCCLR(in, data);
     } else {
         propagate(in, data, imProp);
     }
