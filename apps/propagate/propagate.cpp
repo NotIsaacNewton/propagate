@@ -213,10 +213,14 @@ void propagate(const inputs& in, const std::string& data, const bool imProp) {
     // open output file and buffer
     auto [wf, buffer] = openWFOutputFile(in, data);
     // norm psi (often slightly off norm) and check norm
-    normalize(in.space_grid, in.dx, psi); // normalize psi
-    double mag = norm(in.space_grid, in.dx, psi); // calculate norm
-    std::cout << RED << "Check norm:\n" << RESET;
-    std::print("The initial norm is {}\n", mag);
+    if (!imProp) {
+        normalize(in.space_grid, in.dx, psi); // normalize psi
+        double mag = norm(in.space_grid, in.dx, psi); // calculate norm
+        std::cout << RED << "Check norm:\n" << RESET;
+        std::print("The initial norm is {}\n", mag);
+    } else {
+        std::print("{}Imaginary time propagation—no initial norm check.\n{}", YELLOW, RESET);
+    }
     // spacer
     spacer(RESET);
     // console output
@@ -242,12 +246,14 @@ void propagate(const inputs& in, const std::string& data, const bool imProp) {
     std::cout << "\n";
     // spacer
     spacer(RESET);
-    // check norm
-    mag = norm(in.space_grid, in.dx, psi);
-    std::cout << RED << "Check norm:\n" << RESET;
-    std::print("The final norm is {}\n", mag);
-    // save final ground state if imProp
-    if (imProp) {
+    if (!imProp) {
+        // check norm
+        double mag = norm(in.space_grid, in.dx, psi);
+        std::cout << RED << "Check norm:\n" << RESET;
+        std::print("The final norm is {}\n", mag);
+    } else {
+        std::print("{}Running imaginary propagation—no initial norm check.\n{}", YELLOW, RESET);
+        // save final ground state if imProp
         normalize(in.space_grid, in.dx, psi);
         fftw_complex_array_to_file(in.initial_pos, in.space_grid, in.dx,
             data + "/" + in.input_psi_file + ".dat", psi);
