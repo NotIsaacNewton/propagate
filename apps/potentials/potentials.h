@@ -19,6 +19,8 @@ std::function<double(double)> barrier(double start_pos, double end_pos, double s
 std::function<double(double)> triangle(double strength, double pos);
 // wall
 std::function<double(double)> wall(double pos, double strength);
+// soft-core hydrogen
+std::function<double(double)> hydrogen();
 
 // map of options
 std::function<double(double)> buildPotential(const inputs& in);

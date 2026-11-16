@@ -15,6 +15,7 @@
 #include <variant>
 #include <omp.h>
 #include "../potentials/potentials_td_cc.h"
+#include "../potentials/potentials_td.h"
 
 // applies potential operator using dense hermitian matrix diagonalization ZHEEVR routine from LAPACK
 void applyPotentialOperatorDense(const inputs& in, const int tick,
@@ -68,9 +69,7 @@ void applyPotentialOperatorDense(const inputs& in, const int tick,
         hermitian_matrix H = potential(i*in.dx + in.initial_pos, (tick+0.5)*in.dt + in.initial_t);
         for (int c1 = 0; c1 < in.channels; c1++) {
             for (int c2 = c1+1; c2 < in.channels; c2++) {
-                H(c1, c2) *= electricField(
-                    in.initial_pos + i*in.dx, in.initial_t + (tick + 0.5)*in.dt, in.strength_2
-                    );
+                H(c1, c2) *= electricField(in.initial_t + (tick + 0.5)*in.dt, in.strength_2);
             }
         }
         // allocate eigenvalue and eigenvector arrays

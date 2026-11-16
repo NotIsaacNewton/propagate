@@ -3,7 +3,6 @@
 //
 
 #include "potentials_td_cc.h"
-#include <numbers>
 #include <string>
 #include <cmath>
 #include <algorithm>
@@ -15,12 +14,7 @@ double SHO(const double x) {
 double expDecay(const double x, const int c, const int channels, const double range) {
     return 500*exp(-x) + (c-1)*(range/(channels-1));
 }
-double gaussian(const double x, const double t, const double delta, const double pos) {
-    return pow(1/(std::numbers::pi * (delta*delta)), 1.0/4.0)*exp(-(x-(t-pos))*(x-(t-pos))/(2*(delta*delta)));
-}
-double electricField(const double x, const double t, const double omega) {
-    return gaussian(x, t, 0.4, 1.5)*cos(omega/137*x-omega*t);
-}
+
 std::function<hermitian_matrix(double, double)> coupledSHO(const inputs& in) {
     return [in](const double x, const double) {
         hermitian_matrix potential(in.channels);

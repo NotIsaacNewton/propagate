@@ -13,6 +13,12 @@ std::function<double(double, double)> electricBarrier(double start_pos, double e
     double strength_1, double strength_2);
 // harmonic oscillator + wave
 std::function<double(double, double)> electricSho(double strength, double k);
+// time-dependent Gaussian
+double gaussian(double t, double delta, double pos);
+// electric field
+double electricField(double t, double omega);
+// dipole-coupled soft-core hydrogen
+std::function<double(double, double)> electricHydrogen();
 
 // potential builder + map of options
 std::function<double(double, double)> buildPotentialTD(const inputs& in);

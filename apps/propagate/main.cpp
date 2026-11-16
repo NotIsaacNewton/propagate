@@ -45,7 +45,7 @@ int main(const int argc, const char* argv[]) {
     const std::string psiout = data + "/" + in.output_psi_file;
 
     // imaginary propagation?
-    const bool imProp = in.run_type == "true";
+    const bool imProp = in.run_type == "IM";
     // TD propagation?
     const bool propTD = in.run_type == "TD";
     // TDCC real-space two propagation?

@@ -15,6 +15,7 @@
 #include <variant>
 #include <omp.h>
 #include "../potentials/potentials_td_cc.h"
+#include "../potentials/potentials_td.h"
 
 // prep low-rank approximation method
 coupling_lr prepCouplingOperatorLR(const inputs& in,
@@ -73,7 +74,7 @@ void applyCouplingOperatorLR(const inputs& in, const coupling_lr& coup,
     // apply e^{-i * E(x,t) * lambda[k] * dt/2}
     for (int k = 0; k < in.channels; k++) {
         const double phase = - electricField(
-            in.initial_pos + point*in.dx, in.initial_t + (tick + 0.5)*in.dt, in.strength_2
+            in.initial_t + (tick + 0.5)*in.dt, in.strength_2
             ) * coup.diag_coup(k) * in.dt / 2.0;
         coeff[k] *= std::complex(std::cos(phase), std::sin(phase));
     }

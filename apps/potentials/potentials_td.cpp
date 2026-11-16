@@ -24,6 +24,20 @@ std::function<double(double, double)> electricSho(const double strength, const d
     };
 }
 
+// time-dependent gaussian
+double gaussian(const double t, const double delta, const double pos) {
+    return exp(-(t-pos)*(t-pos)/(2*(delta*delta)));
+}
+// electric field
+double electricField(const double t, const double omega) {
+    return 0.0534*gaussian(t, 744, 3000)*cos(omega*(t-3000));
+}
+std::function<double(double, double)> electricHydrogen() {
+    return [](const double x, const double t) {
+        return -1/std::sqrt(1 + x*x) + x*electricField(t, 0.057);
+    };
+}
+
 // potential builder + map of options
 std::function<double(double, double)> buildPotentialTD(const inputs& in) {
     std::unordered_map<std::string, std::function<std::function<double(double, double)>()>> const potentials = {
@@ -31,8 +45,11 @@ std::function<double(double, double)> buildPotentialTD(const inputs& in) {
             return electricBarrier(in.pot_position_1,in.pot_position_2,
                 in.strength_1, in.strength_2);
             }},
-        {"electricsho",    [in] {
+        {"electricsho",     [in] {
             return electricSho(in.strength_1,in.strength_2);
+            }},
+        {"electrichydrogen",  [] {
+            return electricHydrogen();
             }}
     };
     return potentials.at(in.potential_type)();

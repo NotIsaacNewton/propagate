@@ -81,6 +81,7 @@ void writeFunction2D(const double& start_x, const double& start_y, const double&
             reinterpret_cast<const char*>(temp.data()), static_cast<std::streamsize>(width * sizeof(double)));
         }
         write.close();
+        std::cout << "\n";
     } else {
         std::cerr << "Failed to open " << file << "." << "\n";
     }
@@ -130,6 +131,7 @@ void readArray2D(const std::string& file, std::vector<std::vector<double>>& arra
             read.read(reinterpret_cast<char*>(array[i].data()), static_cast<std::streamsize>(width * sizeof(double)));
         }
         read.close();
+        std::cout << "\n";
     } else {
         std::cerr << "Failed to open " << file << "." << "\n";
     }

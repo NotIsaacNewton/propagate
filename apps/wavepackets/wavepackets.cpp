@@ -55,7 +55,7 @@ std::function<void(double, fftw_complex)> shoExcited() {
 std::function<void(double, fftw_complex)> test() {
     return [](const double x, fftw_complex out) {
         double psi;
-        x <= 5 && x >= -5 ? psi = 1 : psi = 0;
+        x < 4 && x >= -4 ? psi = -x*x : psi = 0;
         out[0] = psi;
         out[1] = 0;
     };

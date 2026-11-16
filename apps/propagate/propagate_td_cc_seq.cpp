@@ -15,6 +15,7 @@
 #include <variant>
 #include <omp.h>
 #include "../potentials/potentials_td_cc.h"
+#include "../potentials/potentials_td.h"
 
 // creates array of coupling operator arrays from data at tick and outputs to op
 void defineCouplingOperator(const inputs& in, const int& tick, std::vector<std::vector<std::vector<coupling>>>& op,
@@ -25,8 +26,7 @@ void defineCouplingOperator(const inputs& in, const int& tick, std::vector<std::
         for (int c1 = 0; c1 < in.channels; c1++) {
             for (int c2 = c1+1; c2 < in.channels; c2++) {
                 const std::complex<double> coupling = electricField(
-            in.initial_pos + i*in.dx, in.initial_t + (tick + 0.5)*in.dt, in.strength_2
-            ) * temp(c1,c2);
+                    in.initial_t + (tick + 0.5)*in.dt, in.strength_2) * temp(c1,c2);
                 if (const double coupling_strength = std::abs(coupling); coupling_strength < 1e-15) {
                     op[i][c1][c2].cos_factor = 1.0;
                     op[i][c1][c2].sin_factor = 0.0;

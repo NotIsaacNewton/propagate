@@ -38,6 +38,12 @@ std::function<double(double)> wall(const double pos, const double strength) {
         return x <= pos ? 0 : strength;
     };
 }
+// soft-core hydrogen
+std::function<double(double)> hydrogen() {
+    return [=](const double x) {
+        return -1/std::sqrt(1 + x*x);
+    };
+}
 
 // potential builder + map of options
 std::function<double(double)> buildPotential(const inputs& in) {
@@ -56,6 +62,9 @@ std::function<double(double)> buildPotential(const inputs& in) {
             }},
         {"wall",    [in] {
             return wall(in.pot_position_1,in.strength_1);
+            }},
+        {"hydrogen",  [] {
+            return hydrogen();
             }}
     };
     return potentials.at(in.potential_type)();

@@ -81,7 +81,7 @@ if(LAPACK_DEFINITIONS)
 endif()
 
 # build propagate
-add_executable(propagate ${PROPAGATE} ${potential}/potentials_td_cc.cpp)
+add_executable(propagate ${PROPAGATE} ${potential}/potentials_td_cc.cpp ${potential}/potentials_td.cpp)
 target_link_libraries(propagate LIB ${FFT_LIBS} OpenMP::OpenMP_CXX)
 
 # build wavepacket

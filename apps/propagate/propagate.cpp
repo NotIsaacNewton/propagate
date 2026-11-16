@@ -246,4 +246,10 @@ void propagate(const inputs& in, const std::string& data, const bool imProp) {
     mag = norm(in.space_grid, in.dx, psi);
     std::cout << RED << "Check norm:\n" << RESET;
     std::print("The final norm is {}\n", mag);
+    // save final ground state if imProp
+    if (imProp) {
+        normalize(in.space_grid, in.dx, psi);
+        fftw_complex_array_to_file(in.initial_pos, in.space_grid, in.dx,
+            data + "/" + in.input_psi_file + ".dat", psi);
+    }
 }

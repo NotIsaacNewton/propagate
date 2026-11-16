@@ -67,7 +67,8 @@ int main(const int argc, char *argv[]) {
     // record end time and duration
     auto const end = std::chrono::steady_clock::now();
     const std::chrono::duration<double> sec = end - start;
-    spacerChunky("\n" BLUE);
+    std::print("{}Potential written!\n", GREEN);
+    spacerChunky(BLUE);
     std::print("{}Execution time: {} seconds\n\n", BLUE, sec.count());
 
     return 0;
