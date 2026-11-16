@@ -216,7 +216,6 @@ void propagate(const inputs& in, const std::string& data, const bool imProp) {
     if (!imProp) {
         normalize(in.space_grid, in.dx, psi); // normalize psi
         double mag = norm(in.space_grid, in.dx, psi); // calculate norm
-        std::cout << RED << "Check norm:\n" << RESET;
         std::print("The initial norm is {}\n", mag);
     } else {
         std::print("{}Imaginary time propagation—no initial norm check.\n{}", YELLOW, RESET);
@@ -252,7 +251,7 @@ void propagate(const inputs& in, const std::string& data, const bool imProp) {
         std::cout << RED << "Check norm:\n" << RESET;
         std::print("The final norm is {}\n", mag);
     } else {
-        std::print("{}Running imaginary propagation—no final norm check.\n{}", YELLOW, RESET);
+        std::print("{}Imaginary time propagation—no final norm check.\n{}", YELLOW, RESET);
         // save final ground state if imProp
         normalize(in.space_grid, in.dx, psi);
         fftw_complex_array_to_file(in.initial_pos, in.space_grid, in.dx,

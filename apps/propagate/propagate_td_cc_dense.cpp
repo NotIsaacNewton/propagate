@@ -168,7 +168,6 @@ void propagateTDCCDense(const inputs& in, const std::string& data) {
     // norm psi (often slightly off norm) and check norm
     normalizeCC(in.space_grid, in.dx, in.channels, psi); // normalize psi
     double mag = normCC(in.space_grid, in.dx, in.channels, psi); // recalculate norm
-    std::cout << RED << "Check norm:\n" << RESET;
     std::print("The initial norm is {}\n", mag);
     // spacer
     spacer(RESET);

@@ -10,6 +10,7 @@
 #include <print>
 #include <chrono>
 #include <iostream>
+#include <numbers>
 
 // gets potential and returns arrays
 std::vector<std::vector<double>> getPotential(const inputs& in, const std::string& data) {
@@ -29,6 +30,22 @@ void definePotentialOperatorTD(const inputs& in, const int& tick, fftw_complex *
         const double phase = potential[tick][i] * in.dt / 2.0;
         op[i][0] = cos(phase);
         op[i][1] = -sin(phase);
+    }
+}
+
+// mask function for edge absorption
+double maskFunction(const double x) {
+    if (std::abs(x) <= 150) {
+        return 1;
+    }
+    return std::pow(std::cos(std::numbers::pi*(std::abs(x)-150)/(2*(200-150))), 1/8);
+}
+// applies mask function
+void applyMaskFunction(const inputs& in, fftw_complex* psi) {
+    #pragma omp parallel for default(none) shared(in, psi)
+    for (int i = 0; i < in.space_grid; ++i) {
+        psi[i][0] *= maskFunction(in.initial_pos + i*in.dx);
+        psi[i][1] *= maskFunction(in.initial_pos + i*in.dx);
     }
 }
 
@@ -79,6 +96,8 @@ void propTickTD(const int& tick, const inputs& in, fftw_complex *psi, const std:
     scale_fftw_complex(scale, psi, in.space_grid);
     // apply e^(-i dt V(x))
     applyPotentialOperator(in.space_grid, psi, V);
+    // apply mask
+    //applyMaskFunction(in, psi);
 }
 
 // propagates wavefunction based on general values
@@ -101,7 +120,6 @@ void propagateTD(const inputs& in, const std::string& data) {
     // norm psi (often slightly off norm) and check norm
     normalize(in.space_grid, in.dx, psi); // normalize psi
     double mag = norm(in.space_grid, in.dx, psi); // recalculate norm
-    std::cout << RED << "Check norm:\n" << RESET;
     std::print("The initial norm is {}\n", mag);
     // spacer
     spacer(RESET);

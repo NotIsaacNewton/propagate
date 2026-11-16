@@ -14,6 +14,11 @@ std::vector<std::vector<double>> getPotential(const inputs& in, const std::strin
 void definePotentialOperatorTD(const inputs& in, const int& tick, fftw_complex *op,
     const std::vector<std::vector<double>>& potential);
 
+// mask function for edge absorption
+double maskFunction(double x);
+// applies mask function
+void applyMaskFunction(const inputs& in, fftw_complex* psi);
+
 // prepares fftw variables with RAII
 fftwResources fftwPrepTD(const inputs& in, fftw_complex *psi, const std::string& data);
 
