@@ -289,9 +289,6 @@
 /cmake-build-debug/.cmake/api/v1/reply/target-potential-Debug-e4334cabc23483a7a982.json
 /cmake-build-debug/.cmake/api/v1/reply/target-propagate-Debug-6af6bf95e5e7ec9873d5.json
 /cmake-build-debug/.cmake/api/v1/reply/target-wavepacket-Debug-00e9306dae151bbfa554.json
-/data/potential.dat
-/data/psi_final.dat
-/data/psi_initial.dat
 /cmake-build-debug/.cmake/api/v1/reply/cache-v2-24876fa8bfdd7a001fa6.json
 /cmake-build-debug/.cmake/api/v1/reply/codemodel-v2-7ffa52386b9c774317f1.json
 /cmake-build-debug/.cmake/api/v1/reply/index-2026-10-01T21-39-11-0834.json
@@ -377,3 +374,15 @@
 /cmake-build-debug/CMakeFiles/4.4.2/CMakeDetermineCompilerABI_C.bin
 /cmake-build-debug/CMakeFiles/4.4.2/CMakeDetermineCompilerABI_CXX.bin
 /cmake-build-debug/CMakeFiles/4.4.2/CMakeSystem.cmake
+/cmake-build-debug/.cmake/api/v1/reply/cache-v2-7543f279cc42d14cf4ad.json
+/cmake-build-debug/.cmake/api/v1/reply/cmakeFiles-v1-300857c00ba0bff101a9.json
+/cmake-build-debug/.cmake/api/v1/reply/codemodel-v2-ec0fad51050de26584de.json
+/cmake-build-debug/.cmake/api/v1/reply/index-2026-11-16T21-48-58-0277.json
+/cmake-build-debug/.cmake/api/v1/reply/target-LIB-Debug-124598dd2d33eb5f160c.json
+/cmake-build-debug/.cmake/api/v1/reply/target-potential-Debug-c91bd0264a6dfa74235b.json
+/cmake-build-debug/.cmake/api/v1/reply/target-propagate-Debug-a779bc12ad4bfc93ebd8.json
+/cmake-build-debug/.cmake/api/v1/reply/target-wavepacket-Debug-dfe776ce1820ad50b0cf.json
+/cmake-build-debug/CMakeFiles/propagate.dir/apps/potentials/potentials_td.cpp.o
+/cmake-build-debug/CMakeFiles/propagate.dir/apps/propagate/propagate_td_cc_dense.cpp.o
+/cmake-build-debug/CMakeFiles/propagate.dir/apps/propagate/propagate_td_cc_lr.cpp.o
+/cmake-build-debug/CMakeFiles/propagate.dir/apps/propagate/propagate_td_cc_seq.cpp.o
