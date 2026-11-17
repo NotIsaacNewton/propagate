@@ -28,7 +28,7 @@ if(BUILD_HPC)
     )
     set(LAPACK_INCLUDE_DIR ${MKL_INCLUDE_DIR})
     set(LAPACK_LIBRARIES ${MKL_LIBRARY})
-    set(LAPACK_DEFINITIONS USE_MKL)
+    set(LAPACK_DEFINITIONS USE_MKL lapack_complex_double=std::complex<double>)
 elseif(BUILD_INTEL)
     find_package(LAPACK REQUIRED)
     find_path(LAPACKE_INCLUDE_DIR
