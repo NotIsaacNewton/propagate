@@ -71,9 +71,9 @@ void applyCouplingOperatorLR(const inputs& in, const coupling_lr& coup,
             coeff[k] += std::conj(z) * std::complex(psi_vec[c].real(), psi_vec[c].imag());
         }
     }
-    // apply e^{-i * E(x,t) * lambda[k] * dt/2}
+    // apply e^{-i * x E(t) * lambda[k] * dt/2}
     for (int k = 0; k < in.channels; k++) {
-        const double phase = - electricField(
+        const double phase = -(in.initial_pos + point*in.dx) * electricField(
             in.initial_t + (tick + 0.5)*in.dt, in.strength_2
             ) * coup.diag_coup(k) * in.dt / 2.0;
         coeff[k] *= std::complex(std::cos(phase), std::sin(phase));

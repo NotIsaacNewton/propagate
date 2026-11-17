@@ -69,7 +69,8 @@ void applyPotentialOperatorDense(const inputs& in, const int tick,
         hermitian_matrix H = potential(i*in.dx + in.initial_pos, (tick+0.5)*in.dt + in.initial_t);
         for (int c1 = 0; c1 < in.channels; c1++) {
             for (int c2 = c1+1; c2 < in.channels; c2++) {
-                H(c1, c2) *= electricField(in.initial_t + (tick + 0.5)*in.dt, in.strength_2);
+                H(c1, c2) *= (in.initial_pos + i*in.dx)*electricField(in.initial_t + (tick + 0.5)*in.dt,
+                    in.strength_2);
             }
         }
         // allocate eigenvalue and eigenvector arrays
@@ -88,7 +89,8 @@ void applyPotentialOperatorDense(const inputs& in, const int tick,
         std::vector<std::complex<double>> coeff(in.channels, {0.0, 0.0});
         for (int k = 0; k < in.channels; k++) {
             for (int c = 0; c < in.channels; c++) {
-                const auto z = reinterpret_cast<const std::complex<double>*>(eigenvectors.data())[c + k*in.channels];
+                const auto z = reinterpret_cast<const std::complex<double>*>(eigenvectors.data())[
+                    c + k*in.channels];
                 coeff[k] += std::conj(z) * std::complex(psi_vec[c].real(), psi_vec[c].imag());
             }
         }
@@ -101,7 +103,8 @@ void applyPotentialOperatorDense(const inputs& in, const int tick,
         for (int c = 0; c < in.channels; c++) {
             std::complex val = {0.0, 0.0};
             for (int k = 0; k < in.channels; k++) {
-                const auto z = reinterpret_cast<const std::complex<double>*>(eigenvectors.data())[c + k*in.channels];
+                const auto z = reinterpret_cast<const std::complex<double>*>(eigenvectors.data())[
+                    c + k*in.channels];
                 val += z * coeff[k];
             }
             psi[c][i][0] = val.real();
