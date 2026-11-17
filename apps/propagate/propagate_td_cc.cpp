@@ -185,5 +185,5 @@ void savePEY(const std::vector<fftw_complex*>& psi, const inputs& in) {
     }
     writeArray1D(in.min_energy, in.dE, in.channels-1, "data/PEY.dat", PEY);
     spacer(RESET);
-    std::print("{}——> PEY saved! Total yield is {}{}{}\n", BLUE, MAGENTA, total_PEY, RESET);
+    std::print("{}——> PEY saved! Total yield is {}{}{}\n", GRAY, YELLOW, total_PEY, RESET);
 }

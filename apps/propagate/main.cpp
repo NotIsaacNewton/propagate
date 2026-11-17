@@ -45,7 +45,7 @@ int main(const int argc, const char* argv[]) {
     spacer(RESET);
 
     // confirm run type in console
-    std::print("{}——> using {}{}{} propagation{}\n", BLUE, MAGENTA, in.run_type, BLUE, RESET);
+    std::print("{}——> using {}{}{} propagation{}\n", GRAY, MAGENTA, in.run_type, BLUE, RESET);
 
     // psi output file location
     const std::string psiout = data + "/" + in.output_psi_file;

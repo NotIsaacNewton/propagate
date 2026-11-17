@@ -257,6 +257,6 @@ void propagate(const inputs& in, const std::string& data, const bool imProp) {
         fftw_complex_array_to_file(in.initial_pos, in.space_grid, in.dx,
             data + "/" + in.input_psi_file + ".dat", psi);
         spacer(RESET);
-        std::print("{}——> wavefunction saved to {}{}\n", BLUE, RESET, in.input_psi_file + ".dat");
+        std::print("{}——> wavefunction saved to {}{}\n", GRAY, RESET, in.input_psi_file + ".dat");
     }
 }
