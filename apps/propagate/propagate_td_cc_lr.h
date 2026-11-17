@@ -6,7 +6,6 @@
 #define PROPAGATE_PROPAGATE_TD_CC_LR_H
 
 #include "propagate_td_cc.h"
-#include <complex>
 
 // struct used to carry usable information of coupling elements (low-rank approximation)
 struct coupling_lr {
