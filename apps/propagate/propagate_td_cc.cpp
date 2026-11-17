@@ -11,6 +11,7 @@
 #include <print>
 #include <algorithm>
 #include <variant>
+#include "console_tools.h"
 
 // gets potential and returns arrays
 std::vector<std::vector<hermitian_matrix> > getPotentialCC(const inputs &in, const std::string &data) {
@@ -183,5 +184,6 @@ void savePEY(const std::vector<fftw_complex*>& psi, const inputs& in) {
         total_PEY += PEY[c-1]*in.dE;
     }
     writeArray1D(in.min_energy, in.dE, in.channels-1, "data/PEY.dat", PEY);
-    std::print("\nPEY saved! Total yield is {}\n", total_PEY);
+    spacer(RESET);
+    std::print("{}——> PEY saved! Total yield is {}{}{}\n", BLUE, MAGENTA, total_PEY, RESET);
 }
