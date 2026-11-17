@@ -18,7 +18,7 @@ double expDecay(const double x, const int c, const int channels, const double ra
 std::function<hermitian_matrix(double, double)> coupledSHO(const inputs& in) {
     return [in](const double x, const double) {
         hermitian_matrix potential(in.channels);
-        potential(0,0) = std::complex(SHO(x)-350, 0.0);
+        potential(0,0) = std::complex(SHO(x)-20, 0.0);
         for (int c = 1; c < in.channels; c++) {
             potential(c,c) = std::complex(expDecay(x, c, in.channels,
                 in.max_energy-in.min_energy), 0.0);
