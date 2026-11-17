@@ -27,7 +27,7 @@ int main(const int argc, char *argv[]) {
     const std::string data = argv[2];
 
     // introduction
-    std::print("\n{}potential\n", BLUE);
+    std::print("{}potential\n", BLUE);
 
     // record the start time
     auto const start = std::chrono::steady_clock::now();

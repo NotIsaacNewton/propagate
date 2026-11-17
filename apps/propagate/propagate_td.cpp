@@ -5,6 +5,7 @@
 #include "propagate_td.h"
 #include "console_tools.h"
 #include "fftw_complex_tools.h"
+#include "../potentials/potentials_td.h"
 #include <fstream>
 #include <memory>
 #include <print>
@@ -32,13 +33,23 @@ void definePotentialOperatorTD(const inputs& in, const int& tick, fftw_complex *
         op[i][1] = -sin(phase);
     }
 }
+void definePotentialOperatorTD(const inputs& in, const int& tick, fftw_complex *op,
+    const std::function<double(double,double)>& potential) {
+    // write potential operator
+    #pragma omp parallel for default(none) shared(potential, tick, in, op)
+    for (int i = 0; i < in.space_grid; i++) {
+        const double phase = potential(in.initial_pos + i*in.dx, in.initial_t + (tick + 0.5)*in.dt) * in.dt / 2.0;
+        op[i][0] = cos(phase);
+        op[i][1] = -sin(phase);
+    }
+}
 
 // mask function for edge absorption
 double maskFunction(const double x) {
     if (std::abs(x) <= 150) {
         return 1;
     }
-    return std::pow(std::cos(std::numbers::pi*(std::abs(x)-150)/(2*(200-150))), 1/8);
+    return std::pow(std::cos(std::numbers::pi*(std::abs(x)-150)/(2*(200-150))), 1.0/8.0);
 }
 // applies mask function
 void applyMaskFunction(const inputs& in, fftw_complex* psi) {
@@ -80,10 +91,12 @@ fftwResources fftwPrepTD(const inputs& in, fftw_complex *psi, const std::string&
 }
 
 // propagation tick
-void propTickTD(const int& tick, const inputs& in, fftw_complex *psi, const std::vector<std::vector<double>>& potential,
+void propTickTD(const int& tick, const inputs& in, fftw_complex *psi, const pot& potential,
     fftw_complex* V, const fftw_complex* T, const fftw_plan* fft, const fftw_plan* ifft, const double scale) {
     // define potential operator
-    definePotentialOperatorTD(in, tick, V, potential);
+    std::visit([&](const auto& pot) {
+        definePotentialOperatorTD(in, tick, V, pot);
+    }, potential);
     // apply e^(-i dt V(x,t))
     applyPotentialOperator(in.space_grid, psi, V);
     // execute fft plan
@@ -97,7 +110,7 @@ void propTickTD(const int& tick, const inputs& in, fftw_complex *psi, const std:
     // apply e^(-i dt V(x))
     applyPotentialOperator(in.space_grid, psi, V);
     // apply mask
-    //applyMaskFunction(in, psi);
+    applyMaskFunction(in, psi);
 }
 
 // propagates wavefunction based on general values
@@ -112,7 +125,9 @@ void propagateTD(const inputs& in, const std::string& data) {
     fftw_plan fft = fft_ptr.get();
     fftw_plan ifft = ifft_ptr.get();
     // get potential
-    auto potential = getPotential(in, data);
+    pot potential = in.potential_type == "file"
+        ? pot(getPotential(in, data))
+        : pot(buildPotentialTD(in));
     // scale for normalizing fft result
     const double scale = 1.0 / in.space_grid;
     // open output file and buffer

@@ -6,6 +6,7 @@
 #define PROPAGATE_PROPOGATE_TD_H
 
 #include "propagate.h"
+#include <variant>
 
 // gets potential and returns arrays
 std::vector<std::vector<double>> getPotential(const inputs& in, const std::string& data);
@@ -13,6 +14,8 @@ std::vector<std::vector<double>> getPotential(const inputs& in, const std::strin
 // creates potential operator array from data and outputs to op
 void definePotentialOperatorTD(const inputs& in, const int& tick, fftw_complex *op,
     const std::vector<std::vector<double>>& potential);
+void definePotentialOperatorTD(const inputs& in, const int& tick, fftw_complex *op,
+    const std::function<double(double,double)>& potential);
 
 // mask function for edge absorption
 double maskFunction(double x);
@@ -22,8 +25,11 @@ void applyMaskFunction(const inputs& in, fftw_complex* psi);
 // prepares fftw variables with RAII
 fftwResources fftwPrepTD(const inputs& in, fftw_complex *psi, const std::string& data);
 
+// variant for handling potential input types
+using pot = std::variant<std::vector<std::vector<double>>, std::function<double(double, double)>>;
+
 // propagates psi in potential from tick to tick + 1
-void propTickTD(const int& tick, const inputs& in, fftw_complex *psi, const std::vector<std::vector<double>>& potential,
+void propTickTD(const int& tick, const inputs& in, fftw_complex *psi, const pot& potential,
     fftw_complex* V, const fftw_complex* T, const fftw_plan* fft, const fftw_plan* ifft, double scale);
 
 // sets up and propagates psi in a TD potential based on general values

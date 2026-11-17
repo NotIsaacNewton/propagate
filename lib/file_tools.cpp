@@ -158,6 +158,7 @@ void writeArray2D(const std::string& file, const std::vector<std::vector<double>
 // read inputs from file
 inputs::inputs(const std::string& file) {
     std::ifstream read;
+    std::print("{}Reading {}...\n", RESET, file);
     read.open(file);
     if (read.is_open()) {
         std::string strings[8];
@@ -210,7 +211,6 @@ inputs::inputs(const std::string& file) {
         dx = (final_pos - initial_pos)/(space_grid - 1);
         dt = (final_t - initial_t)/(time_grid-1);
         dE = (max_energy - min_energy)/(channels-2);
-        std::print("Read {}\n",file);
     } else {
         std::cerr << "Failed to open " << file << "." << "\n";
         exit(1);

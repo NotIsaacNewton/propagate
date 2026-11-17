@@ -218,12 +218,12 @@ void propagate(const inputs& in, const std::string& data, const bool imProp) {
         double mag = norm(in.space_grid, in.dx, psi); // calculate norm
         std::print("The initial norm is {}\n", mag);
     } else {
-        std::print("{}Imaginary time propagation—no initial norm check.\n{}", YELLOW, RESET);
+        std::print("{}Imaginary time propagation —— no initial norm check.\n{}", YELLOW, RESET);
     }
     // spacer
     spacer(RESET);
     // console output
-    std::cout << "Propagation progress:\n";
+    std::cout << "Propagating...\n";
     // propagation loop
     for (int t = 0; t < in.time_grid; t++) {
         // print completion % to console
@@ -251,10 +251,12 @@ void propagate(const inputs& in, const std::string& data, const bool imProp) {
         std::cout << RED << "Check norm:\n" << RESET;
         std::print("The final norm is {}\n", mag);
     } else {
-        std::print("{}Imaginary time propagation—no final norm check.\n{}", YELLOW, RESET);
+        std::print("{}Imaginary time propagation —— no final norm check.\n{}", YELLOW, RESET);
         // save final ground state if imProp
         normalize(in.space_grid, in.dx, psi);
         fftw_complex_array_to_file(in.initial_pos, in.space_grid, in.dx,
             data + "/" + in.input_psi_file + ".dat", psi);
+        spacer(RESET);
+        std::print("{}——> wavefunction saved to {}{}\n", BLUE, RESET, in.input_psi_file + ".dat");
     }
 }
