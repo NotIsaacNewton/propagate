@@ -144,8 +144,8 @@ void applyKineticOperatorCoeff(const int gridpoints, fftw_complex *psi, const ff
         const double k = scale * j + shift;
         const double phase = alpha * k * k * dt / 2.0;
         const double re = psi[j][0], im = psi[j][1];
-        psi[j][0] = re*std::cos(phase) - im*std::sin(phase);
-        psi[j][1] = re*std::sin(phase) + im*std::cos(phase);
+        psi[j][0] = re*std::cos(phase) + im*std::sin(phase);
+        psi[j][1] = re*std::sin(phase) - im*std::cos(phase);
     }
 }
 

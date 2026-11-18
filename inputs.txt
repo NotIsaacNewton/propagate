@@ -1,7 +1,7 @@
 psi_initial          // psi input file
 psi_final.dat         // psi output file
 potential.dat          // potential file
-TDCCLRBM02        // run type
+TDCCDense        // run type
 coupledsho        // type of potential
 eg_pot_coarse.dat    // input potential
 shoground         // type of wavepacket
@@ -19,9 +19,9 @@ eg_molpro_output.dat     // input wavepacket
 0          // wavepacket position
 0      // min continuum energy
 4      // max continuum energy
-1000    	// space gridpoints
-1000	// coarse space grid
-7500    	// time gridpoints
+500    	// space gridpoints
+500	// coarse space grid
+10000    	// time gridpoints
 2	// print to file every nx space steps
-75	// print to file every nt time steps
-1	// number of channels
+100	// print to file every nt time steps
+21	// number of channels
