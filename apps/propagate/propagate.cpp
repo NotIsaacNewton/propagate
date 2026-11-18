@@ -140,12 +140,12 @@ void applyKineticOperatorCoeff(const int gridpoints, fftw_complex *psi, const ff
     const double scale = 2 * std::numbers::pi / (gridpoints * dx);
     const double shift = -std::numbers::pi / dx;
     #pragma omp parallel for default(none) shared(gridpoints, psi, alpha, dt, scale, shift)
-    for (int j = 0; j < gridpoints; j++) {
-        const double k = scale * j + shift;
+    for (int i = 0; i < gridpoints; i++) {
+        const double k = scale * i + shift;
         const double phase = alpha * k * k * dt / 2.0;
-        const double re = psi[j][0], im = psi[j][1];
-        psi[j][0] = re*std::cos(phase) + im*std::sin(phase);
-        psi[j][1] = re*std::sin(phase) - im*std::cos(phase);
+        const double re = psi[i][0], im = psi[i][1];
+        psi[i][0] = re*cos(phase) + im*sin(phase);
+        psi[i][1] = im*cos(phase) - re*sin(phase);
     }
 }
 
