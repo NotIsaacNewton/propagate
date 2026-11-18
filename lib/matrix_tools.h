@@ -10,8 +10,9 @@
 #include <complex>
 #ifdef USE_MKL
     #include <mkl_lapacke.h>
+    #include <mkl_cblas.h>
 #else
-    #include <lapacke.h>
+    #include <cblas.h>
 #endif
 
 // diagonal matrix
@@ -70,7 +71,7 @@ void diagonalizeHermitianMatrix(const hermitian_matrix& H, std::vector<double>& 
     std::vector<lapack_complex_double>& eigenvectors, std::vector<lapack_int>& isuppz);
 
 // applies phases in eigenbasis 'eigenvectors' to vectors 'psi_vec'
-void eigenbasisTransform(const int N, const std::vector<lapack_complex_double>& eigenvectors,
+void eigenbasisTransform(int N, const std::vector<lapack_complex_double>& eigenvectors,
     const std::vector<double>& phases, std::vector<std::complex<double>>& psi_vec,
     std::vector<std::complex<double>>& coeff);
 

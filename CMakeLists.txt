@@ -21,11 +21,17 @@ if(BUILD_HPC)
             PATHS $ENV{MKLROOT}/include
             REQUIRED
     )
+    find_path(CBLAS_INCLUDE_DIR
+            NAMES mkl_cblas.h
+            PATHS $ENV{MKLROOT}/include
+            REQUIRED
+    )
     find_library(MKL_LIBRARY
             NAMES mkl_rt
             PATHS $ENV{MKLROOT}/lib/intel64
             REQUIRED
     )
+    target_include_directories(LIB PRIVATE ${CBLAS_INCLUDE_DIR})
     set(LAPACK_INCLUDE_DIR ${MKL_INCLUDE_DIR})
     set(LAPACK_LIBRARIES ${MKL_LIBRARY})
     set(LAPACK_DEFINITIONS USE_MKL lapack_complex_double=std::complex<double>)
