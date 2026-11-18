@@ -166,6 +166,7 @@ void propagateTDCCDense(const inputs& in, const std::string& data) {
     // console output
     std::cout << "Propagating...\n";
     // propagation loop
+    progressBar(GREEN, 0);
     for (int t = 0; t < in.time_grid; t++) {
         // print completion % to console
         !((t+1) % (in.time_grid / 10)) ? progressBar(GREEN, 100*(t+1)/in.time_grid) : reset();

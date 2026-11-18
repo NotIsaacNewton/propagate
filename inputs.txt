@@ -12,16 +12,16 @@ eg_molpro_output.dat     // input wavepacket
 7500     	// final time
 0        // potential position 1
 0        // potential position 2
-0.057   // potential strength 1
-0.0534   // potential strength 2
+1   // potential strength 1
+0.057   // potential strength 2
 0          // wavepacket delta
 0       // wavepacket momentum
 0          // wavepacket position
 0      // min continuum energy
 4      // max continuum energy
-600    	// space gridpoints
-600	// coarse space grid
-40000    	// time gridpoints
-3	// print to file every nx space steps
-200	// print to file every nt time steps
+500    	// space gridpoints
+500	// coarse space grid
+7500    	// time gridpoints
+4	// print to file every nx space steps
+75	// print to file every nt time steps
 51	// number of channels

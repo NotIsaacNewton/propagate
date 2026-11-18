@@ -212,6 +212,7 @@ void propagateTDCCLRBM02(const inputs& in, const std::string& data) {
     // propagation loop
     std::vector bm02_coefficients = {0.0829844064174052, 0.2452989571842710, 0.396309801498368,
         0.604872665711080, -0.0390563049223486, -0.350171622895351, 0.11952419401315084};
+    progressBar(GREEN, 0);
     for (int t = 0; t < in.time_grid; t++) {
         // print completion % to console
         !((t+1) % (in.time_grid / 10)) ? progressBar(GREEN, 100*(t+1)/in.time_grid) : reset();
