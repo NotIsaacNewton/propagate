@@ -126,6 +126,9 @@ void propagateTDCCDense(const inputs& in, const std::string& data) {
     // psip owns the lifetime of psi's data
     auto psip = getWavepacketCC(in, data); // vector of pointers
     std::vector<fftw_complex*> psi(in.channels);
+    for (int c = 0; c < in.channels; c++) {
+        psi[c] = psip[c].get();
+    }
     // prep fftw variables and plans
     fftw_init_threads();
     fftw_plan_with_nthreads(omp_get_max_threads());
@@ -142,7 +145,7 @@ void propagateTDCCDense(const inputs& in, const std::string& data) {
         ifft[c] = ifft_ptrs[c].get();
     }
     fftw_complex* T = Tp.get();
-    // write to psi *after* FFTW_MEASURE is done (fftw planning can overwrite arrays)
+    // write to psi again *after* FFTW_MEASURE is done (fftw planning can overwrite arrays)
     for (int c = 0; c < in.channels; c++) {
         psi[c] = psip[c].get();
     }

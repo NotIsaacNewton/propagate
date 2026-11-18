@@ -142,6 +142,9 @@ void propagateTDCCSeq(const inputs& in, const std::string& data) {
     // psip owns the lifetime of psi's data
     auto psip = getWavepacketCC(in, data); // vector of pointers
     std::vector<fftw_complex*> psi(in.channels);
+    for (int c = 0; c < in.channels; c++) {
+        psi[c] = psip[c].get();
+    }
     // prep fftw variables and plans
     fftw_init_threads();
     fftw_plan_with_nthreads(omp_get_max_threads());

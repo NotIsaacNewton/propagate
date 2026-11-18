@@ -1,7 +1,7 @@
 psi_initial          // psi input file
 psi_final.dat         // psi output file
 potential.dat          // potential file
-TDCCLRBM02        // run type
+TDCCLR        // run type
 coupledsho        // type of potential
 eg_pot_coarse.dat    // input potential
 shoground         // type of wavepacket
