@@ -31,7 +31,6 @@ if(BUILD_HPC)
             PATHS $ENV{MKLROOT}/lib/intel64
             REQUIRED
     )
-    target_include_directories(LIB PRIVATE ${CBLAS_INCLUDE_DIR})
     set(LAPACK_INCLUDE_DIR ${MKL_INCLUDE_DIR})
     set(LAPACK_LIBRARIES ${MKL_LIBRARY})
     set(LAPACK_DEFINITIONS USE_MKL lapack_complex_double=std::complex<double>)
@@ -68,7 +67,7 @@ endif()
 # find, add, and target library of shared tools
 file(GLOB_RECURSE lib CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/lib/*.cpp")
 add_library(LIB STATIC ${lib})
-target_include_directories(LIB PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/lib ${OpenMP_ROOT}/include ${LAPACK_INCLUDE_DIR})
+target_include_directories(LIB PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/lib ${OpenMP_ROOT}/include ${LAPACK_INCLUDE_DIR} ${CBLAS_INCLUDE_DIR})
 target_link_libraries(LIB PUBLIC OpenMP::OpenMP_CXX ${LAPACK_LIBRARIES})
 
 # find directories with main programs and source codes
