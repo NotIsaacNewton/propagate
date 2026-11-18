@@ -8,7 +8,6 @@
 #include <iostream>
 #include <string>
 #include <fstream>
-#include <cmath>
 #include <chrono>
 #include <print>
 #include <algorithm>
@@ -63,30 +62,22 @@ void applyCouplingOperatorLR(const inputs& in, const coupling_lr& coup,
     // project psi onto eigenvectors
     std::vector<std::complex<double>> psi_vec(in.channels);
     for (int c = 0; c < in.channels; c++) { psi_vec[c] = {psi[c][point][0], psi[c][point][1]}; }
-    // coefficients
-    std::vector<std::complex<double>> coeff(in.channels, {0.0, 0.0});
-    for (int k = 0; k < in.channels; k++) {
-        for (int c = 0; c < in.channels; c++) {
-            const auto z = coup.eigenvectors[c + k*in.channels];
-            coeff[k] += std::conj(z) * std::complex(psi_vec[c].real(), psi_vec[c].imag());
-        }
-    }
+    // stores coefficients
+    std::vector<std::complex<double>> coeff(in.channels);
     // apply e^{-i * x E(t) * lambda[k] * dt/2}
+    // phases for transform
+    std::vector<double> phases(in.channels);
     for (int k = 0; k < in.channels; k++) {
-        const double phase = -(in.initial_pos + point*in.dx) * electricField(
-            in.initial_t + (tick + 0.5)*in.dt, in.strength_2
-            ) * coup.diag_coup(k) * in.dt / 2.0;
-        coeff[k] *= std::complex(std::cos(phase), std::sin(phase));
+        phases[k] = - (in.initial_pos + point*in.dx)
+        * electricField(in.initial_t + (tick+0.5)*in.dt, in.strength_2)
+        * coup.diag_coup(k) * in.dt / 2.0;
     }
-    // transform back: psi = Z * coeff
+    // apply transformation in eigenbasis
+    eigenbasisTransform(in.channels, coup.eigenvectors, phases, psi_vec, coeff);
+    // write to psi
     for (int c = 0; c < in.channels; c++) {
-        std::complex val = {0.0, 0.0};
-        for (int k = 0; k < in.channels; k++) {
-            const auto z = coup.eigenvectors[c + k*in.channels];
-            val += z * coeff[k];
-        }
-        psi[c][point][0] = val.real();
-        psi[c][point][1] = val.imag();
+        psi[c][point][0] = psi_vec[c].real();
+        psi[c][point][1] = psi_vec[c].imag();
     }
 }
 

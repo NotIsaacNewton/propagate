@@ -14,6 +14,7 @@
 #include "propagate_td_cc_seq.h"
 #include "propagate_td_cc_lr.h"
 #include "propagate_td_cc_dense.h"
+#include "propagate_td_cc_lr_bm02.h"
 
 // inputs: location/of/input_file location/of/data_directory
 int main(const int argc, const char* argv[]) {
@@ -60,6 +61,8 @@ int main(const int argc, const char* argv[]) {
     const bool propTDCCDense = in.run_type == "TDCCDense";
     // TDCC low-rank propagation?
     const bool propTDCCLR = in.run_type == "TDCCLR";
+    // TDCC low-rank propagation split by BM02?
+    const bool propTDCCLRBM02 = in.run_type == "TDCCLRBM02";
 
     // warning if odd number of gridpoints
     if (in.space_grid % 2 != 0) {
@@ -91,6 +94,8 @@ int main(const int argc, const char* argv[]) {
         propagateTDCCDense(in, data);
     } else if (propTDCCLR) {
         propagateTDCCLR(in, data);
+    } else if (propTDCCLRBM02) {
+        propagateTDCCLRBM02(in, data);
     } else {
         propagate(in, data, imProp);
     }

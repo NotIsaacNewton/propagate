@@ -1,10 +1,10 @@
 psi_initial          // psi input file
 psi_final.dat         // psi output file
 potential.dat          // potential file
-TD        // run type
-electrichydrogen        // type of potential
+TDCCLRBM02        // run type
+coupledsho        // type of potential
 eg_pot_coarse.dat    // input potential
-test         // type of wavepacket
+shoground         // type of wavepacket
 eg_molpro_output.dat     // input wavepacket
 -200     // initial position
 200       // final position
@@ -12,16 +12,16 @@ eg_molpro_output.dat     // input wavepacket
 7500     	// final time
 0        // potential position 1
 0        // potential position 2
-10   // potential strength 1
-55   // potential strength 2
+0.057   // potential strength 1
+0.0534   // potential strength 2
 0          // wavepacket delta
 0       // wavepacket momentum
 0          // wavepacket position
 0      // min continuum energy
 4      // max continuum energy
-8000    	// space gridpoints
-8000	// coarse space grid
-300000    	// time gridpoints
-10	// print to file every nx space steps
-30	// print to file every nt time steps
-51	// number of channels
+1000    	// space gridpoints
+1000	// coarse space grid
+7500    	// time gridpoints
+2	// print to file every nx space steps
+75	// print to file every nt time steps
+1	// number of channels

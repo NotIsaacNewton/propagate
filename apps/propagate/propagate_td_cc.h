@@ -16,9 +16,13 @@ std::vector<std::vector<hermitian_matrix>> getPotentialCC(const inputs& in, cons
 // op at first level is indexed for each channel and at second level for spatial grid
 void definePotentialOperatorDiag(const inputs& in, const int& tick, const std::vector<fftw_complex*>& op,
     const std::vector<std::vector<hermitian_matrix>>& potential);
-// creates array of diagonal potential operator arrays from potential at tick and outputs to op
 void definePotentialOperatorDiag(const inputs& in, const int& tick, const std::vector<fftw_complex*>& op,
     const std::function<hermitian_matrix(double, double)>& potential);
+// creates array of diagonal potential operator arrays from potential at fractional tick and outputs to op
+void definePotentialOperatorDiagFrac(const inputs& in, const double& tick, const std::vector<fftw_complex*>& op,
+    const std::vector<std::vector<hermitian_matrix>>& potential, const double& alpha);
+void definePotentialOperatorDiagFrac(const inputs& in, const double& tick, const std::vector<fftw_complex*>& op,
+    const std::function<hermitian_matrix(double, double)>& potential, const double& alpha);
 
 // struct used to carry usable information of coupling elements (real-space two method)
 // contains cos(|V_{ij}|*dt/2), sin(|V_{ij}|*dt/2), -i*V_{ij}/|V_{ij}|
@@ -41,6 +45,9 @@ void applyDiagonalOperator(int point, int channels, const std::vector<fftw_compl
 
 // applies kinetic energy operator using applyKineticOperator from propagate.cpp in parallel
 void applyKineticOperatorCC(int gridpoints, int channels, const std::vector<fftw_complex*>& psi, const fftw_complex *T);
+// applies kinetic energy operator using applyKineticOperatorCoeff from propagate.cpp in parallel
+void applyKineticOperatorCCCoeff(int gridpoints, int channels, const std::vector<fftw_complex*>& psi,
+    const fftw_complex* T, const double& alpha, const double& dx, const double& dt);
 
 // bundles all RAII-sensitive resources for propagation and fftw
 struct fftwResourcesCC {

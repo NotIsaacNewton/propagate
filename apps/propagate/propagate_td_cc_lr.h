@@ -23,7 +23,6 @@ void applyCouplingOperatorLR(const inputs& in, const coupling_lr& coup,
 // applies potential operator in parallel threads across spatial gridpoints for low-rank approximation
 void applyPotentialOperatorLR(const inputs& in, int tick, const std::vector<fftw_complex*>& diag,
     const coupling_lr& coup, const std::vector<fftw_complex*>& psi);
-// applies potential operator in parallel threads across spatial gridpoints for low-rank approximation
 void applyPotentialOperatorLRReverse(const inputs& in, int tick, const std::vector<fftw_complex*>& diag,
     const coupling_lr& coup, const std::vector<fftw_complex*>& psi);
 

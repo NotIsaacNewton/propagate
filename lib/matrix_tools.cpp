@@ -42,3 +42,27 @@ void diagonalizeHermitianMatrix(const hermitian_matrix& H, std::vector<double>& 
         std::print("ZHEEVR failed with info={}\n", info);
     }
 }
+
+// applies phases in eigenbasis 'eigenvectors' to vectors 'psi_vec'
+void eigenbasisTransform(const int N, const std::vector<lapack_complex_double>& eigenvectors,
+    const std::vector<double>& phases, std::vector<std::complex<double>>& psi_vec,
+    std::vector<std::complex<double>>& coeff) {
+    constexpr std::complex<double> one(1,0), zero(0,0);
+    const auto* Zc = eigenvectors.data();
+
+    // coeff = eigenvector^† * psi_vec
+    cblas_zgemv(CblasColMajor, CblasConjTrans,
+                N, N, &one, Zc, N,
+                psi_vec.data(), 1, &zero,
+                coeff.data(), 1);
+
+    // apply phases
+    for (int k = 0; k < N; k++)
+        coeff[k] *= std::polar(1.0, phases[k]);
+
+    // psi_vec = eigenvector * coeff
+    cblas_zgemv(CblasColMajor, CblasNoTrans,
+                N, N, &one, Zc, N,
+                coeff.data(), 1, &zero,
+                psi_vec.data(), 1);
+}

@@ -65,7 +65,13 @@ struct hermitian_matrix {
     }
 };
 
+// diagonalizes a hermitian matrix H using LAPACK's ZHEEVR
 void diagonalizeHermitianMatrix(const hermitian_matrix& H, std::vector<double>& eigenvalues,
     std::vector<lapack_complex_double>& eigenvectors, std::vector<lapack_int>& isuppz);
+
+// applies phases in eigenbasis 'eigenvectors' to vectors 'psi_vec'
+void eigenbasisTransform(const int N, const std::vector<lapack_complex_double>& eigenvectors,
+    const std::vector<double>& phases, std::vector<std::complex<double>>& psi_vec,
+    std::vector<std::complex<double>>& coeff);
 
 #endif //PROPAGATE_MATRIX_TOOLS_H

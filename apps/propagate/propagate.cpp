@@ -134,6 +134,20 @@ void applyKineticOperator(const int gridpoints, fftw_complex *psi, const fftw_co
         psi[i][1] = im * T[i][0] + re * T[i][1];
     }
 }
+// applies kinetic energy exponential operator to psi with coefficient alpha
+void applyKineticOperatorCoeff(const int gridpoints, fftw_complex *psi, const fftw_complex *T, const double alpha,
+    const double dx, const double dt) {
+    const double scale = 2 * std::numbers::pi / (gridpoints * dx);
+    const double shift = -std::numbers::pi / dx;
+    #pragma omp parallel for default(none) shared(gridpoints, psi, alpha, dt, scale, shift)
+    for (int j = 0; j < gridpoints; j++) {
+        const double k = scale * j + shift;
+        const double phase = alpha * k * k * dt / 2.0;
+        const double re = psi[j][0], im = psi[j][1];
+        psi[j][0] = re*std::cos(phase) - im*std::sin(phase);
+        psi[j][1] = re*std::sin(phase) + im*std::cos(phase);
+    }
+}
 
 // output to file
 void writeOutput(const fftw_complex *psi, const int t, const int gridpoints, const int output_ndx, const int output_ndt,

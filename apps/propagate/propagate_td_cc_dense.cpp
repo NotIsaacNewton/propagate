@@ -8,7 +8,6 @@
 #include <iostream>
 #include <string>
 #include <fstream>
-#include <cmath>
 #include <chrono>
 #include <print>
 #include <algorithm>
@@ -28,7 +27,7 @@ void applyPotentialOperatorDense(const inputs& in, const int tick,
         std::vector<double> eigenvalues(in.channels);
         std::vector<lapack_complex_double> eigenvectors(in.channels * in.channels);
         std::vector<lapack_int> isuppz(2 * in.channels);
-        // call ZHEEVR with error check
+        // call ZHEEVR
         diagonalizeHermitianMatrix(H, eigenvalues, eigenvectors, isuppz);
         // apply e^{-i * eigenvalue * dt/2} in eigenbasis
         // project psi onto eigenvectors
@@ -36,28 +35,19 @@ void applyPotentialOperatorDense(const inputs& in, const int tick,
         for (int c = 0; c < in.channels; c++) {
             psi_vec[c] = {psi[c][i][0], psi[c][i][1]};
         }
-        // coefficients
-        std::vector<std::complex<double>> coeff(in.channels, {0.0, 0.0});
+        // stores coefficients
+        std::vector<std::complex<double>> coeff(in.channels);
+        // phases for transform
+        std::vector<double> phases(in.channels);
         for (int k = 0; k < in.channels; k++) {
-            for (int c = 0; c < in.channels; c++) {
-                const auto z = reinterpret_cast<const std::complex<double>*>(eigenvectors.data())[c + k*in.channels];
-                coeff[k] += std::conj(z) * std::complex(psi_vec[c].real(), psi_vec[c].imag());
-            }
+            phases[k] = -eigenvalues[k] * in.dt / 2.0;
         }
-        // apply e^{-i * lambda[k] * dt/2}
-        for (int k = 0; k < in.channels; k++) {
-            const double phase = -eigenvalues[k] * in.dt / 2.0;
-            coeff[k] *= std::complex(std::cos(phase), std::sin(phase));
-        }
-        // transform back: psi = Z * coeff
+        // apply transformation in eigenbasis
+        eigenbasisTransform(in.channels, eigenvectors, phases, psi_vec, coeff);
+        // write to psi
         for (int c = 0; c < in.channels; c++) {
-            std::complex val = {0.0, 0.0};
-            for (int k = 0; k < in.channels; k++) {
-                const auto z = reinterpret_cast<const std::complex<double>*>(eigenvectors.data())[c + k*in.channels];
-                val += z * coeff[k];
-            }
-            psi[c][i][0] = val.real();
-            psi[c][i][1] = val.imag();
+            psi[c][i][0] = psi_vec[c].real();
+            psi[c][i][1] = psi_vec[c].imag();
         }
     }
 }
@@ -77,7 +67,7 @@ void applyPotentialOperatorDense(const inputs& in, const int tick,
         std::vector<double> eigenvalues(in.channels);
         std::vector<lapack_complex_double> eigenvectors(in.channels * in.channels);
         std::vector<lapack_int> isuppz(2 * in.channels);
-        // call ZHEEVR with error check
+        // call ZHEEVR
         diagonalizeHermitianMatrix(H, eigenvalues, eigenvectors, isuppz);
         // apply e^{-i * eigenvalue * dt/2} in eigenbasis
         // project psi onto eigenvectors
@@ -85,30 +75,19 @@ void applyPotentialOperatorDense(const inputs& in, const int tick,
         for (int c = 0; c < in.channels; c++) {
             psi_vec[c] = {psi[c][i][0], psi[c][i][1]};
         }
-        // coefficients = psi^* * psi
-        std::vector<std::complex<double>> coeff(in.channels, {0.0, 0.0});
+        // stores coefficients
+        std::vector<std::complex<double>> coeff(in.channels);
+        // phases for transform
+        std::vector<double> phases(in.channels);
         for (int k = 0; k < in.channels; k++) {
-            for (int c = 0; c < in.channels; c++) {
-                const auto z = reinterpret_cast<const std::complex<double>*>(eigenvectors.data())[
-                    c + k*in.channels];
-                coeff[k] += std::conj(z) * std::complex(psi_vec[c].real(), psi_vec[c].imag());
-            }
+            phases[k] = -eigenvalues[k] * in.dt / 2.0;
         }
-        // apply e^{-i * lambda[k] * dt/2}
-        for (int k = 0; k < in.channels; k++) {
-            const double phase = -eigenvalues[k] * in.dt / 2.0;
-            coeff[k] *= std::complex(std::cos(phase), std::sin(phase));
-        }
-        // transform back: psi = Z * coeff
+        // apply transformation in eigenbasis
+        eigenbasisTransform(in.channels, eigenvectors, phases, psi_vec, coeff);
+        // write to psi
         for (int c = 0; c < in.channels; c++) {
-            std::complex val = {0.0, 0.0};
-            for (int k = 0; k < in.channels; k++) {
-                const auto z = reinterpret_cast<const std::complex<double>*>(eigenvectors.data())[
-                    c + k*in.channels];
-                val += z * coeff[k];
-            }
-            psi[c][i][0] = val.real();
-            psi[c][i][1] = val.imag();
+            psi[c][i][0] = psi_vec[c].real();
+            psi[c][i][1] = psi_vec[c].imag();
         }
     }
 }

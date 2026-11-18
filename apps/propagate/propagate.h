@@ -29,6 +29,9 @@ void applyPotentialOperator(int gridpoints, fftw_complex *psi, const fftw_comple
 
 // kinetic energy exponential operator
 void applyKineticOperator(int gridpoints, fftw_complex *psi, const fftw_complex *T);
+// kinetic energy exponential operator with coefficient alpha
+void applyKineticOperatorCoeff(int gridpoints, fftw_complex *psi, const fftw_complex *T,
+    double alpha, double dx, double dt);
 
 // output to file
 void writeOutput(const fftw_complex *psi, int t, int gridpoints, int output_ndx, int output_ndt,

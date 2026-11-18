@@ -64,6 +64,30 @@ void definePotentialOperatorDiag(const inputs& in, const int& tick, const std::v
         }
     }
 }
+// creates array of diagonal potential operator arrays from potential at fractional tick and with coefficient
+void definePotentialOperatorDiagFrac(const inputs& in, const double& tick, const std::vector<fftw_complex*>& op,
+    const std::vector<std::vector<hermitian_matrix>>& potential, const double& alpha) {
+    #pragma omp parallel for default(none) shared(in, potential, tick, op, alpha)
+    for (int i = 0; i < in.space_grid; i++) {
+        for (int c = 0; c < in.channels; c++) {
+            const double phase = alpha*std::real(potential[static_cast<int>(tick)][i](c,c) * in.dt);
+            op[c][i][0] = cos(phase);
+            op[c][i][1] = -sin(phase);
+        }
+    }
+}
+void definePotentialOperatorDiagFrac(const inputs& in, const double& tick, const std::vector<fftw_complex*>& op,
+    const std::function<hermitian_matrix(double, double)>& potential, const double& alpha) {
+    #pragma omp parallel for default(none) shared(in, potential, tick, op, alpha)
+    for (int i = 0; i < in.space_grid; i++) {
+        auto intermediate = potential(i*in.dx + in.initial_pos, tick*in.dt + in.initial_t);
+        for (int c = 0; c < in.channels; c++) {
+            const double phase = alpha*std::real(intermediate(c,c) * in.dt);
+            op[c][i][0] = cos(phase);
+            op[c][i][1] = -sin(phase);
+        }
+    }
+}
 
 // executes fft plans in parallel for all channels
 void fftExecuteCC(const int gridpoints, const int channels, const std::vector<fftw_complex*>& psi,
@@ -110,6 +134,14 @@ void applyKineticOperatorCC(const int gridpoints, const int channels, const std:
     #pragma omp parallel for default(none) shared(channels, gridpoints, psi, T)
     for (int c = 0; c < channels; c++) {
         applyKineticOperator(gridpoints, psi[c], T);
+    }
+}
+// applies kinetic energy operator using applyKineticOperatorCoeff from propagate.cpp in parallel
+void applyKineticOperatorCCCoeff(const int gridpoints, const int channels, const std::vector<fftw_complex*>& psi,
+    const fftw_complex* T, const double& alpha, const double& dx, const double& dt) {
+    #pragma omp parallel for default(none) shared(channels, gridpoints, psi, T, alpha, dx, dt)
+    for (int c = 0; c < channels; c++) {
+        applyKineticOperatorCoeff(gridpoints, psi[c], T, alpha, dx, dt);
     }
 }
 
