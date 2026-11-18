@@ -63,104 +63,102 @@ void applyPotentialOperatorLRCoeffReverse(const inputs& in, const double tick, c
 void propTickLRBM02(const double& tick, const inputs& in, const std::vector<fftw_complex*>& psi,
     const potCC& potential, const std::vector<fftw_complex*>& V_d,
     const coupling_lr& V_c, const fftw_complex* T,
-    const std::vector<fftw_plan>& fft, const std::vector<fftw_plan>& ifft, const double scale) {
-    constexpr double b1 = 0.0829844064174052;
-    constexpr double a1 = 0.2452989571842710;
-    constexpr double b2 = 0.396309801498368;
-    constexpr double a2 = 0.604872665711080;
-    constexpr double b3 = -0.0390563049223486;
-    constexpr double a3 = -0.350171622895351;
-    constexpr double b4 = 0.11952419401315084;
+    const std::vector<fftw_plan>& fft, const std::vector<fftw_plan>& ifft, const double scale,
+    const std::vector<double>& c) {
     // define diagonal potential operator
     std::visit([&](const auto& pot) {
-        definePotentialOperatorDiagFrac(in, tick, V_d, pot, b1);
+        definePotentialOperatorDiagFrac(in, tick, V_d, pot, c[0]);
     }, potential);
     // apply potential operators
-    applyPotentialOperatorLRCoeff(in, tick, V_d, V_c, psi, b1);
+    applyPotentialOperatorLRCoeff(in, tick, V_d, V_c, psi, c[0]);
     // execute fft
     fftExecuteCC(in.space_grid, in.channels, psi, fft);
     // apply kinetic energy operator
-    applyKineticOperatorCCCoeff(in.space_grid, in.channels, psi, T, a1, in.dx, in.dt);
+    applyKineticOperatorCCCoeff(in.space_grid, in.channels, psi, T, c[1], in.dx, in.dt);
     // execute ifft
     ifftExecuteCC(in.space_grid, in.channels, psi, ifft);
     // normalize fftw result (fftw uses non-normalized fft algorithm)
     fftwNormCC(in, scale, psi);
     // define diagonal potential operator
     std::visit([&](const auto& pot) {
-        definePotentialOperatorDiagFrac(in, tick+a1, V_d, pot, b2);
+        definePotentialOperatorDiagFrac(in, tick+c[1], V_d, pot, c[2]);
     }, potential);
     // apply potential operators
-    applyPotentialOperatorLRCoeff(in, tick+a1, V_d, V_c, psi, b2);
+    applyPotentialOperatorLRCoeff(in, tick+c[1], V_d, V_c, psi, c[2]);
     // execute fft
     fftExecuteCC(in.space_grid, in.channels, psi, fft);
     // apply kinetic energy operator
-    applyKineticOperatorCCCoeff(in.space_grid, in.channels, psi, T, a2, in.dx, in.dt);
+    applyKineticOperatorCCCoeff(in.space_grid, in.channels, psi, T, c[3], in.dx, in.dt);
     // execute ifft
     ifftExecuteCC(in.space_grid, in.channels, psi, ifft);
     // normalize fftw result (fftw uses non-normalized fft algorithm)
     fftwNormCC(in, scale, psi);
     // define diagonal potential operator
     std::visit([&](const auto& pot) {
-        definePotentialOperatorDiagFrac(in, tick+a1+a2, V_d, pot, b3);
+        definePotentialOperatorDiagFrac(in, tick+c[1]+c[3], V_d, pot, c[4]);
     }, potential);
     // apply potential operators
-    applyPotentialOperatorLRCoeff(in, tick+a1+a2, V_d, V_c, psi, b3);
+    applyPotentialOperatorLRCoeff(in, tick+c[1]+c[3], V_d, V_c, psi, c[4]);
     // execute fft
     fftExecuteCC(in.space_grid, in.channels, psi, fft);
     // apply kinetic energy operator
-    applyKineticOperatorCCCoeff(in.space_grid, in.channels, psi, T, a3, in.dx, in.dt);
+    applyKineticOperatorCCCoeff(in.space_grid, in.channels, psi, T, c[5], in.dx, in.dt);
     // execute ifft
     ifftExecuteCC(in.space_grid, in.channels, psi, ifft);
     // normalize fftw result (fftw uses non-normalized fft algorithm)
     fftwNormCC(in, scale, psi);
     // define diagonal potential operator
     std::visit([&](const auto& pot) {
-        definePotentialOperatorDiagFrac(in, tick+a1+a2+a3, V_d, pot, b4);
+        definePotentialOperatorDiagFrac(in, tick+c[1]+c[3]+c[5], V_d, pot, c[6]);
     }, potential);
-    // apply potential operators
-    applyPotentialOperatorLRCoeff(in, tick+a1+a2+a3, V_d, V_c, psi, b4);
+    #pragma omp parallel for default(none) shared(in, V_c, psi, V_d, tick, c)
+    for (int i = 0; i < in.space_grid; i++) {
+        applyCouplingOperatorLRCoeff(in, V_c, psi, i, tick+c[1]+c[3]+c[5], c[6]/2.0);
+        applyDiagonalOperator(i, in.channels, V_d, psi);
+        applyCouplingOperatorLRCoeff(in, V_c, psi, i, tick+c[1]+c[3]+c[5], c[6]/2.0);
+    }
     // execute fft
     fftExecuteCC(in.space_grid, in.channels, psi, fft);
     // apply kinetic energy operator
-    applyKineticOperatorCCCoeff(in.space_grid, in.channels, psi, T, a3, in.dx, in.dt);
+    applyKineticOperatorCCCoeff(in.space_grid, in.channels, psi, T, c[5], in.dx, in.dt);
     // execute ifft
     ifftExecuteCC(in.space_grid, in.channels, psi, ifft);
     // normalize fftw result (fftw uses non-normalized fft algorithm)
     fftwNormCC(in, scale, psi);
     // define diagonal potential operator
     std::visit([&](const auto& pot) {
-        definePotentialOperatorDiagFrac(in, tick+a1+a2+2*a3, V_d, pot, b3);
+        definePotentialOperatorDiagFrac(in, tick+c[1]+c[3]+2*c[5], V_d, pot, c[4]);
     }, potential);
     // apply potential operators
-    applyPotentialOperatorLRCoeffReverse(in, tick+a1+a2+2*a3, V_d, V_c, psi, b3);
+    applyPotentialOperatorLRCoeffReverse(in, tick+c[1]+c[3]+2*c[5], V_d, V_c, psi, c[4]);
     // execute fft
     fftExecuteCC(in.space_grid, in.channels, psi, fft);
     // apply kinetic energy operator
-    applyKineticOperatorCCCoeff(in.space_grid, in.channels, psi, T, a2, in.dx, in.dt);
+    applyKineticOperatorCCCoeff(in.space_grid, in.channels, psi, T, c[3], in.dx, in.dt);
     // execute ifft
     ifftExecuteCC(in.space_grid, in.channels, psi, ifft);
     // normalize fftw result (fftw uses non-normalized fft algorithm)
     fftwNormCC(in, scale, psi);
     // define diagonal potential operator
     std::visit([&](const auto& pot) {
-        definePotentialOperatorDiagFrac(in, tick+a1+2*a2+2*a3, V_d, pot, b2);
+        definePotentialOperatorDiagFrac(in, tick+c[1]+2*c[3]+2*c[5], V_d, pot, c[2]);
     }, potential);
     // apply potential operators
-    applyPotentialOperatorLRCoeffReverse(in, tick+a1+2*a2+2*a3, V_d, V_c, psi, b2);
+    applyPotentialOperatorLRCoeffReverse(in, tick+c[1]+2*c[3]+2*c[5], V_d, V_c, psi, c[2]);
     // execute fft
     fftExecuteCC(in.space_grid, in.channels, psi, fft);
     // apply kinetic energy operator
-    applyKineticOperatorCCCoeff(in.space_grid, in.channels, psi, T, a1, in.dx, in.dt);
+    applyKineticOperatorCCCoeff(in.space_grid, in.channels, psi, T, c[1], in.dx, in.dt);
     // execute ifft
     ifftExecuteCC(in.space_grid, in.channels, psi, ifft);
     // normalize fftw result (fftw uses non-normalized fft algorithm)
     fftwNormCC(in, scale, psi);
     // define diagonal potential operator
     std::visit([&](const auto& pot) {
-        definePotentialOperatorDiagFrac(in, tick+1, V_d, pot, b1);
+        definePotentialOperatorDiagFrac(in, tick+1, V_d, pot, c[0]);
     }, potential);
     // apply potential operators
-    applyPotentialOperatorLRCoeffReverse(in, tick+1, V_d, V_c, psi, b1);
+    applyPotentialOperatorLRCoeffReverse(in, tick+1, V_d, V_c, psi, c[0]);
 }
 
 // propagates wavefunction based on general values
@@ -169,9 +167,6 @@ void propagateTDCCLRBM02(const inputs& in, const std::string& data) {
     // psip owns the lifetime of psi's data
     auto psip = getWavepacketCC(in, data); // vector of pointers
     std::vector<fftw_complex*> psi(in.channels);
-    for (int c = 0; c < in.channels; c++) {
-        psi[c] = psip[c].get();
-    }
     // prep fftw variables and plans
     fftw_init_threads();
     fftw_plan_with_nthreads(omp_get_max_threads());
@@ -188,6 +183,10 @@ void propagateTDCCLRBM02(const inputs& in, const std::string& data) {
         ifft[c] = ifft_ptrs[c].get();
     }
     fftw_complex* T = Tp.get();
+    // write to psi *after* FFTW_MEASURE is done (fftw planning can overwrite arrays)
+    for (int c = 0; c < in.channels; c++) {
+        psi[c] = psip[c].get();
+    }
     // get potential
     potCC potential = in.potential_type == "file"
         ? potCC(getPotentialCC(in, data))
@@ -208,13 +207,15 @@ void propagateTDCCLRBM02(const inputs& in, const std::string& data) {
     // console output
     std::cout << "Propagating...\n";
     // propagation loop
+    std::vector bm02_coefficients = {0.0829844064174052, 0.2452989571842710, 0.396309801498368,
+        0.604872665711080, -0.0390563049223486, -0.350171622895351, 0.11952419401315084};
     for (int t = 0; t < in.time_grid; t++) {
         // print completion % to console
         !((t+1) % (in.time_grid / 10)) ? progressBar(GREEN, 100*(t+1)/in.time_grid) : reset();
         // write lines in output buffer
         writeOutputCC(psi, t, in, buffer);
         // propagate for one tick
-        propTickLRBM02(t, in, psi, potential, V_d, coup, T, fft, ifft, scale);
+        propTickLRBM02(t, in, psi, potential, V_d, coup, T, fft, ifft, scale, bm02_coefficients);
     }
     // save buffer to output file and close the file
     wf.write(reinterpret_cast<const char*>(buffer.data()),

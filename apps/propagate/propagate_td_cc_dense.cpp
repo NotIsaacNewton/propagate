@@ -20,74 +20,80 @@
 void applyPotentialOperatorDense(const inputs& in, const int tick,
     const std::vector<std::vector<hermitian_matrix>>& potential, const std::vector<fftw_complex*>& psi) {
     // parallel over the spatial grid
-    #pragma omp parallel for default(none) shared(in, tick, potential, psi)
-    for (int i = 0; i < in.space_grid; i++) {
-        const hermitian_matrix H = potential[tick][i];
-        // allocate eigenvalue and eigenvector arrays
+    #pragma omp parallel default(none) shared(in, tick, potential, psi)
+    {
+        // allocate eigenvalue and eigenvector arrays + other LAPACK necessities
         std::vector<double> eigenvalues(in.channels);
         std::vector<lapack_complex_double> eigenvectors(in.channels * in.channels);
         std::vector<lapack_int> isuppz(2 * in.channels);
-        // call ZHEEVR
-        diagonalizeHermitianMatrix(H, eigenvalues, eigenvectors, isuppz);
-        // apply e^{-i * eigenvalue * dt/2} in eigenbasis
-        // project psi onto eigenvectors
         std::vector<std::complex<double>> psi_vec(in.channels);
-        for (int c = 0; c < in.channels; c++) {
-            psi_vec[c] = {psi[c][i][0], psi[c][i][1]};
-        }
-        // stores coefficients
+        // scratch for coefficients
         std::vector<std::complex<double>> coeff(in.channels);
-        // phases for transform
-        std::vector<double> phases(in.channels);
-        for (int k = 0; k < in.channels; k++) {
-            phases[k] = -eigenvalues[k] * in.dt / 2.0;
-        }
-        // apply transformation in eigenbasis
-        eigenbasisTransform(in.channels, eigenvectors, phases, psi_vec, coeff);
-        // write to psi
-        for (int c = 0; c < in.channels; c++) {
-            psi[c][i][0] = psi_vec[c].real();
-            psi[c][i][1] = psi_vec[c].imag();
+        #pragma omp for
+        for (int i = 0; i < in.space_grid; i++) {
+            const hermitian_matrix H = potential[tick][i];
+            // call ZHEEVR
+            diagonalizeHermitianMatrix(H, eigenvalues, eigenvectors, isuppz);
+            // apply e^{-i * eigenvalue * dt/2} in eigenbasis
+            // project psi onto eigenvectors
+            for (int c = 0; c < in.channels; c++) {
+                psi_vec[c] = {psi[c][i][0], psi[c][i][1]};
+            }
+            // phases for transform
+            std::vector<double> phases(in.channels);
+            for (int k = 0; k < in.channels; k++) {
+                phases[k] = -eigenvalues[k] * in.dt / 2.0;
+            }
+            // apply transformation in eigenbasis
+            eigenbasisTransform(in.channels, eigenvectors, phases, psi_vec, coeff);
+            // write to psi
+            for (int c = 0; c < in.channels; c++) {
+                psi[c][i][0] = psi_vec[c].real();
+                psi[c][i][1] = psi_vec[c].imag();
+            }
         }
     }
 }
 void applyPotentialOperatorDense(const inputs& in, const int tick,
     const std::function<hermitian_matrix(double,double)>& potential, const std::vector<fftw_complex*>& psi) {
     // parallel over the spatial grid
-    #pragma omp parallel for default(none) shared(in, tick, potential, psi)
-    for (int i = 0; i < in.space_grid; i++) {
-        hermitian_matrix H = potential(i*in.dx + in.initial_pos, (tick+0.5)*in.dt + in.initial_t);
-        for (int c1 = 0; c1 < in.channels; c1++) {
-            for (int c2 = c1+1; c2 < in.channels; c2++) {
-                H(c1, c2) *= (in.initial_pos + i*in.dx)*electricField(in.initial_t + (tick + 0.5)*in.dt,
-                    in.strength_2);
-            }
-        }
-        // allocate eigenvalue and eigenvector arrays
+    #pragma omp parallel default(none) shared(in, tick, potential, psi)
+    {
+        // allocate eigenvalue and eigenvector arrays + other LAPACK necessities
         std::vector<double> eigenvalues(in.channels);
         std::vector<lapack_complex_double> eigenvectors(in.channels * in.channels);
         std::vector<lapack_int> isuppz(2 * in.channels);
-        // call ZHEEVR
-        diagonalizeHermitianMatrix(H, eigenvalues, eigenvectors, isuppz);
-        // apply e^{-i * eigenvalue * dt/2} in eigenbasis
-        // project psi onto eigenvectors
         std::vector<std::complex<double>> psi_vec(in.channels);
-        for (int c = 0; c < in.channels; c++) {
-            psi_vec[c] = {psi[c][i][0], psi[c][i][1]};
-        }
-        // stores coefficients
+        // scratch for coefficients
         std::vector<std::complex<double>> coeff(in.channels);
-        // phases for transform
-        std::vector<double> phases(in.channels);
-        for (int k = 0; k < in.channels; k++) {
-            phases[k] = -eigenvalues[k] * in.dt / 2.0;
-        }
-        // apply transformation in eigenbasis
-        eigenbasisTransform(in.channels, eigenvectors, phases, psi_vec, coeff);
-        // write to psi
-        for (int c = 0; c < in.channels; c++) {
-            psi[c][i][0] = psi_vec[c].real();
-            psi[c][i][1] = psi_vec[c].imag();
+        #pragma omp for
+        for (int i = 0; i < in.space_grid; i++) {
+            hermitian_matrix H = potential(i*in.dx + in.initial_pos, (tick+0.5)*in.dt + in.initial_t);
+            for (int c1 = 0; c1 < in.channels; c1++) {
+                for (int c2 = c1+1; c2 < in.channels; c2++) {
+                    H(c1, c2) *= (in.initial_pos + i*in.dx)*electricField(in.initial_t + (tick + 0.5)*in.dt,
+                        in.strength_2);
+                }
+            }
+            // call ZHEEVR
+            diagonalizeHermitianMatrix(H, eigenvalues, eigenvectors, isuppz);
+            // apply e^{-i * eigenvalue * dt/2} in eigenbasis
+            // project psi onto eigenvectors
+            for (int c = 0; c < in.channels; c++) {
+                psi_vec[c] = {psi[c][i][0], psi[c][i][1]};
+            }
+            // phases for transform
+            std::vector<double> phases(in.channels);
+            for (int k = 0; k < in.channels; k++) {
+                phases[k] = -eigenvalues[k] * in.dt / 2.0;
+            }
+            // apply transformation in eigenbasis
+            eigenbasisTransform(in.channels, eigenvectors, phases, psi_vec, coeff);
+            // write to psi
+            for (int c = 0; c < in.channels; c++) {
+                psi[c][i][0] = psi_vec[c].real();
+                psi[c][i][1] = psi_vec[c].imag();
+            }
         }
     }
 }
@@ -120,9 +126,6 @@ void propagateTDCCDense(const inputs& in, const std::string& data) {
     // psip owns the lifetime of psi's data
     auto psip = getWavepacketCC(in, data); // vector of pointers
     std::vector<fftw_complex*> psi(in.channels);
-    for (int c = 0; c < in.channels; c++) {
-        psi[c] = psip[c].get();
-    }
     // prep fftw variables and plans
     fftw_init_threads();
     fftw_plan_with_nthreads(omp_get_max_threads());
@@ -139,6 +142,10 @@ void propagateTDCCDense(const inputs& in, const std::string& data) {
         ifft[c] = ifft_ptrs[c].get();
     }
     fftw_complex* T = Tp.get();
+    // write to psi *after* FFTW_MEASURE is done (fftw planning can overwrite arrays)
+    for (int c = 0; c < in.channels; c++) {
+        psi[c] = psip[c].get();
+    }
     // get potential
     potCC potential = in.potential_type == "file"
         ? potCC(getPotentialCC(in, data))

@@ -66,9 +66,10 @@ int main(const int argc, const char* argv[]) {
 
     // warning if odd number of gridpoints
     if (in.space_grid % 2 != 0) {
-        spacerFancy(YELLOW);
-        std::cerr << YELLOW << "WARNING: Odd number of gridpoints may produce asymmetric momentum grid.\n" << RESET;
-        spacerFancy(YELLOW);
+        spacerFancy(RED);
+        std::cerr << RED << "ERROR: Odd number of gridpoints produces asymmetric momentum grid.\n" << RESET;
+        spacerFancy(RED);
+        return 1;
     }
     // warning if large dt
     if (in.time_grid < 1000) {
