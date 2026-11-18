@@ -66,11 +66,11 @@ void propTickLRBM02(const double& tick, const inputs& in, const std::vector<fftw
     const std::vector<fftw_plan>& fft, const std::vector<fftw_plan>& ifft, const double scale) {
     constexpr double b1 = 0.0829844064174052;
     constexpr double a1 = 0.2452989571842710;
-    constexpr double b2 = 0.3963098014983680;
-    constexpr double a2 = 0.6048726657110800;
+    constexpr double b2 = 0.396309801498368;
+    constexpr double a2 = 0.604872665711080;
     constexpr double b3 = -0.0390563049223486;
-    constexpr double a3 = -0.3501716228953510;
-    constexpr double b4 = 0.28239057773085900;
+    constexpr double a3 = -0.350171622895351;
+    constexpr double b4 = 0.11952419401315084;
     // define diagonal potential operator
     std::visit([&](const auto& pot) {
         definePotentialOperatorDiagFrac(in, tick, V_d, pot, b1);
