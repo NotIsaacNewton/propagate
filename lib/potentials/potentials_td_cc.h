@@ -35,7 +35,8 @@ struct potentials_from_file {
     // constructor
     explicit potentials_from_file(const inputs& in) : dx((in.final_pos - in.initial_pos) / (in.space_grid_coarse - 1)),
                                                    grid(in.space_grid_coarse),
-                                                   potentials(in.bound_channels+in.residual_channels),
+                                                   potentials(in.bound_channels+in.residual_channels,
+                                                       std::vector<double>(in.space_grid_coarse)),
                                                    interpolators([&] {
                                                        buildGrid(in, grid, dx);
                                                        getPotentials(in);
@@ -75,15 +76,14 @@ struct couplings_from_file {
 struct potential_from_file_tdcc {
     const potentials_from_file pots; // holds all potentials
     const couplings_from_file coups; // holds all couplings
-    hermitian_matrix pot_matrix;
-    const inputs& in;
-    explicit potential_from_file_tdcc(const inputs& in) : pots(in), coups(in),
-    pot_matrix(in.channels), in(in) {}
+    const inputs in;
+    explicit potential_from_file_tdcc(const inputs& in) : pots(in), coups(in), in(in) {}
     // accessor (read-only)
-    const hermitian_matrix& operator()(const double x, const double) {
+    const hermitian_matrix& operator()(const double x, const double) const {
+        hermitian_matrix pot_matrix(in.channels);
         for (int c1 = 0; c1 < in.channels; c1++) {
             const double electron_energy = c1%in.continuum_channels*in.dE;
-            for (int c2 = 0; c2 < in.channels; c2++) {
+            for (int c2 = c1; c2 < in.channels; c2++) {
                 if (c1==c2) {
                     pot_matrix(c1, c1) = std::complex(pots(c1, x) + electron_energy, 0.0);
                 } else {
@@ -97,21 +97,21 @@ struct potential_from_file_tdcc {
 // uses the above methods to get a complete set of interpolators for all TDCC objects that can be packaged
 //  into the standard std::function<hermitian_matrix(double, double)>
 struct hybrid_from_file_tdcc {
-    const inputs& in;
+    const inputs in;
     const std::function<std::vector<double>(double, int)> potentials;
     const couplings_from_file coups; // holds all couplings
-    hermitian_matrix pot_matrix;
     explicit hybrid_from_file_tdcc(const inputs& in) : in(in),
-    potentials(hybridPotentialFunctions(in.bound_channels + in.residual_channels, in.dE)),
-    coups(in), pot_matrix(in.channels) {}
+    potentials(hybridPotentialFunctions(in.bound_channels + in.residual_channels, in.dE)), coups(in) {}
     // accessor (read-only)
-    const hermitian_matrix& operator()(const double x, const double) {
+    const hermitian_matrix& operator()(const double x, const double) const {
+        hermitian_matrix pot_matrix(in.channels);
         for (int c = 0; c < in.bound_channels; c++) {
             pot_matrix(c, c) = potentials(x, 0)[c];
         }
         for (int c = in.bound_channels; c < in.bound_channels + in.residual_channels; c++) {
             for (int cont = 0; cont < in.continuum_channels; cont++) {
-                pot_matrix(c, c) = potentials(x, cont)[c];
+                pot_matrix(c + (c - in.bound_channels)*in.continuum_channels + cont,
+                    c + (c - in.bound_channels)*in.continuum_channels + cont) = potentials(x, cont)[c];
             }
         }
         for (int c1 = 0; c1 < in.channels; c1++) {

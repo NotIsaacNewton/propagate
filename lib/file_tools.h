@@ -39,6 +39,9 @@ void readArray2D(const std::string& file, std::vector<std::vector<double>>& arra
 void writeArray2D(const std::string& file, const std::vector<std::vector<double>>& array,
     const int& width, const int& height);
 
+// reads from file to 1D complex array
+void readComplexArray1D(const std::string& file, std::vector<std::complex<double>>& array, const int& length);
+
 // TODO: document all input options and behavior
 // inputs go here
 struct inputs {

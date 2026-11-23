@@ -19,7 +19,7 @@ struct base_interp {
     // constructor
     base_interp(const std::span<const double> x, const std::span<const double> y, const int m)
         : n(x.size()), mm(m), jsav(0), cor(0), xx(x), yy(y) {
-        dj = std::min(1, static_cast<int>(std::pow(static_cast<double>(n), 0.25)));
+        dj = std::max(1, static_cast<int>(std::pow(static_cast<double>(n), 0.25)));
     }
     // given x, return interpolated value from data pointed to by xx and yy
     double interp(const double x) const {

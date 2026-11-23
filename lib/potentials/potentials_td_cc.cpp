@@ -59,7 +59,7 @@ std::function<hermitian_matrix(double, double)> hybridPotential(const inputs& in
 
 // gets all potentials
 void potentials_from_file::getPotentials(const inputs& in) {
-    for (int c = 0; c < in.bound_channels; c++) {
+    for (int c = 0; c < in.bound_channels+in.residual_channels; c++) {
         readArray1D(in.pot_read_from_file + "_" + std::to_string(c) + ".dat", potentials[c]);
     }
 }
@@ -68,29 +68,32 @@ std::vector<spline_interp> potentials_from_file::interpPotentials(const inputs& 
     const std::vector<std::vector<double>>& potentials) {
     std::vector<spline_interp> interps;
     for (int c = 0; c < in.bound_channels+in.residual_channels; c++) {
-        spline_interp(grid, potentials[c]);
+        interps[c] = spline_interp(grid, potentials[c]);
     }
     return interps;
 }
 
 // grabs all b-c dipole couplings into hermitian_matrix coup
 void couplings_from_file::couplingsFromFileBtoC(const inputs& in) {
-    std::vector<double> temp(2*in.residual_channels*in.continuum_channels);
+    std::vector temp(in.residual_channels, std::vector<std::complex<double>>(in.continuum_channels));
     for (int c = 1; c < in.residual_channels; c++) {
-        readArray1D(in.pot_read_from_file + "_0_" + std::to_string(c) + ".dat", temp);
+        readComplexArray1D(in.pot_read_from_file + "_0_" + std::to_string(c) + ".dat",
+            temp[c-1], in.continuum_channels);
     }
     for (int c = 1; c < in.residual_channels; c++) {
-        coup(0,c) = {temp[2*(c-1)], temp[2*(c-1)+1]};
+        for (int cont = 0; cont < in.continuum_channels; cont++) {
+            coup(0,(c+1)*cont) = temp[c-1][cont];
+        }
     }
 }
 // grabs a c-c dipole couplings ordered as (E_0->E_0, E_0->E_1, ..., E_0->E_M; ...; E_M->E_0, E_M->E_1, ... E_M->E_M)
 void couplings_from_file::couplingsFromFileCtoC(const inputs& in) {
     std::vector temp(in.residual_channels, std::vector(in.residual_channels-1,
-        std::vector<double>(2*in.continuum_channels*in.continuum_channels)));
+        std::vector<std::complex<double>>(in.continuum_channels*in.continuum_channels)));
     for (int c1 = 1; c1 < in.residual_channels; c1++) {
         for (int c2 = c1+1; c2 < in.residual_channels; c2++) {
-            readArray1D(in.pot_read_from_file + "_" + std::to_string(c1) + "_" + std::to_string(c2) + ".dat",
-                temp[c1][c2]);
+            readComplexArray1D(in.pot_read_from_file + "_" + std::to_string(c1) + "_" + std::to_string(c2) + ".dat",
+                temp[c1][c2-1], in.continuum_channels);
         }
     }
     for (int c1 = 1; c1 < in.residual_channels; c1++) {
@@ -98,9 +101,8 @@ void couplings_from_file::couplingsFromFileCtoC(const inputs& in) {
             #pragma omp parallel for default(none) shared(in, temp, c1, c2)
             for (int i = 0; i < in.continuum_channels; i++) {
                 for (int j = 0; j < in.continuum_channels; j++) {
-                    coup(c1*in.continuum_channels + i, c2*in.residual_channels + j) =
-                        {temp[c1][c2][2*i*in.continuum_channels + 2*j],
-                        temp[c1][c2][2*i*in.continuum_channels + 2*j + 1]};
+                    coup(in.bound_channels + c1*in.continuum_channels + i,
+                        in.bound_channels + c2*in.continuum_channels + j) = temp[c1][c2-1][i*in.continuum_channels + j];
                 }
             }
         }

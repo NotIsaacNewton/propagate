@@ -155,6 +155,22 @@ void writeArray2D(const std::string& file, const std::vector<std::vector<double>
     }
 }
 
+// reads from file to 1D complex array
+void readComplexArray1D(const std::string& file, std::vector<std::complex<double>>& array, const int& length) {
+    if (std::ifstream read(file, std::ios::binary); read.is_open()) {
+        std::vector temp(length, std::vector<double>(2));
+        for (int i=0; i<length; i++) {
+            read.read(reinterpret_cast<char*>(temp[i].data()), 2 * sizeof(double));
+        }
+        read.close();
+        for (int i=0; i<length; i++) {
+            array[i] = std::complex{temp[i][0], temp[i][1]};
+        }
+    } else {
+        std::cerr << "Failed to open " << file << "." << "\n";
+    }
+}
+
 // read inputs from file
 inputs::inputs(const std::string& file) {
     std::ifstream read;
@@ -210,7 +226,7 @@ inputs::inputs(const std::string& file) {
             momentum = doubles[9],
             wp_position = doubles[10];
         }
-        channels = bound_channels+residual_channels+continuum_channels;
+        channels = bound_channels+residual_channels*continuum_channels;
         dx = (final_pos - initial_pos)/(space_grid - 1);
         dt = (final_t - initial_t)/(time_grid-1);
         dE = (max_energy - min_energy)/(continuum_channels-1);
