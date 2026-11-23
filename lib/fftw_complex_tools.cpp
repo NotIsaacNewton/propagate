@@ -59,7 +59,7 @@ void fftw_complex_func_to_file(const inputs& in, const std::string& savefile,
 // writes array of fftw_complex functions to file
 void fftw_complex_func_array_to_file(const inputs& in, const std::string& save_dir, const std::string& savefile,
     const std::vector<std::function<void(double, fftw_complex)>>& wavefunction) {
-    for (int c = 0; c < in.channels; c++) {
+    for (int c = 0; c < in.bound_channels; c++) {
         fftw_complex_func_to_file(in, save_dir + "/" + (savefile + "_") + std::to_string(c) + ".dat",
             wavefunction[c]);
     }

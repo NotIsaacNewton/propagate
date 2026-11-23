@@ -19,7 +19,7 @@ void applyPotentialOperatorLRCoeffReverse(const inputs& in, double tick, const s
 
 // propagates psi in potential from tick to tick + 1
 void propTickLRBM02(const double& tick, const inputs& in, const std::vector<fftw_complex*>& psi,
-    const potCC& potential, const std::vector<fftw_complex*>& V_d,
+    const std::function<hermitian_matrix(double,double)>& potential, const std::vector<fftw_complex*>& V_d,
     const coupling_lr& V_c, const fftw_complex* T,
     const std::vector<fftw_plan>& fft, const std::vector<fftw_plan>& ifft, double scale,
     const std::vector<double>& c);

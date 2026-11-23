@@ -158,12 +158,12 @@ void writeArray2D(const std::string& file, const std::vector<std::vector<double>
 // read inputs from file
 inputs::inputs(const std::string& file) {
     std::ifstream read;
-    std::print("{}Reading {}...\n", RESET, file);
+    std::print("{}——> using {}{}{}...{}\n", GRAY, YELLOW, file, GRAY, RESET);
     read.open(file);
     if (read.is_open()) {
         std::string strings[8];
         double doubles[13];
-        int ints[6];
+        int ints[8];
         std::string line;
         int n = 0;
         while (std::getline(read, line)) {
@@ -186,7 +186,9 @@ inputs::inputs(const std::string& file) {
             run_type = strings[3],
             min_energy = doubles[11],
             max_energy = doubles[12],
-            channels = ints[5],
+            bound_channels = ints[5],
+            residual_channels = ints[6],
+            continuum_channels = ints[7],
             initial_pos = doubles[0],
             final_pos = doubles[1],
             space_grid = ints[0],
@@ -208,9 +210,10 @@ inputs::inputs(const std::string& file) {
             momentum = doubles[9],
             wp_position = doubles[10];
         }
+        channels = bound_channels+residual_channels+continuum_channels;
         dx = (final_pos - initial_pos)/(space_grid - 1);
         dt = (final_t - initial_t)/(time_grid-1);
-        dE = (max_energy - min_energy)/(channels-2);
+        dE = (max_energy - min_energy)/(continuum_channels-1);
     } else {
         std::cerr << "Failed to open " << file << "." << "\n";
         exit(1);
@@ -238,6 +241,7 @@ wfOutput openWFOutputFileCC(const inputs& in, const std::string &data) {
         std::cerr << "Failed to open " << output << "." << "\n";
     }
     std::vector<double> buffer;
-    buffer.reserve((in.time_grid / in.nt_prints + 1) * (in.space_grid / in.nx_prints) * 2 * in.channels);
+    buffer.reserve((in.time_grid / in.nt_prints + 1) * (in.space_grid / in.nx_prints) * 2 *
+        (in.bound_channels + in.residual_channels*in.continuum_channels));
     return {.wf = std::move(wf), .buffer = buffer};
 }

@@ -13,7 +13,7 @@
 #include <algorithm>
 #include <variant>
 #include <omp.h>
-#include "../potentials/potentials_td_cc.h"
-#include "../potentials/potentials_td.h"
+#include "../../lib/potentials/potentials_td_cc.h"
+#include "../../lib/potentials/potentials_td.h"
 
 

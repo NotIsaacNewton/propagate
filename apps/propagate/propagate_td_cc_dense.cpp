@@ -11,49 +11,11 @@
 #include <chrono>
 #include <print>
 #include <algorithm>
-#include <variant>
 #include <omp.h>
-#include "../potentials/potentials_td_cc.h"
-#include "../potentials/potentials_td.h"
+#include "potentials_td_cc.h"
+#include "potentials_td.h"
 
 // applies potential operator using dense hermitian matrix diagonalization ZHEEVR routine from LAPACK
-void applyPotentialOperatorDense(const inputs& in, const int tick,
-    const std::vector<std::vector<hermitian_matrix>>& potential, const std::vector<fftw_complex*>& psi) {
-    // parallel over the spatial grid
-    #pragma omp parallel default(none) shared(in, tick, potential, psi)
-    {
-        // allocate eigenvalue and eigenvector arrays + other LAPACK necessities
-        std::vector<double> eigenvalues(in.channels);
-        std::vector<lapack_complex_double> eigenvectors(in.channels * in.channels);
-        std::vector<lapack_int> isuppz(2 * in.channels);
-        std::vector<std::complex<double>> psi_vec(in.channels);
-        // scratch for coefficients
-        std::vector<std::complex<double>> coeff(in.channels);
-        #pragma omp for
-        for (int i = 0; i < in.space_grid; i++) {
-            const hermitian_matrix H = potential[tick][i];
-            // call ZHEEVR
-            diagonalizeHermitianMatrix(H, eigenvalues, eigenvectors, isuppz);
-            // apply e^{-i * eigenvalue * dt/2} in eigenbasis
-            // project psi onto eigenvectors
-            for (int c = 0; c < in.channels; c++) {
-                psi_vec[c] = {psi[c][i][0], psi[c][i][1]};
-            }
-            // phases for transform
-            std::vector<double> phases(in.channels);
-            for (int k = 0; k < in.channels; k++) {
-                phases[k] = -eigenvalues[k] * in.dt / 2.0;
-            }
-            // apply transformation in eigenbasis
-            eigenbasisTransform(in.channels, eigenvectors, phases, psi_vec, coeff);
-            // write to psi
-            for (int c = 0; c < in.channels; c++) {
-                psi[c][i][0] = psi_vec[c].real();
-                psi[c][i][1] = psi_vec[c].imag();
-            }
-        }
-    }
-}
 void applyPotentialOperatorDense(const inputs& in, const int tick,
     const std::function<hermitian_matrix(double,double)>& potential, const std::vector<fftw_complex*>& psi) {
     // parallel over the spatial grid
@@ -72,7 +34,7 @@ void applyPotentialOperatorDense(const inputs& in, const int tick,
             for (int c1 = 0; c1 < in.channels; c1++) {
                 for (int c2 = c1+1; c2 < in.channels; c2++) {
                     H(c1, c2) *= (in.initial_pos + i*in.dx)*electricField(in.initial_t + (tick + 0.5)*in.dt,
-                        in.strength_2);
+                        in.pot_position_1, in.pot_position_2, in.strength_1, in.strength_2);
                 }
             }
             // call ZHEEVR
@@ -100,12 +62,10 @@ void applyPotentialOperatorDense(const inputs& in, const int tick,
 
 // propagates psi in potential from tick to tick + 1
 void propTickDense(const int& tick, const inputs& in, const std::vector<fftw_complex*>& psi,
-    const potCC& potential, const fftw_complex* T,
+    const std::function<hermitian_matrix(double,double)>& potential, const fftw_complex* T,
     const std::vector<fftw_plan>& fft, const std::vector<fftw_plan>& ifft, const double scale) {
     // apply potential operators
-    std::visit([&](const auto& pot) {
-        applyPotentialOperatorDense(in, tick, pot, psi);
-    }, potential);
+    applyPotentialOperatorDense(in, tick, potential, psi);
     // execute fft
     fftExecuteCC(in.space_grid, in.channels, psi, fft);
     // apply kinetic energy operator
@@ -115,9 +75,7 @@ void propTickDense(const int& tick, const inputs& in, const std::vector<fftw_com
     // normalize fftw result (fftw uses non-normalized fft algorithm)
     fftwNormCC(in, scale, psi);
     // apply potential operators
-    std::visit([&](const auto& pot) {
-        applyPotentialOperatorDense(in, tick, pot, psi);
-    }, potential);
+    applyPotentialOperatorDense(in, tick, potential, psi);
 }
 
 // propagates wavefunction based on general values
@@ -150,9 +108,7 @@ void propagateTDCCDense(const inputs& in, const std::string& data) {
         psi[c] = psip[c].get();
     }
     // get potential
-    potCC potential = in.potential_type == "file"
-        ? potCC(getPotentialCC(in, data))
-        : potCC(buildPotentialTDCC(in));
+    auto potential = buildPotentialTDCC(in);
     // scale for normalizing fft result
     const double scale = 1.0 / in.space_grid;
     // open output file and buffer

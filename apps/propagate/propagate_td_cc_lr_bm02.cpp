@@ -11,10 +11,9 @@
 #include <chrono>
 #include <print>
 #include <algorithm>
-#include <variant>
 #include <omp.h>
-#include "../potentials/potentials_td_cc.h"
-#include "../potentials/potentials_td.h"
+#include "potentials_td_cc.h"
+#include "potentials_td.h"
 
 // apply low-rank coupling operator with modified coefficient alpha and with fractional (double-valued) tick
 void applyCouplingOperatorLRCoeff(const inputs& in, const coupling_lr& coup,
@@ -29,7 +28,8 @@ void applyCouplingOperatorLRCoeff(const inputs& in, const coupling_lr& coup,
     std::vector<double> phases(in.channels);
     for (int k = 0; k < in.channels; k++) {
         phases[k] = - alpha * (in.initial_pos + point*in.dx)
-        * electricField(in.initial_t + tick*in.dt, in.strength_2)
+        * electricField(in.initial_t + tick*in.dt,
+            in.pot_position_1, in.pot_position_2, in.strength_1, in.strength_2)
         * coup.diag_coup(k) * in.dt;
     }
     // apply transformation in eigenbasis
@@ -61,14 +61,12 @@ void applyPotentialOperatorLRCoeffReverse(const inputs& in, const double tick, c
 
 // propagates psi in potential from tick to tick + 1
 void propTickLRBM02(const double& tick, const inputs& in, const std::vector<fftw_complex*>& psi,
-    const potCC& potential, const std::vector<fftw_complex*>& V_d,
+    const std::function<hermitian_matrix(double,double)>& potential, const std::vector<fftw_complex*>& V_d,
     const coupling_lr& V_c, const fftw_complex* T,
     const std::vector<fftw_plan>& fft, const std::vector<fftw_plan>& ifft, const double scale,
     const std::vector<double>& c) {
     // define diagonal potential operator
-    std::visit([&](const auto& pot) {
-        definePotentialOperatorDiagFrac(in, tick, V_d, pot, c[0]);
-    }, potential);
+    definePotentialOperatorDiagFrac(in, tick, V_d, potential, c[0]);
     // apply potential operators
     applyPotentialOperatorLRCoeff(in, tick, V_d, V_c, psi, c[0]);
     // execute fft
@@ -80,9 +78,7 @@ void propTickLRBM02(const double& tick, const inputs& in, const std::vector<fftw
     // normalize fftw result (fftw uses non-normalized fft algorithm)
     fftwNormCC(in, scale, psi);
     // define diagonal potential operator
-    std::visit([&](const auto& pot) {
-        definePotentialOperatorDiagFrac(in, tick+c[1], V_d, pot, c[2]);
-    }, potential);
+    definePotentialOperatorDiagFrac(in, tick+c[1], V_d, potential, c[2]);
     // apply potential operators
     applyPotentialOperatorLRCoeff(in, tick+c[1], V_d, V_c, psi, c[2]);
     // execute fft
@@ -94,9 +90,7 @@ void propTickLRBM02(const double& tick, const inputs& in, const std::vector<fftw
     // normalize fftw result (fftw uses non-normalized fft algorithm)
     fftwNormCC(in, scale, psi);
     // define diagonal potential operator
-    std::visit([&](const auto& pot) {
-        definePotentialOperatorDiagFrac(in, tick+c[1]+c[3], V_d, pot, c[4]);
-    }, potential);
+    definePotentialOperatorDiagFrac(in, tick+c[1]+c[3], V_d, potential, c[4]);
     // apply potential operators
     applyPotentialOperatorLRCoeff(in, tick+c[1]+c[3], V_d, V_c, psi, c[4]);
     // execute fft
@@ -108,9 +102,7 @@ void propTickLRBM02(const double& tick, const inputs& in, const std::vector<fftw
     // normalize fftw result (fftw uses non-normalized fft algorithm)
     fftwNormCC(in, scale, psi);
     // define diagonal potential operator
-    std::visit([&](const auto& pot) {
-        definePotentialOperatorDiagFrac(in, tick+c[1]+c[3]+c[5], V_d, pot, c[6]);
-    }, potential);
+    definePotentialOperatorDiagFrac(in, tick+c[1]+c[3]+c[5], V_d, potential, c[6]);
     #pragma omp parallel for default(none) shared(in, V_c, psi, V_d, tick, c)
     for (int i = 0; i < in.space_grid; i++) {
         applyCouplingOperatorLRCoeff(in, V_c, psi, i, tick+c[1]+c[3]+c[5], c[6]/2.0);
@@ -126,9 +118,7 @@ void propTickLRBM02(const double& tick, const inputs& in, const std::vector<fftw
     // normalize fftw result (fftw uses non-normalized fft algorithm)
     fftwNormCC(in, scale, psi);
     // define diagonal potential operator
-    std::visit([&](const auto& pot) {
-        definePotentialOperatorDiagFrac(in, tick+c[1]+c[3]+2*c[5], V_d, pot, c[4]);
-    }, potential);
+    definePotentialOperatorDiagFrac(in, tick+c[1]+c[3]+2*c[5], V_d, potential, c[4]);
     // apply potential operators
     applyPotentialOperatorLRCoeffReverse(in, tick+c[1]+c[3]+2*c[5], V_d, V_c, psi, c[4]);
     // execute fft
@@ -140,9 +130,7 @@ void propTickLRBM02(const double& tick, const inputs& in, const std::vector<fftw
     // normalize fftw result (fftw uses non-normalized fft algorithm)
     fftwNormCC(in, scale, psi);
     // define diagonal potential operator
-    std::visit([&](const auto& pot) {
-        definePotentialOperatorDiagFrac(in, tick+c[1]+2*c[3]+2*c[5], V_d, pot, c[2]);
-    }, potential);
+    definePotentialOperatorDiagFrac(in, tick+c[1]+2*c[3]+2*c[5], V_d, potential, c[2]);
     // apply potential operators
     applyPotentialOperatorLRCoeffReverse(in, tick+c[1]+2*c[3]+2*c[5], V_d, V_c, psi, c[2]);
     // execute fft
@@ -154,9 +142,7 @@ void propTickLRBM02(const double& tick, const inputs& in, const std::vector<fftw
     // normalize fftw result (fftw uses non-normalized fft algorithm)
     fftwNormCC(in, scale, psi);
     // define diagonal potential operator
-    std::visit([&](const auto& pot) {
-        definePotentialOperatorDiagFrac(in, tick+1, V_d, pot, c[0]);
-    }, potential);
+    definePotentialOperatorDiagFrac(in, tick+1, V_d, potential, c[0]);
     // apply potential operators
     applyPotentialOperatorLRCoeffReverse(in, tick+1, V_d, V_c, psi, c[0]);
 }
@@ -191,12 +177,8 @@ void propagateTDCCLRBM02(const inputs& in, const std::string& data) {
         psi[c] = psip[c].get();
     }
     // get potential
-    potCC potential = in.potential_type == "file"
-        ? potCC(getPotentialCC(in, data))
-        : potCC(buildPotentialTDCC(in));
-    coupling_lr coup = in.potential_type == "file"
-        ? prepCouplingOperatorLR(in, getPotentialCC(in, data))
-        : prepCouplingOperatorLR(in, buildPotentialTDCC(in));
+    auto potential = buildPotentialTDCC(in);
+    coupling_lr coup = prepCouplingOperatorLR(in, buildPotentialTDCC(in));
     // scale for normalizing fft result
     const double scale = 1.0 / in.space_grid;
     // open output file and buffer

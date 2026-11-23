@@ -51,6 +51,9 @@ struct inputs {
     double min_energy;
     double max_energy;
     double dE;
+    int bound_channels;
+    int residual_channels;
+    int continuum_channels;
     int channels;
     // space data
     double initial_pos;

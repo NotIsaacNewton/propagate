@@ -11,10 +11,9 @@
 #include <chrono>
 #include <print>
 #include <algorithm>
-#include <variant>
 #include <omp.h>
-#include "../potentials/potentials_td_cc.h"
-#include "../potentials/potentials_td.h"
+#include "potentials_td_cc.h"
+#include "potentials_td.h"
 
 // prep low-rank approximation method
 coupling_lr prepCouplingOperatorLR(const inputs& in,
@@ -24,26 +23,7 @@ coupling_lr prepCouplingOperatorLR(const inputs& in,
     #pragma omp parallel for default(none) shared(in, potential, coupling_matrix)
     for (int c1 = 0; c1 < in.channels; c1++) {
         for (int c2 = c1+1; c2 < in.channels; c2++) {
-            coupling_matrix(c1,c2) = potential(0.0,0.0)(c1,c2);
-        }
-    }
-    // allocate eigenvalue and eigenvector arrays
-    std::vector<double> eigenvalues(in.channels);
-    std::vector<lapack_complex_double> eigenvectors(in.channels * in.channels);
-    std::vector<lapack_int> isuppz(2 * in.channels);
-    // diagonalize dipole coupling matrix
-    diagonalizeHermitianMatrix(coupling_matrix, eigenvalues, eigenvectors, isuppz);
-    const diag_matrix coup(in.channels, eigenvalues);
-    return { .diag_coup = coup, .eigenvectors = eigenvectors };
-}
-coupling_lr prepCouplingOperatorLR(const inputs& in,
-    const std::vector<std::vector<hermitian_matrix>>& potential) {
-    hermitian_matrix coupling_matrix(in.channels);
-    // grab dipole coupling matrix
-    #pragma omp parallel for default(none) shared(in, potential, coupling_matrix)
-    for (int c1 = 0; c1 < in.channels; c1++) {
-        for (int c2 = c1+1; c2 < in.channels; c2++) {
-            coupling_matrix(c1,c2) = potential[0][0](c1,c2);
+            coupling_matrix(c1,c2) = potential(0.0, 0.0)(c1,c2);
         }
     }
     // allocate eigenvalue and eigenvector arrays
@@ -69,7 +49,8 @@ void applyCouplingOperatorLR(const inputs& in, const coupling_lr& coup,
     std::vector<double> phases(in.channels);
     for (int k = 0; k < in.channels; k++) {
         phases[k] = - (in.initial_pos + point*in.dx)
-        * electricField(in.initial_t + (tick+0.5)*in.dt, in.strength_2)
+        * electricField(in.initial_t + (tick+0.5)*in.dt,
+            in.pot_position_1, in.pot_position_2, in.strength_1, in.strength_2)
         * coup.diag_coup(k) * in.dt / 2.0;
     }
     // apply transformation in eigenbasis
@@ -101,13 +82,11 @@ void applyPotentialOperatorLRReverse(const inputs& in, const int tick, const std
 
 // propagates psi in potential from tick to tick + 1
 void propTickLR(const int& tick, const inputs& in, const std::vector<fftw_complex*>& psi,
-    const potCC& potential, const std::vector<fftw_complex*>& V_d,
+    const std::function<hermitian_matrix(double,double)>& potential, const std::vector<fftw_complex*>& V_d,
     const coupling_lr& V_c, const fftw_complex* T,
     const std::vector<fftw_plan>& fft, const std::vector<fftw_plan>& ifft, const double scale) {
     // define diagonal potential operator
-    std::visit([&](const auto& pot) {
-        definePotentialOperatorDiag(in, tick, V_d, pot);
-    }, potential);
+    definePotentialOperatorDiag(in, tick, V_d, potential);
     // apply potential operators
     applyPotentialOperatorLR(in, tick, V_d, V_c, psi);
     // execute fft
@@ -152,12 +131,8 @@ void propagateTDCCLR(const inputs& in, const std::string& data) {
         psi[c] = psip[c].get();
     }
     // get potential
-    potCC potential = in.potential_type == "file"
-        ? potCC(getPotentialCC(in, data))
-        : potCC(buildPotentialTDCC(in));
-    coupling_lr coup = in.potential_type == "file"
-        ? prepCouplingOperatorLR(in, getPotentialCC(in, data))
-        : prepCouplingOperatorLR(in, buildPotentialTDCC(in));
+    auto potential = buildPotentialTDCC(in);
+    coupling_lr coup = prepCouplingOperatorLR(in, buildPotentialTDCC(in));
     // scale for normalizing fft result
     const double scale = 1.0 / in.space_grid;
     // open output file and buffer

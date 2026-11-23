@@ -45,6 +45,15 @@ std::function<double(double)> hydrogen() {
     };
 }
 
+// builds a coarse grid
+void buildGrid(const inputs& in, std::vector<double>& grid, const double& dx) {
+    // write coarse potential grid
+    #pragma omp parallel for default(none) shared(in, grid, dx)
+    for (int i = 0; i < in.space_grid_coarse; i++) {
+        grid[i] = in.initial_pos + i * dx;
+    }
+}
+
 // potential builder + map of options
 std::function<double(double)> buildPotential(const inputs& in) {
     std::unordered_map<std::string, std::function<std::function<double(double)>()>> const potentials = {
@@ -65,6 +74,12 @@ std::function<double(double)> buildPotential(const inputs& in) {
             }},
         {"hydrogen",  [] {
             return hydrogen();
+            }},
+        {"file",    [in] {
+            auto pot = std::make_shared<potential_from_file>(in);
+            return [pot](const double x) {
+                return pot->operator()(x);
+            };
             }}
     };
     return potentials.at(in.potential_type)();

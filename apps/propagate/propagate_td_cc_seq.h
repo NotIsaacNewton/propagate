@@ -10,9 +10,6 @@
 // creates array of coupling operator arrays from data at tick and outputs to op
 // op at first level is indexed for spatial grid and at second and third levels for each pair of channels
 void defineCouplingOperator(const inputs& in, const int& tick, std::vector<std::vector<std::vector<coupling>>>& op,
-    const std::vector<std::vector<hermitian_matrix>>& potential);
-// creates array of coupling operator arrays from data at tick and outputs to op
-void defineCouplingOperator(const inputs& in, const int& tick, std::vector<std::vector<std::vector<coupling>>>& op,
     const std::function<hermitian_matrix(double,double)>& potential);
 // applies coupling part of potential operator for all channels at a specific gridpoint
 void applyCouplingOperator(int point, int channels, const std::vector<std::vector<std::vector<coupling>>>& coup,
@@ -28,7 +25,7 @@ void applyPotentialOperatorCCReverse(const inputs& in, const std::vector<fftw_co
 
 // propagates psi in potential from tick to tick + 1
 void propTickTDCCSeq(const int& tick, const inputs& in, const std::vector<fftw_complex*>& psi,
-    const potCC& potential, const std::vector<fftw_complex*>& V_d,
+    const std::function<hermitian_matrix(double,double)>& potential, const std::vector<fftw_complex*>& V_d,
     std::vector<std::vector<std::vector<coupling>>>& V_c, const fftw_complex* T,
     const std::vector<fftw_plan>& fft, const std::vector<fftw_plan>& ifft, double scale);
 

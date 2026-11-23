@@ -15,8 +15,6 @@ struct coupling_lr {
 // prep low-rank approximation method
 coupling_lr prepCouplingOperatorLR(const inputs& in,
     const std::function<hermitian_matrix(double,double)>& potential);
-coupling_lr prepCouplingOperatorLR(const inputs& in,
-    const std::vector<std::vector<hermitian_matrix>>& potential);
 // apply potential operator with low-rank approximation
 void applyCouplingOperatorLR(const inputs& in, const coupling_lr& coup,
     const std::vector<fftw_complex*>& psi, int point, int tick);
@@ -28,7 +26,7 @@ void applyPotentialOperatorLRReverse(const inputs& in, int tick, const std::vect
 
 // propagates psi in potential from tick to tick + 1
 void propTickLR(const int& tick, const inputs& in, const std::vector<fftw_complex*>& psi,
-    const potCC& potential, const std::vector<fftw_complex*>& V_d,
+    const std::function<hermitian_matrix(double,double)>& potential, const std::vector<fftw_complex*>& V_d,
     const coupling_lr& V_c, const fftw_complex* T,
     const std::vector<fftw_plan>& fft, const std::vector<fftw_plan>& ifft, double scale);
 

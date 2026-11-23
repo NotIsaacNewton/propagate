@@ -29,12 +29,14 @@ double gaussian(const double t, const double delta, const double pos) {
     return exp(-(t-pos)*(t-pos)/(2*(delta*delta)));
 }
 // electric field
-double electricField(const double t, const double omega) {
-    return 0.0534*gaussian(t, 744, 3000)*cos(omega*(t-3000));
+double electricField(const double t, const double delta, const double pos,
+    const double intensity, const double omega) {
+    return intensity*gaussian(t, delta, pos)*cos(omega*(t-pos));
 }
-std::function<double(double, double)> electricHydrogen() {
-    return [](const double x, const double t) {
-        return -1/std::sqrt(1 + x*x) + x*electricField(t, 0.057);
+std::function<double(double, double)> electricHydrogen(const double delta, const double pos,
+    const double intensity, const double omega) {
+    return [delta, pos, intensity, omega](const double x, const double t) {
+        return -1/std::sqrt(1 + x*x) + x*electricField(t, delta, pos, intensity, omega);
     };
 }
 
@@ -48,8 +50,16 @@ std::function<double(double, double)> buildPotentialTD(const inputs& in) {
         {"electricsho",     [in] {
             return electricSho(in.strength_1,in.strength_2);
             }},
-        {"electrichydrogen",  [] {
-            return electricHydrogen();
+        {"electrichydrogen",[in] {
+            return electricHydrogen(in.pot_position_1, in.pot_position_2,
+                in.strength_1, in.strength_2);
+            }},
+        {"file",            [in] {
+            auto pot = std::make_shared<potential_from_file>(in);
+            return [pot, in](const double x, const double t) {
+                return pot->interpolator.interp_threaded(x) + x*electricField(t,
+                    in.pot_position_1, in.pot_position_2, in.strength_1, in.strength_2);
+            };
             }}
     };
     return potentials.at(in.potential_type)();

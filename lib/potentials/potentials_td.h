@@ -16,9 +16,9 @@ std::function<double(double, double)> electricSho(double strength, double k);
 // time-dependent Gaussian
 double gaussian(double t, double delta, double pos);
 // electric field
-double electricField(double t, double omega);
+double electricField(double t, double delta, double pos, double intensity, double omega);
 // dipole-coupled soft-core hydrogen
-std::function<double(double, double)> electricHydrogen();
+std::function<double(double, double)> electricHydrogen(double delta, double pos, double intensity, double omega);
 
 // potential builder + map of options
 std::function<double(double, double)> buildPotentialTD(const inputs& in);

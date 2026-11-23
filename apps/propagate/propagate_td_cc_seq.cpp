@@ -12,10 +12,9 @@
 #include <chrono>
 #include <print>
 #include <algorithm>
-#include <variant>
 #include <omp.h>
-#include "../potentials/potentials_td_cc.h"
-#include "../potentials/potentials_td.h"
+#include "potentials_td_cc.h"
+#include "potentials_td.h"
 
 // creates array of coupling operator arrays from data at tick and outputs to op
 void defineCouplingOperator(const inputs& in, const int& tick, std::vector<std::vector<std::vector<coupling>>>& op,
@@ -26,30 +25,9 @@ void defineCouplingOperator(const inputs& in, const int& tick, std::vector<std::
         for (int c1 = 0; c1 < in.channels; c1++) {
             for (int c2 = c1+1; c2 < in.channels; c2++) {
                 const std::complex<double> coupling = (in.initial_pos + i*in.dx)*electricField(
-                    in.initial_t + (tick + 0.5)*in.dt, in.strength_2) * temp(c1,c2);
-                if (const double coupling_strength = std::abs(coupling); coupling_strength < 1e-15) {
-                    op[i][c1][c2].cos_factor = 1.0;
-                    op[i][c1][c2].sin_factor = 0.0;
-                    op[i][c1][c2].exp_phase = std::complex(0.0, 0.0);
-                } else {
-                    const double phase = coupling_strength * in.dt / 2.0;
-                    op[i][c1][c2].cos_factor = cos(phase);
-                    op[i][c1][c2].sin_factor = sin(phase);
-                    op[i][c1][c2].exp_phase = std::complex(coupling.imag()/coupling_strength,
-                        -coupling.real()/coupling_strength);
-                }
-            }
-        }
-    }
-}
-void defineCouplingOperator(const inputs& in, const int& tick, std::vector<std::vector<std::vector<coupling>>>& op,
-    const std::vector<std::vector<hermitian_matrix>>& potential) {
-    #pragma omp parallel for default(none) shared(in, potential, tick, op)
-    for (int i = 0; i < in.space_grid; i++) {
-        auto intermediate = potential[tick][i];
-        for (int c1 = 0; c1 < in.channels; c1++) {
-            for (int c2 = c1+1; c2 < in.channels; c2++) {
-                const std::complex<double> coupling = intermediate(c1,c2);
+                    in.initial_t + (tick + 0.5)*in.dt,
+                    in.pot_position_1, in.pot_position_2, in.strength_1, in.strength_2) *
+                        temp(c1,c2);
                 if (const double coupling_strength = std::abs(coupling); coupling_strength < 1e-15) {
                     op[i][c1][c2].cos_factor = 1.0;
                     op[i][c1][c2].sin_factor = 0.0;
@@ -114,14 +92,12 @@ void applyPotentialOperatorCCReverse(const inputs& in, const std::vector<fftw_co
 
 // propagates psi in potential from tick to tick + 1
 void propTickTDCCSeq(const int& tick, const inputs& in, const std::vector<fftw_complex*>& psi,
-    const potCC& potential, const std::vector<fftw_complex*>& V_d,
+    const std::function<hermitian_matrix(double,double)>& potential, const std::vector<fftw_complex*>& V_d,
     std::vector<std::vector<std::vector<coupling>>>& V_c, const fftw_complex* T,
     const std::vector<fftw_plan>& fft, const std::vector<fftw_plan>& ifft, const double scale) {
     // define diagonal and coupling potential operators
-    std::visit([&](const auto& pot) {
-        definePotentialOperatorDiag(in, tick, V_d, pot);
-        defineCouplingOperator(in, tick, V_c, pot);
-    }, potential);
+    definePotentialOperatorDiag(in, tick, V_d, potential);
+    defineCouplingOperator(in, tick, V_c, potential);
     // apply potential operators
     applyPotentialOperatorCC(in, V_d, V_c, psi);
     // execute fft
@@ -166,9 +142,7 @@ void propagateTDCCSeq(const inputs& in, const std::string& data) {
         psi[c] = psip[c].get();
     }
     // get potential
-    potCC potential = in.potential_type == "file"
-        ? potCC(getPotentialCC(in, data))
-        : potCC(buildPotentialTDCC(in));
+    auto potential = buildPotentialTDCC(in);
     // scale for normalizing fft result
     const double scale = 1.0 / in.space_grid;
     // open output file and buffer

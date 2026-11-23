@@ -15,8 +15,6 @@ std::vector<std::vector<hermitian_matrix>> getPotentialCC(const inputs& in, cons
 // creates array of diagonal potential operator arrays from potential at tick and outputs to op
 // op at first level is indexed for each channel and at second level for spatial grid
 void definePotentialOperatorDiag(const inputs& in, const int& tick, const std::vector<fftw_complex*>& op,
-    const std::vector<std::vector<hermitian_matrix>>& potential);
-void definePotentialOperatorDiag(const inputs& in, const int& tick, const std::vector<fftw_complex*>& op,
     const std::function<hermitian_matrix(double, double)>& potential);
 // creates array of diagonal potential operator arrays from potential at fractional tick and outputs to op
 void definePotentialOperatorDiagFrac(const inputs& in, const double& tick, const std::vector<fftw_complex*>& op,
@@ -62,10 +60,6 @@ fftwResourcesCC fftwPrepTDCC(const inputs& in, const std::vector<fftw_complex*>&
 
 // normalizes fftw results in parallel for all channels
 void fftwNormCC(const inputs& in, double scale, const std::vector<fftw_complex*>& psi);
-
-// variant for handling potential input types
-using potCC = std::variant<std::vector<std::vector<hermitian_matrix>>,
-    std::function<hermitian_matrix(double, double)>>;
 
 // gets initial wavepacket handled with RAII, outputing a vector of unique pointers
 std::vector<std::unique_ptr<fftw_complex, void(*)(void*)>> getWavepacketCC(const inputs& in, const std::string& data);

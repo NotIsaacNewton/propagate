@@ -26,8 +26,12 @@ struct base_interp {
         const int jlo = cor ? hunt(x) : locate(x);
         return rawinterp(jlo, x);
     }
+    double interp_threaded(const double x) const {
+        return rawinterp(locate_threaded(x), x);
+    }
     // locate and hunt routines for finding a section of xx data for which x is the midpoint
     int locate(double x) const;
+    int locate_threaded(double x) const;
     int hunt(double x) const;
     // classes derived from this class must provide the actual interpolation method below
     double virtual rawinterp(int jlo, double x) const = 0;
@@ -35,7 +39,7 @@ struct base_interp {
     virtual ~base_interp() = default;
 };
 
-// locate routine
+// locate routines
 inline int base_interp::locate(const double x) const {
     if (n < 2 || mm < 2 || mm > n) throw "locate size error during interpolation";
     const bool ascnd = xx[n-1] >= xx[0];
@@ -47,6 +51,17 @@ inline int base_interp::locate(const double x) const {
     }
     cor = std::abs(jl-jsav) > dj ? 0 : 1;
     jsav = jl;
+    return std::max(0, std::min(n-mm, jl-((mm-2)>>1)));
+}
+inline int base_interp::locate_threaded(const double x) const {
+    if (n < 2 || mm < 2 || mm > n) throw "locate size error during interpolation";
+    const bool ascnd = xx[n-1] >= xx[0];
+    int jl = 0;
+    int ju = n - 1;
+    while (ju - jl > 1) {
+        const int jm = (ju + jl) >> 1;
+        x >= xx[jm] == ascnd ? jl = jm : ju = jm;
+    }
     return std::max(0, std::min(n-mm, jl-((mm-2)>>1)));
 }
 
