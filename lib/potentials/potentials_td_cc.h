@@ -76,7 +76,7 @@ struct potential_from_file_tdcc {
     explicit potential_from_file_tdcc(const inputs& in) : pots(in), coups(in),
     pot_matrix(in.channels), in(in) {}
     // accessor (read-only)
-    const hermitian_matrix& operator()(const double x, const double t) {
+    const hermitian_matrix& operator()(const double x, const double) {
         for (int c1 = 0; c1 < in.channels; c1++) {
             const double electron_energy = c1%in.continuum_channels*in.dE;
             for (int c2 = 0; c2 < in.channels; c2++) {

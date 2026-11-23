@@ -65,9 +65,15 @@ else()
 endif()
 
 # find, add, and target library of shared tools
-file(GLOB_RECURSE lib CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/lib/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/lib/potentials/*.cpp")
+file(GLOB_RECURSE lib CONFIGURE_DEPENDS
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/*.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/potentials/*.cpp")
 add_library(LIB STATIC ${lib})
-target_include_directories(LIB PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/lib ${CMAKE_CURRENT_SOURCE_DIR}/lib/potentials ${OpenMP_ROOT}/include ${LAPACK_INCLUDE_DIR} ${CBLAS_INCLUDE_DIR})
+target_include_directories(LIB PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/lib
+        ${CMAKE_CURRENT_SOURCE_DIR}/lib/potentials
+        ${OpenMP_ROOT}/include ${LAPACK_INCLUDE_DIR}
+        ${CBLAS_INCLUDE_DIR})
 target_link_libraries(LIB PUBLIC OpenMP::OpenMP_CXX ${LAPACK_LIBRARIES})
 
 # find directories with main programs and source codes
