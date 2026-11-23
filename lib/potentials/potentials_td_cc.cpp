@@ -33,6 +33,30 @@ std::function<hermitian_matrix(double, double)> coupledSHO(const inputs& in) {
     };
 }
 
+// this is called for the potentials during hybrid runs
+std::function<std::vector<double>(double, int)> hybridPotentialFunctions(const int states, const double dE) {
+    return [states, dE] (const double x, const int c) {
+        std::vector<double> pots(states);
+        pots[0] = -1/x; // a bound state
+        pots[1] = -2/x + c*dE; // a residual state
+        pots[2] = -3/x + c*dE; // another residual state
+        return pots;
+    };
+}
+std::function<hermitian_matrix(double, double)> hybridPotential(const inputs& in) {
+    return [in](const double x, const double) {
+        hermitian_matrix potential(in.bound_channels + in.residual_channels);
+        const auto potentials =
+            hybridPotentialFunctions(in.bound_channels + in.residual_channels, in.dE);
+        potential(0,0) = std::complex(potentials(x, 0)[0], 0.0);
+        for (int c = 1; c < in.residual_channels*in.continuum_channels; c++) {
+            potential(c,c) = std::complex(expDecay(x, c, in.continuum_channels,
+                in.max_energy-in.min_energy), 0.0);
+        }
+        return potential;
+    };
+}
+
 // gets all potentials
 void potentials_from_file::getPotentials(const inputs& in) {
     for (int c = 0; c < in.bound_channels; c++) {
@@ -92,6 +116,12 @@ std::function<hermitian_matrix(double, double)> buildPotentialTDCC(const inputs&
             }},
         {"file",            [in] {
             auto pot = std::make_shared<potential_from_file_tdcc>(in);
+            return [pot, in](const double x, const double t) {
+                return pot->operator()(x, t);
+            };
+            }},
+        {"hybrid",            [in] {
+            auto pot = std::make_shared<hybrid_from_file_tdcc>(in);
             return [pot, in](const double x, const double t) {
                 return pot->operator()(x, t);
             };

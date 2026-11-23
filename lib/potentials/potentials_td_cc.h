@@ -16,6 +16,10 @@ double SHO(double x);
 double expDecay(double x, int c, int channels, double range);
 std::function<hermitian_matrix(double, double)> coupledSHO(const inputs& in);
 
+// this is called for the potentials during hybrid runs
+std::function<std::vector<double>(double, int)> hybridPotentialFunctions(int states, double dE);
+std::function<hermitian_matrix(double, double)> hybridPotential(const inputs& in);
+
 // potential from file: assumes one bound ground state
 // requires a file containing the bound (ground state) potential curve
 // requires N files containing potentials curves for N residual states
@@ -89,7 +93,34 @@ struct potential_from_file_tdcc {
         }
         return pot_matrix;
     }
-
+};
+// uses the above methods to get a complete set of interpolators for all TDCC objects that can be packaged
+//  into the standard std::function<hermitian_matrix(double, double)>
+struct hybrid_from_file_tdcc {
+    const inputs& in;
+    const std::function<std::vector<double>(double, int)> potentials;
+    const couplings_from_file coups; // holds all couplings
+    hermitian_matrix pot_matrix;
+    explicit hybrid_from_file_tdcc(const inputs& in) : in(in),
+    potentials(hybridPotentialFunctions(in.bound_channels + in.residual_channels, in.dE)),
+    coups(in), pot_matrix(in.channels) {}
+    // accessor (read-only)
+    const hermitian_matrix& operator()(const double x, const double) {
+        for (int c = 0; c < in.bound_channels; c++) {
+            pot_matrix(c, c) = potentials(x, 0)[c];
+        }
+        for (int c = in.bound_channels; c < in.bound_channels + in.residual_channels; c++) {
+            for (int cont = 0; cont < in.continuum_channels; cont++) {
+                pot_matrix(c, c) = potentials(x, cont)[c];
+            }
+        }
+        for (int c1 = 0; c1 < in.channels; c1++) {
+            for (int c2 = c1+1; c2 < in.channels; c2++) {
+                pot_matrix(c1,c2) = coups(c1, c2);
+            }
+        }
+        return pot_matrix;
+    }
 };
 
 // potential builder + map of options
