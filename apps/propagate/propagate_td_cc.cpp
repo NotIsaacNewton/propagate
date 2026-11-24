@@ -193,9 +193,9 @@ void writeOutputCC(const std::vector<fftw_complex*>& psi, const int t, const inp
 void savePEY(const std::vector<fftw_complex*>& psi, const inputs& in) {
     std::vector<double> PEY(in.residual_channels*in.continuum_channels);
     double total_PEY = 0;
-    for (int c = 1; c < in.residual_channels*in.continuum_channels; c++) {
-        PEY[c-1] = norm(in.space_grid, in.dx, psi[c])/in.dE;
-        total_PEY += PEY[c-1]*in.dE;
+    for (int c = in.bound_channels; c < in.channels; c++) {
+        PEY[c-in.bound_channels] = norm(in.space_grid, in.dx, psi[c])/in.dE;
+        total_PEY += PEY[c-in.bound_channels]*in.dE;
     }
     writeArray1D(in.min_energy, in.dE, in.residual_channels*in.continuum_channels,
         "data/PEY.dat", PEY);

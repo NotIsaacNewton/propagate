@@ -34,12 +34,13 @@ std::function<hermitian_matrix(double, double)> coupledSHO(const inputs& in) {
 }
 
 // this is called for the potentials during hybrid runs
-std::function<std::vector<double>(double, int)> hybridPotentialFunctions(const int states, const double dE) {
-    return [states, dE] (const double x, const int c) {
+std::function<std::vector<double>(double, int)> hybridPotentialFunctions(const int states, const double min_energy,
+    const double dE) {
+    return [states, min_energy, dE] (const double x, const int c) {
         std::vector<double> pots(states);
         pots[0] = -1/x; // a bound state
-        pots[1] = -2/x + c*dE; // a residual state
-        pots[2] = -3/x + c*dE; // another residual state
+        pots[1] = -2/x + min_energy + c*dE; // a residual state
+        pots[2] = -3/x + min_energy + c*dE; // another residual state
         return pots;
     };
 }
@@ -47,7 +48,7 @@ std::function<hermitian_matrix(double, double)> hybridPotential(const inputs& in
     return [in](const double x, const double) {
         hermitian_matrix potential(in.bound_channels + in.residual_channels);
         const auto potentials =
-            hybridPotentialFunctions(in.bound_channels + in.residual_channels, in.dE);
+            hybridPotentialFunctions(in.bound_channels + in.residual_channels, in.min_energy, in.dE);
         potential(0,0) = std::complex(potentials(x, 0)[0], 0.0);
         for (int c = 1; c < in.residual_channels*in.continuum_channels; c++) {
             potential(c,c) = std::complex(expDecay(x, c, in.continuum_channels,
@@ -77,9 +78,9 @@ std::vector<spline_interp> potentials_from_file::interpPotentials(const inputs& 
 // grabs all b-c dipole couplings into hermitian_matrix coup
 void couplings_from_file::couplingsFromFileBtoC(const inputs& in) {
     std::vector temp(in.residual_channels, std::vector<std::complex<double>>(in.continuum_channels));
-    for (int c = 1; c < in.residual_channels; c++) {
-        readComplexArray1D(in.pot_read_from_file + "_0_" + std::to_string(c) + ".dat",
-            temp[c-1], in.continuum_channels);
+    for (int c = 0; c < in.residual_channels; c++) {
+        readComplexArray1D(in.pot_read_from_file + "_0_" + std::to_string(c+1) + ".dat",
+            temp[c], in.continuum_channels);
     }
     for (int c = 0; c < in.residual_channels; c++) {
         for (int cont = 0; cont < in.continuum_channels; cont++) {
@@ -91,10 +92,11 @@ void couplings_from_file::couplingsFromFileBtoC(const inputs& in) {
 void couplings_from_file::couplingsFromFileCtoC(const inputs& in) {
     std::vector temp(in.residual_channels, std::vector(in.residual_channels-1,
         std::vector<std::complex<double>>(in.continuum_channels*in.continuum_channels)));
-    for (int c1 = 1; c1 < in.residual_channels; c1++) {
+    for (int c1 = 0; c1 < in.residual_channels; c1++) {
         for (int c2 = c1+1; c2 < in.residual_channels; c2++) {
-            readComplexArray1D(in.pot_read_from_file + "_" + std::to_string(c1) + "_" + std::to_string(c2) + ".dat",
-                temp[c1][c2-1], in.continuum_channels);
+            readComplexArray1D(in.pot_read_from_file + "_" + std::to_string(c1+in.bound_channels) +
+                "_" + std::to_string(c2+in.bound_channels) + ".dat", temp[c1][c2-1],
+                in.continuum_channels*in.continuum_channels);
         }
     }
     for (int c1 = 0; c1 < in.residual_channels; c1++) {
@@ -103,7 +105,8 @@ void couplings_from_file::couplingsFromFileCtoC(const inputs& in) {
             for (int i = 0; i < in.continuum_channels; i++) {
                 for (int j = 0; j < in.continuum_channels; j++) {
                     coup(in.bound_channels + c1*in.continuum_channels + i,
-                        in.bound_channels + c2*in.continuum_channels + j) = temp[c1][c2-1][i*in.continuum_channels + j];
+                        in.bound_channels + c2*in.continuum_channels + j) =
+                            temp[c1][c2-1][i*in.continuum_channels + j];
                 }
             }
         }

@@ -17,7 +17,7 @@ double expDecay(double x, int c, int channels, double range);
 std::function<hermitian_matrix(double, double)> coupledSHO(const inputs& in);
 
 // this is called for the potentials during hybrid runs
-std::function<std::vector<double>(double, int)> hybridPotentialFunctions(int states, double dE);
+std::function<std::vector<double>(double, int)> hybridPotentialFunctions(int states, double min_energy, double dE);
 std::function<hermitian_matrix(double, double)> hybridPotential(const inputs& in);
 
 // potential from file: assumes one bound ground state
@@ -88,7 +88,7 @@ struct potential_from_file_tdcc {
             for (int cont = 0; cont < in.continuum_channels; cont++) {
                 pot_matrix(in.bound_channels + (c - in.bound_channels)*in.continuum_channels + cont,
                     in.bound_channels + (c - in.bound_channels)*in.continuum_channels + cont) =
-                        std::complex(pots(c, x) + cont*in.dE, 0.0);
+                        std::complex(pots(c, x) + in.min_energy + cont*in.dE, 0.0);
             }
         }
         for (int c1 = 0; c1 < in.channels; c1++) {
@@ -106,7 +106,8 @@ struct hybrid_from_file_tdcc {
     const std::function<std::vector<double>(double, int)> potentials;
     const couplings_from_file coups; // holds all couplings
     explicit hybrid_from_file_tdcc(const inputs& in) : in(in),
-    potentials(hybridPotentialFunctions(in.bound_channels + in.residual_channels, in.dE)), coups(in) {}
+    potentials(hybridPotentialFunctions(in.bound_channels + in.residual_channels, in.min_energy, in.dE)),
+    coups(in) {}
     // accessor (read-only)
     hermitian_matrix operator()(const double x, const double) const {
         hermitian_matrix pot_matrix(in.channels);
