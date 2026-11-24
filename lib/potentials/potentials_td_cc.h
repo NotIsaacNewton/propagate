@@ -24,7 +24,7 @@ std::function<hermitian_matrix(double, double)> hybridPotential(const inputs& in
 // requires a file containing the bound (ground state) potential curve
 // requires N files containing potentials curves for N residual states
 // requires N files containing bound-continuum dipole couplings for all N residual states, at M continuum energies
-// requires N*(N-1)/2 files with M(M-1)/2 continuum-continuum dipole couplings (since each potential comes with its
+// requires N*(N-1)/2 files with M^2 continuum-continuum dipole couplings (since each potential comes with its
 //  own continuum) ordered by rows of increasing energy (E_00 -> E_0M, E_10 -> E_1M, ..., E_M0 -> E_MM)
 // grabs all bound + residual potential curves and interpolates each one
 struct potentials_from_file {
@@ -79,16 +79,21 @@ struct potential_from_file_tdcc {
     const inputs in;
     explicit potential_from_file_tdcc(const inputs& in) : pots(in), coups(in), in(in) {}
     // accessor (read-only)
-    const hermitian_matrix& operator()(const double x, const double) const {
+    hermitian_matrix operator()(const double x, const double) const {
         hermitian_matrix pot_matrix(in.channels);
+        for (int c = 0; c < in.bound_channels; c++) {
+            pot_matrix(c, c) = std::complex(pots(c, x), 0.0);
+        }
+        for (int c = in.bound_channels; c < in.bound_channels + in.residual_channels; c++) {
+            for (int cont = 0; cont < in.continuum_channels; cont++) {
+                pot_matrix(in.bound_channels + (c - in.bound_channels)*in.continuum_channels + cont,
+                    in.bound_channels + (c - in.bound_channels)*in.continuum_channels + cont) =
+                        std::complex(pots(c, x) + cont*in.dE, 0.0);
+            }
+        }
         for (int c1 = 0; c1 < in.channels; c1++) {
-            const double electron_energy = c1%in.continuum_channels*in.dE;
-            for (int c2 = c1; c2 < in.channels; c2++) {
-                if (c1==c2) {
-                    pot_matrix(c1, c1) = std::complex(pots(c1, x) + electron_energy, 0.0);
-                } else {
-                    pot_matrix(c1,c2) = coups(c1, c2);
-                }
+            for (int c2 = c1+1; c2 < in.channels; c2++) {
+                pot_matrix(c1,c2) = coups(c1, c2);
             }
         }
         return pot_matrix;
@@ -103,15 +108,16 @@ struct hybrid_from_file_tdcc {
     explicit hybrid_from_file_tdcc(const inputs& in) : in(in),
     potentials(hybridPotentialFunctions(in.bound_channels + in.residual_channels, in.dE)), coups(in) {}
     // accessor (read-only)
-    const hermitian_matrix& operator()(const double x, const double) const {
+    hermitian_matrix operator()(const double x, const double) const {
         hermitian_matrix pot_matrix(in.channels);
         for (int c = 0; c < in.bound_channels; c++) {
             pot_matrix(c, c) = potentials(x, 0)[c];
         }
         for (int c = in.bound_channels; c < in.bound_channels + in.residual_channels; c++) {
             for (int cont = 0; cont < in.continuum_channels; cont++) {
-                pot_matrix(c + (c - in.bound_channels)*in.continuum_channels + cont,
-                    c + (c - in.bound_channels)*in.continuum_channels + cont) = potentials(x, cont)[c];
+                pot_matrix(in.bound_channels + (c - in.bound_channels)*in.continuum_channels + cont,
+                    in.bound_channels + (c - in.bound_channels)*in.continuum_channels + cont) =
+                        potentials(x, cont)[c];
             }
         }
         for (int c1 = 0; c1 < in.channels; c1++) {

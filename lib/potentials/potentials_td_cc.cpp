@@ -67,8 +67,9 @@ void potentials_from_file::getPotentials(const inputs& in) {
 std::vector<spline_interp> potentials_from_file::interpPotentials(const inputs& in, const std::vector<double>& grid,
     const std::vector<std::vector<double>>& potentials) {
     std::vector<spline_interp> interps;
+    interps.reserve(in.bound_channels + in.residual_channels);
     for (int c = 0; c < in.bound_channels+in.residual_channels; c++) {
-        interps[c] = spline_interp(grid, potentials[c]);
+        interps.emplace_back(std::span{grid}, std::span{potentials[c]});
     }
     return interps;
 }
@@ -80,9 +81,9 @@ void couplings_from_file::couplingsFromFileBtoC(const inputs& in) {
         readComplexArray1D(in.pot_read_from_file + "_0_" + std::to_string(c) + ".dat",
             temp[c-1], in.continuum_channels);
     }
-    for (int c = 1; c < in.residual_channels; c++) {
+    for (int c = 0; c < in.residual_channels; c++) {
         for (int cont = 0; cont < in.continuum_channels; cont++) {
-            coup(0,(c+1)*cont) = temp[c-1][cont];
+            coup(0,in.bound_channels+c*in.continuum_channels+cont) = temp[c][cont];
         }
     }
 }
@@ -96,7 +97,7 @@ void couplings_from_file::couplingsFromFileCtoC(const inputs& in) {
                 temp[c1][c2-1], in.continuum_channels);
         }
     }
-    for (int c1 = 1; c1 < in.residual_channels; c1++) {
+    for (int c1 = 0; c1 < in.residual_channels; c1++) {
         for (int c2 = c1+1; c2 < in.residual_channels; c2++) {
             #pragma omp parallel for default(none) shared(in, temp, c1, c2)
             for (int i = 0; i < in.continuum_channels; i++) {
